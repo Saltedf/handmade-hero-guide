@@ -1,0 +1,172 @@
+[
+  {
+    "slug": "chat/chat001",
+    "title_en": "Chat 001: Health and Emulation",
+    "title_zh": "健康与模拟器",
+    "url": "https://guide.handmadehero.org/chat/chat001/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "coding",
+    "learn": ""
+  },
+  {
+    "slug": "chat/chat002",
+    "title_en": "Chat 002: Asset Files and Installers",
+    "title_zh": "资产文件与安装器",
+    "url": "https://guide.handmadehero.org/chat/chat002/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "coding",
+    "learn": ""
+  },
+  {
+    "slug": "chat/chat003",
+    "title_en": "Chat 003: Resources, Files and DRM",
+    "title_zh": "资源、文件与 DRM",
+    "url": "https://guide.handmadehero.org/chat/chat003/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "coding",
+    "learn": ""
+  },
+  {
+    "slug": "chat/chat004",
+    "title_en": "Chat 004: Cross-compiling",
+    "title_zh": "交叉编译",
+    "url": "https://guide.handmadehero.org/chat/chat004/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "coding",
+    "learn": ""
+  },
+  {
+    "slug": "chat/chat005",
+    "title_en": "Chat 005: SGX and Unbreakable DRM",
+    "title_zh": "SGX 与不可破解的 DRM",
+    "url": "https://guide.handmadehero.org/chat/chat005/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "coding",
+    "learn": ""
+  },
+  {
+    "slug": "chat/chat006",
+    "title_en": "Chat 006: Error-based Drawing Algorithms",
+    "title_zh": "基于误差的绘图算法",
+    "url": "https://guide.handmadehero.org/chat/chat006/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "coding",
+    "learn": ""
+  },
+  {
+    "slug": "chat/chat007",
+    "title_en": "Chat 007: Inverse Kinematics",
+    "title_zh": "逆向运动学",
+    "url": "https://guide.handmadehero.org/chat/chat007/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "coding",
+    "learn": ""
+  },
+  {
+    "slug": "chat/chat010",
+    "title_en": "Chat 010: Partial Specialization",
+    "title_zh": "偏特化",
+    "url": "https://guide.handmadehero.org/chat/chat010/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "coding",
+    "learn": ""
+  },
+  {
+    "slug": "chat/chat011",
+    "title_en": "Chat 011: Undefined Behavior",
+    "title_zh": "未定义行为",
+    "url": "https://guide.handmadehero.org/chat/chat011/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "coding",
+    "learn": ""
+  },
+  {
+    "slug": "chat/chat012",
+    "title_en": "Chat 012: Imposter Syndrome",
+    "title_zh": "冒名顶替综合征",
+    "url": "https://guide.handmadehero.org/chat/chat012/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "coding",
+    "learn": ""
+  },
+  {
+    "slug": "chat/chat013",
+    "title_en": "Chat 013: Translation Units, Function Pointers, Compilation, Linking, and Execution",
+    "title_zh": "翻译单元、函数指针、编译、链接与执行",
+    "url": "https://guide.handmadehero.org/chat/chat013/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "coding",
+    "learn": ""
+  },
+  {
+    "slug": "chat/chat014",
+    "title_en": "Chat 014: CRTP and Library Design",
+    "title_zh": "CRTP 与库设计",
+    "url": "https://guide.handmadehero.org/chat/chat014/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "coding",
+    "learn": ""
+  },
+  {
+    "slug": "chat/chat016",
+    "title_en": "Chat 016: Drawing a Circle on a 286",
+    "title_zh": "在 286 上画圆",
+    "url": "https://guide.handmadehero.org/chat/chat016/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "coding",
+    "learn": ""
+  },
+  {
+    "slug": "chat/chat017",
+    "title_en": "Chat 017: Modern x64 Architectures and the Cache",
+    "title_zh": "现代 x64 架构与缓存",
+    "url": "https://guide.handmadehero.org/chat/chat017/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "coding",
+    "learn": ""
+  },
+  {
+    "slug": "chat/chat018",
+    "title_en": "Chat 018: Pixel Art Games and nSight Shader Analysis",
+    "title_zh": "像素艺术游戏与 nSight shader 分析",
+    "url": "https://guide.handmadehero.org/chat/chat018/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "coding",
+    "learn": ""
+  },
+  {
+    "slug": "chat/chat019",
+    "title_en": "Chat 019: Introduction to Mesh Skinning",
+    "title_zh": "网格蒙皮入门",
+    "url": "https://guide.handmadehero.org/chat/chat019/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "concept",
+    "learn": ""
+  },
+  {
+    "slug": "chat/chat020",
+    "title_en": "Chat 020: Assembly Analysis and Front-end Register Clears",
+    "title_zh": "汇编分析与前端寄存器清零",
+    "url": "https://guide.handmadehero.org/chat/chat020/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "coding",
+    "learn": ""
+  }
+]

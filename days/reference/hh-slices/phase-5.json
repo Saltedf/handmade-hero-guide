@@ -1,0 +1,4093 @@
+{
+  "phase_num": 5,
+  "phase_meta": {
+    "id": "phase-5",
+    "title": "Phase 5 — Debug 系统 + OpenGL 迁移(Day 176–260)",
+    "range": "Day 176–260 · 85 集 · 预计 8–10 周",
+    "intro": "前 175 集打下了游戏与渲染的基础,但 Casey 一直用 printf 调试。Day 176 起他正式开始<strong>造自己的 debug 系统</strong>——performance counters、profiler、introspection、debug hierarchy、debug UI。这一段是 HH 全剧规模最大的「内部工具」建设,占 60 多集。\n\nDay 235 是另一个分水岭:Casey 终于决定接入 <strong>OpenGL</strong>,把软渲染搬到 GPU。对 Rust 学习者来说,这一周要把 softbuffer 换成 glutin+glow,但 winit 窗口保留—— Casey 自己也是从这天开始切 OpenGL。",
+    "goal": "完成一个能可视化性能热点、能编辑游戏变量的内置 profiler/debug UI;完成 OpenGL 迁移,把渲染管线搬到 GPU。",
+    "exit": "按 F4 能打开 in-game profiler 看每帧每函数耗时;切换到 OpenGL 后端渲染结果与软渲染一致。",
+    "rust_topics": [
+      "`glutin` + `glow` OpenGL 4.x 加载",
+      "winit 窗口复用,只换 surface 类型",
+      "GLSL shader 编译与链接",
+      "Persistent Mapped Buffers(如果支持)",
+      "异步纹理下载(`glFenceSync`)"
+    ],
+    "cs_supplement": [],
+    "resources": []
+  },
+  "episodes": [
+    {
+      "slug": "code/day176",
+      "title_en": "Day 176: Introduction to Debug Infrastructure",
+      "title_zh": "调试基础设施入门",
+      "url": "https://guide.handmadehero.org/code/day176/",
+      "difficulty": 3,
+      "duration": "2h",
+      "type": "concept",
+      "learn": "🔥 Debug 基础设施开始"
+    },
+    {
+      "slug": "code/day177",
+      "title_en": "Day 177: Automatic Performance Counters",
+      "title_zh": "自动性能计数器",
+      "url": "https://guide.handmadehero.org/code/day177/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day178",
+      "title_en": "Day 178: Thread-safe Performance Counters",
+      "title_zh": "线程安全的性能计数器",
+      "url": "https://guide.handmadehero.org/code/day178/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day179",
+      "title_en": "Day 179: Tracking Debug Information Over Time",
+      "title_zh": "随时间跟踪调试信息",
+      "url": "https://guide.handmadehero.org/code/day179/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day180",
+      "title_en": "Day 180: Adding Debug Graphs",
+      "title_zh": "加调试图表",
+      "url": "https://guide.handmadehero.org/code/day180/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day181",
+      "title_en": "Day 181: Log-based Performance Counters",
+      "title_zh": "基于日志的性能计数器",
+      "url": "https://guide.handmadehero.org/code/day181/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day182",
+      "title_en": "Day 182: Fast Thread ID Retrieval",
+      "title_zh": "快速线程 ID 获取",
+      "url": "https://guide.handmadehero.org/code/day182/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day183",
+      "title_en": "Day 183: Platform Layer Debug Events",
+      "title_zh": "平台层调试事件",
+      "url": "https://guide.handmadehero.org/code/day183/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day184",
+      "title_en": "Day 184: Collating Debug Events",
+      "title_zh": "整理调试事件",
+      "url": "https://guide.handmadehero.org/code/day184/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day185",
+      "title_en": "Day 185: Finishing Basic Debug Collation",
+      "title_zh": "完成基础调试整理",
+      "url": "https://guide.handmadehero.org/code/day185/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day186",
+      "title_en": "Day 186: Starting to Debug Event Recording",
+      "title_zh": "开始调试事件录制",
+      "url": "https://guide.handmadehero.org/code/day186/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day187",
+      "title_en": "Day 187: Fixing an Event Recording Bug",
+      "title_zh": "修复事件录制 bug",
+      "url": "https://guide.handmadehero.org/code/day187/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day188",
+      "title_en": "Day 188: Adding Hover to the Debug Graphs",
+      "title_zh": "调试图表加悬停",
+      "url": "https://guide.handmadehero.org/code/day188/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day189",
+      "title_en": "Day 189: Incremental Debug Frame Processing",
+      "title_zh": "增量调试帧处理",
+      "url": "https://guide.handmadehero.org/code/day189/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day190",
+      "title_en": "Day 190: Cleaning Up Debug Globals",
+      "title_zh": "清理调试全局变量",
+      "url": "https://guide.handmadehero.org/code/day190/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day191",
+      "title_en": "Day 191: Implementing a Radial Menu",
+      "title_zh": "实现环形菜单",
+      "url": "https://guide.handmadehero.org/code/day191/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day192",
+      "title_en": "Day 192: Implementing Self-Recompilation",
+      "title_zh": "实现自重编译",
+      "url": "https://guide.handmadehero.org/code/day192/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day193",
+      "title_en": "Day 193: Run-time Setting of Compile-time Variables",
+      "title_zh": "运行时设置编译时变量",
+      "url": "https://guide.handmadehero.org/code/day193/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day194",
+      "title_en": "Day 194: Organizing Debug Variables into a Hierarchy",
+      "title_zh": "调试变量组织为层级",
+      "url": "https://guide.handmadehero.org/code/day194/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day195",
+      "title_en": "Day 195: Implementing an Interactive Tree View",
+      "title_zh": "实现交互式树视图",
+      "url": "https://guide.handmadehero.org/code/day195/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day196",
+      "title_en": "Day 196: Introduction to UI Interactions",
+      "title_zh": "UI 交互入门",
+      "url": "https://guide.handmadehero.org/code/day196/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "concept",
+      "learn": ""
+    },
+    {
+      "slug": "code/day197",
+      "title_en": "Day 197: Integrating Multiple Debug Views",
+      "title_zh": "集成多个调试视图",
+      "url": "https://guide.handmadehero.org/code/day197/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day198",
+      "title_en": "Day 198: Run-time Editing of Debug Hierarchies",
+      "title_zh": "运行时编辑调试层级",
+      "url": "https://guide.handmadehero.org/code/day198/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day199",
+      "title_en": "Day 199: Reusing Debug Interactions",
+      "title_zh": "复用调试交互",
+      "url": "https://guide.handmadehero.org/code/day199/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day200",
+      "title_en": "Day 200: Debug Element Layout",
+      "title_zh": "调试元素布局",
+      "url": "https://guide.handmadehero.org/code/day200/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day201",
+      "title_en": "Day 201: Isolating the Debug Code",
+      "title_zh": "隔离调试代码",
+      "url": "https://guide.handmadehero.org/code/day201/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day202",
+      "title_en": "Day 202: Multiply Appearing Debug Values",
+      "title_zh": "多次出现的调试值",
+      "url": "https://guide.handmadehero.org/code/day202/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day203",
+      "title_en": "Day 203: Debug UI State Caching",
+      "title_zh": "调试 UI 状态缓存",
+      "url": "https://guide.handmadehero.org/code/day203/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day204",
+      "title_en": "Day 204: Unprojecting the Mouse Cursor",
+      "title_zh": "鼠标光标反投影",
+      "url": "https://guide.handmadehero.org/code/day204/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day205",
+      "title_en": "Day 205: Picking Entities with the Mouse",
+      "title_zh": "用鼠标拾取实体",
+      "url": "https://guide.handmadehero.org/code/day205/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day206",
+      "title_en": "Day 206: Implementing Introspection",
+      "title_zh": "实现内省",
+      "url": "https://guide.handmadehero.org/code/day206/",
+      "difficulty": 4,
+      "duration": "2h",
+      "type": "coding",
+      "learn": "🔥 程序内省:让程序枚举自己的结构"
+    },
+    {
+      "slug": "code/day207",
+      "title_en": "Day 207: Using Introspection Data",
+      "title_zh": "使用内省数据",
+      "url": "https://guide.handmadehero.org/code/day207/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day208",
+      "title_en": "Day 208: Adding Data Blocks to the Debug Log",
+      "title_zh": "调试日志加数据块",
+      "url": "https://guide.handmadehero.org/code/day208/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day209",
+      "title_en": "Day 209: Displaying Buffered Debug Data",
+      "title_zh": "显示缓冲的调试数据",
+      "url": "https://guide.handmadehero.org/code/day209/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day210",
+      "title_en": "Day 210: Consolidating Debug Data Storage",
+      "title_zh": "合并调试数据存储",
+      "url": "https://guide.handmadehero.org/code/day210/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day211",
+      "title_en": "Day 211: Removing Records and Translation Units from the Debug Code",
+      "title_zh": "从调试代码移除记录与翻译单元",
+      "url": "https://guide.handmadehero.org/code/day211/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day212",
+      "title_en": "Day 212: Integrating Debug UI into Game Code",
+      "title_zh": "调试 UI 集成到游戏代码",
+      "url": "https://guide.handmadehero.org/code/day212/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day213",
+      "title_en": "Day 213: Turning Debug Switches into Events",
+      "title_zh": "调试开关转为事件",
+      "url": "https://guide.handmadehero.org/code/day213/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day214",
+      "title_en": "Day 214: Collating Permanent Debug Values",
+      "title_zh": "整理永久调试值",
+      "url": "https://guide.handmadehero.org/code/day214/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day215",
+      "title_en": "Day 215: Cleaning Up Debug Event Collation",
+      "title_zh": "清理调试事件整理",
+      "url": "https://guide.handmadehero.org/code/day215/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day216",
+      "title_en": "Day 216: On-demand Deallocation",
+      "title_zh": "按需释放",
+      "url": "https://guide.handmadehero.org/code/day216/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day217",
+      "title_en": "Day 217: Per-element Debug Event Storage",
+      "title_zh": "逐元素调试事件存储",
+      "url": "https://guide.handmadehero.org/code/day217/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day218",
+      "title_en": "Day 218: Hashing Debug Elements",
+      "title_zh": "调试元素哈希",
+      "url": "https://guide.handmadehero.org/code/day218/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day219",
+      "title_en": "Day 219: Automatically Constructed Debug Hierarchies",
+      "title_zh": "自动构造的调试层级",
+      "url": "https://guide.handmadehero.org/code/day219/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day220",
+      "title_en": "Day 220: Displaying Data Blocks in the Hierarchy",
+      "title_zh": "在层级中显示数据块",
+      "url": "https://guide.handmadehero.org/code/day220/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day221",
+      "title_en": "Day 221: Implementing Multi-layer Cutscenes",
+      "title_zh": "实现多层过场动画",
+      "url": "https://guide.handmadehero.org/code/day221/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day222",
+      "title_en": "Day 222: Laying Out Cutscenes",
+      "title_zh": "过场动画布局",
+      "url": "https://guide.handmadehero.org/code/day222/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day223",
+      "title_en": "Day 223: Playing Multiple Cutscenes",
+      "title_zh": "播放多个过场动画",
+      "url": "https://guide.handmadehero.org/code/day223/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day224",
+      "title_en": "Day 224: Prefetching Cutscene Layers",
+      "title_zh": "预取过场动画层",
+      "url": "https://guide.handmadehero.org/code/day224/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day225",
+      "title_en": "Day 225: Fading In and Out from the Windows Desktop",
+      "title_zh": "从 Windows 桌面淡入淡出",
+      "url": "https://guide.handmadehero.org/code/day225/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day226",
+      "title_en": "Day 226: Handling Multiple Metagame Modes",
+      "title_zh": "处理多个元游戏模式",
+      "url": "https://guide.handmadehero.org/code/day226/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day227",
+      "title_en": "Day 227: Switching Between Metagame Modes",
+      "title_zh": "在元游戏模式之间切换",
+      "url": "https://guide.handmadehero.org/code/day227/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day228",
+      "title_en": "Day 228: Waiting for Dependent Tasks on Metagame Mode Changes",
+      "title_zh": "元游戏模式切换时等待依赖任务",
+      "url": "https://guide.handmadehero.org/code/day228/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day229",
+      "title_en": "Day 229: Sorting Render Elements",
+      "title_zh": "排序渲染元素",
+      "url": "https://guide.handmadehero.org/code/day229/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day230",
+      "title_en": "Day 230: Refining Renderer Sort Keys",
+      "title_zh": "精化渲染器排序键",
+      "url": "https://guide.handmadehero.org/code/day230/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day231",
+      "title_en": "Day 231: Order Notation",
+      "title_zh": "阶数表示(大 O)",
+      "url": "https://guide.handmadehero.org/code/day231/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day232",
+      "title_en": "Day 232: Examples of Sorting Algorithms",
+      "title_zh": "排序算法示例",
+      "url": "https://guide.handmadehero.org/code/day232/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day233",
+      "title_en": "Day 233: Can We Merge Sort In Place?",
+      "title_zh": "归并排序能原地做吗?",
+      "url": "https://guide.handmadehero.org/code/day233/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day234",
+      "title_en": "Day 234: Implementing Radix Sort",
+      "title_zh": "实现基数排序",
+      "url": "https://guide.handmadehero.org/code/day234/",
+      "difficulty": 4,
+      "duration": "2h",
+      "type": "coding",
+      "learn": "🔥 手写 radix sort:O(n) 排序"
+    },
+    {
+      "slug": "code/day235",
+      "title_en": "Day 235: Initializing OpenGL on Windows",
+      "title_zh": "在 Windows 上初始化 OpenGL",
+      "url": "https://guide.handmadehero.org/code/day235/",
+      "difficulty": 5,
+      "duration": "4h",
+      "type": "milestone",
+      "learn": "🔥🔥🔥 切换 OpenGL:渲染管线搬上 GPU"
+    },
+    {
+      "slug": "code/day236",
+      "title_en": "Day 236: GPU Conceptual Overview",
+      "title_zh": "GPU 概念概览",
+      "url": "https://guide.handmadehero.org/code/day236/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "concept",
+      "learn": ""
+    },
+    {
+      "slug": "code/day237",
+      "title_en": "Day 237: Displaying an Image with OpenGL",
+      "title_zh": "用 OpenGL 显示图像",
+      "url": "https://guide.handmadehero.org/code/day237/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day238",
+      "title_en": "Day 238: Making OpenGL Use Our Screen Coordinates",
+      "title_zh": "让 OpenGL 用我们的屏幕坐标",
+      "url": "https://guide.handmadehero.org/code/day238/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day239",
+      "title_en": "Day 239: Rendering the Game Through OpenGL",
+      "title_zh": "通过 OpenGL 渲染游戏",
+      "url": "https://guide.handmadehero.org/code/day239/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day240",
+      "title_en": "Day 240: Moving the Renderer into a Third Tier",
+      "title_zh": "把渲染器移到第三层",
+      "url": "https://guide.handmadehero.org/code/day240/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day241",
+      "title_en": "Day 241: OpenGL VSync and sRGB Extensions",
+      "title_zh": "OpenGL VSync 与 sRGB 扩展",
+      "url": "https://guide.handmadehero.org/code/day241/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day242",
+      "title_en": "Day 242: OpenGL Context Escalation",
+      "title_zh": "OpenGL 上下文升级",
+      "url": "https://guide.handmadehero.org/code/day242/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day243",
+      "title_en": "Day 243: Asynchronous Texture Downloads",
+      "title_zh": "异步纹理下载",
+      "url": "https://guide.handmadehero.org/code/day243/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day244",
+      "title_en": "Day 244: Finishing Asynchronous Texture Downloads",
+      "title_zh": "完成异步纹理下载",
+      "url": "https://guide.handmadehero.org/code/day244/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "refactor",
+      "learn": ""
+    },
+    {
+      "slug": "code/day245",
+      "title_en": "Day 245: Using wglChoosePixelFormatARB",
+      "title_zh": "使用 wglChoosePixelFormatARB",
+      "url": "https://guide.handmadehero.org/code/day245/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day246",
+      "title_en": "Day 246: Moving Worker Context Creation to the Main Thread",
+      "title_zh": "工作上下文创建移到主线程",
+      "url": "https://guide.handmadehero.org/code/day246/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day247",
+      "title_en": "Day 247: Simplifying Debug Values",
+      "title_zh": "简化调试值",
+      "url": "https://guide.handmadehero.org/code/day247/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day248",
+      "title_en": "Day 248: Cleaning Up Data Block Display",
+      "title_zh": "清理数据块显示",
+      "url": "https://guide.handmadehero.org/code/day248/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "refactor",
+      "learn": ""
+    },
+    {
+      "slug": "code/day249",
+      "title_en": "Day 249: Cleaning Up Debug Macros",
+      "title_zh": "清理调试宏",
+      "url": "https://guide.handmadehero.org/code/day249/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day250",
+      "title_en": "Day 250: Cleaning Up Debug GUIDs",
+      "title_zh": "清理调试 GUID",
+      "url": "https://guide.handmadehero.org/code/day250/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day251",
+      "title_en": "Day 251: Finishing the Debug Hierarchy",
+      "title_zh": "完成调试层级",
+      "url": "https://guide.handmadehero.org/code/day251/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day252",
+      "title_en": "Day 252: Allowing Debug Value Edits",
+      "title_zh": "允许调试值编辑",
+      "url": "https://guide.handmadehero.org/code/day252/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day253",
+      "title_en": "Day 253: Reenabling More Debug UI",
+      "title_zh": "重新启用更多调试 UI",
+      "url": "https://guide.handmadehero.org/code/day253/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day254",
+      "title_en": "Day 254: Reenabling Profiling",
+      "title_zh": "重新启用性能分析",
+      "url": "https://guide.handmadehero.org/code/day254/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day255",
+      "title_en": "Day 255: Building a Profile Tree",
+      "title_zh": "构建性能分析树",
+      "url": "https://guide.handmadehero.org/code/day255/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day256",
+      "title_en": "Day 256: XBox Controller Stalls and Fixing GL Blit Gamma",
+      "title_zh": "XBox 控制器卡顿与修复 GL 位块 gamma",
+      "url": "https://guide.handmadehero.org/code/day256/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day257",
+      "title_en": "Day 257: Cleaning Up Some Win32 Issues",
+      "title_zh": "清理一些 Win32 问题",
+      "url": "https://guide.handmadehero.org/code/day257/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "refactor",
+      "learn": ""
+    },
+    {
+      "slug": "code/day258",
+      "title_en": "Day 258: Fixing Profiling Across Code Reloads",
+      "title_zh": "修复跨代码重载的性能分析",
+      "url": "https://guide.handmadehero.org/code/day258/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day259",
+      "title_en": "Day 259: OpenGL and Software Renderer Cleanup",
+      "title_zh": "OpenGL 与软件渲染器清理",
+      "url": "https://guide.handmadehero.org/code/day259/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "refactor",
+      "learn": ""
+    },
+    {
+      "slug": "code/day260",
+      "title_en": "Day 260: Implementing Drill-down in the Profiler",
+      "title_zh": "性能分析器实现下钻",
+      "url": "https://guide.handmadehero.org/code/day260/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    }
+  ],
+  "lessons": {
+    "day176": {
+      "why": "调试基础设施入门",
+      "model": "Casey 正式开始造自己的 profiler/debug UI。之前用 printf,现在做结构化性能分析。这 45 集是 Casey 工程能力的集中展示。\n\n<strong>这集的技术要点</strong>:调试基础设施入门。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 176 的核心概念是调试基础设施入门。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day177": {
+      "why": "自动性能计数器",
+      "model": "用宏自动包裹函数:入口记 rdtsc,出口记 rdtsc,差值=cycle 数。零侵入——游戏代码不用手动加计时。Rust 用 drop guard 模式:struct TimerGuard { start: u64, name: &'static str } impl Drop { fn drop { log(self.name, rdtsc() - self.start) } }。\n\n<strong>这集的技术要点</strong>:自动性能计数器。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day178": {
+      "why": "线程安全的性能计数器",
+      "model": "Day 122+ 加了多线程,debug 也要线程安全。用原子操作累加 cycle 计数:AtomicU64::fetch_add(cycles, Ordering::Relaxed)。Relaxed 够——计数器不参与跨线程数据传递。\n\n<strong>这集的技术要点</strong>:线程安全的性能计数器。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 178 的核心概念是线程安全的性能计数器。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day179": {
+      "why": "随时间跟踪调试信息",
+      "model": "不只看当前帧,看过去 N 帧的性能曲线。让发现偶发卡顿成为可能。ring buffer 存最近 N 帧数据。\n\n<strong>这集的技术要点</strong>:随时间跟踪调试信息。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 179 的核心概念是随时间跟踪调试信息。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day180": {
+      "why": "加调试图表",
+      "model": "在游戏内画帧时间曲线图。X 轴帧号,Y 轴 cycle 数。直观看到哪帧慢。后面所有 debug 可视化的基础。\n\n<strong>这集的技术要点</strong>:加调试图表。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 180 的核心概念是加调试图表。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day181": {
+      "why": "基于日志的性能计数器",
+      "model": "用 ring buffer(环形缓冲)存最近 N 帧。O(1) 内存,无限时间窗口。旧数据自动淘汰。\n\n<strong>这集的技术要点</strong>:基于日志的性能计数器。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 181 的核心概念是基于日志的性能计数器。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day182": {
+      "why": "快速线程 ID 获取",
+      "model": "多线程 debug 要知道当前在哪个线程。直接调 OS API(pthread_self / GetCurrentThreadId)太慢。用 TLS(thread-local storage)缓存:thread_local! { static ID: u32 = get_os_thread_id(); }。\n\n<strong>这集的技术要点</strong>:快速线程 ID 获取。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 182 的核心概念是快速线程 ID 获取。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day183": {
+      "why": "平台层调试事件",
+      "model": "平台层的窗口/音频/文件操作也能发 debug event。统一 pipeline。\n\n<strong>这集的技术要点</strong>:平台层调试事件。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 183 的核心概念是平台层调试事件。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day184": {
+      "why": "整理调试事件",
+      "model": "散乱的 debug event 整理成结构化:按线程+按类别排序。\n\n<strong>这集的技术要点</strong>:整理调试事件。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 184 的核心概念是整理调试事件。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day185": {
+      "why": "完成基础调试整理",
+      "model": "Day 176-184 收尾:可以记录+可视化性能数据。\n\n<strong>这集的技术要点</strong>:完成基础调试整理。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 185 的核心概念是完成基础调试整理。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day186": {
+      "why": "调试事件录制",
+      "model": "把每帧 debug event 写到文件,回放分析。性能回放的基础。\n\n<strong>这集的技术要点</strong>:开始调试事件录制。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 186 的核心概念是开始调试事件录制。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day187": {
+      "why": "修复事件录制 bug",
+      "model": "录制时有竞态条件。Day 124 内存屏障知识的实战。\n\n<strong>这集的技术要点</strong>:修复事件录制 bug。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 187 的核心概念是修复事件录制 bug。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day188": {
+      "why": "调试图表加悬停",
+      "model": "鼠标悬停在曲线上显示该帧详细数据。immediate mode UI 雏形。\n\n<strong>这集的技术要点</strong>:调试图表加悬停。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 188 的核心概念是调试图表加悬停。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day189": {
+      "why": "增量调试帧处理",
+      "model": "不用每帧处理所有历史,只处理增量(新帧)。大幅提升 debug 系统本身性能。\n\n<strong>这集的技术要点</strong>:增量调试帧处理。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 189 的核心概念是增量调试帧处理。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day190": {
+      "why": "清理调试全局变量",
+      "model": "把全局变量封装到 struct。前面为了快用了全局,Day 190 清理。\n\n<strong>这集的技术要点</strong>:清理调试全局变量。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 190 的核心概念是清理调试全局变量。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day191": {
+      "why": "实现环形菜单",
+      "model": "鼠标按住右键,周围出现环形选项。wheel menu。游戏内 debug 工具的典型 UI。\n\n<strong>这集的技术要点</strong>:实现环形菜单。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 191 的核心概念是实现环形菜单。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day192": {
+      "why": "实现自重编译",
+      "model": "🔥 游戏代码自己重启自己的编译!运行中按键→调 build 系统→等编译完→reload。Day 21 热重载的终极形态。\n\n<strong>这集的技术要点</strong>:实现自重编译。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 192 的核心概念是实现自重编译。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day193": {
+      "why": "运行时设置编译时变量",
+      "model": "游戏发 build 命令→build 修改源码 #define→重新编译→reload。运行时改 MAX_ENTITIES 这种编译时常量。\n\n<strong>这集的技术要点</strong>:运行时设置编译时变量。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 193 的核心概念是运行时设置编译时变量。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day194": {
+      "why": "调试变量组织为层级",
+      "model": "debug variables 组织成树形。类似文件系统目录结构。\n\n<strong>这集的技术要点</strong>:调试变量组织为层级。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 194 的核心概念是调试变量组织为层级。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day195": {
+      "why": "实现交互式树视图",
+      "model": "游戏内画交互式树视图:展开/折叠/编辑。immediate mode UI 的核心。\n\n<strong>这集的技术要点</strong>:实现交互式树视图。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 195 的核心概念是实现交互式树视图。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day196": {
+      "why": "UI 交互入门",
+      "model": "immediate mode UI 设计原则:每帧重新声明整个 UI,状态用 ID 哈希记忆。Dear ImGui 的设计哲学。vs 保留模式(Qt/WinForms: UI 控件是持久对象)。\n\n<strong>这集的技术要点</strong>:UI 交互入门。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 196 的核心概念是UI 交互入门。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day197": {
+      "why": "集成多个调试视图",
+      "model": "性能图、变量树、事件列表用 tab 切换。\n\n<strong>这集的技术要点</strong>:集成多个调试视图。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 197 的核心概念是集成多个调试视图。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day198": {
+      "why": "运行时编辑调试层级",
+      "model": "运行时移动变量到不同分组。灵活管理。\n\n<strong>这集的技术要点</strong>:运行时编辑调试层级。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 198 的核心概念是运行时编辑调试层级。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day199": {
+      "why": "复用调试交互",
+      "model": "把点击/拖动/悬停提取成可复用 helper。DRY。\n\n<strong>这集的技术要点</strong>:复用调试交互。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 199 的核心概念是复用调试交互。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day200": {
+      "why": "调试元素布局",
+      "model": "自动布局:元素自动排列(flexbox 风格)。\n\n<strong>这集的技术要点</strong>:调试元素布局。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 200 的核心概念是调试元素布局。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day201": {
+      "why": "隔离调试代码",
+      "model": "debug 代码独立模块,release build 时不编译。零 release 开销。cfg!(debug_assertions) 或 #[cfg(feature=\"debug\")]。\n\n<strong>这集的技术要点</strong>:隔离调试代码。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 201 的核心概念是隔离调试代码。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system",
+        "Profiling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Profiler",
+        "Immediate mode UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day113",
+        "day192"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day202": {
+      "why": "多次出现的调试值",
+      "model": "同名 debug 变量多处出现→用 ID+来源(file:line)区分\n\n<strong>这集的技术要点</strong>:多次出现的调试值。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 202 的核心概念是多次出现的调试值。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Debug UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day176"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day203": {
+      "why": "调试 UI 状态缓存",
+      "model": "缓存每帧不变的状态(布局/位置),只更新变化\n\n<strong>这集的技术要点</strong>:调试 UI 状态缓存。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 203 的核心概念是调试 UI 状态缓存。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Debug UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day176"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day204": {
+      "why": "反投影鼠标光标",
+      "model": "鼠标屏幕坐标→世界坐标。用 Day 110 的 unproject\n\n<strong>这集的技术要点</strong>:鼠标光标反投影。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 204 的核心概念是鼠标光标反投影。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Debug UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day176"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day205": {
+      "why": "用鼠标拾取实体",
+      "model": "鼠标点击世界 entity→用 Day 204 反投影+空间划分查最近 entity\n\n<strong>这集的技术要点</strong>:用鼠标拾取实体。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 205 的核心概念是用鼠标拾取实体。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Debug UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day176"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day206": {
+      "why": "🔥 实现内省(introspection)",
+      "model": "程序运行时枚举自己的结构体字段。C 没有反射,Casey 用宏+全局注册表实现。Rust 有 serde::Serialize 自动做\n\n<strong>这集的技术要点</strong>:实现内省。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 206 的核心概念是实现内省。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Debug UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day176"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day207": {
+      "why": "使用内省数据",
+      "model": "在 debug UI 里自动显示结构体所有字段。不用手写 UI 代码\n\n<strong>这集的技术要点</strong>:使用内省数据。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 207 的核心概念是使用内省数据。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Debug UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day176"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day208": {
+      "why": "调试日志加数据块",
+      "model": "debug log 不只记文本,还记结构化数据块(某 entity 完整状态)\n\n<strong>这集的技术要点</strong>:调试日志加数据块。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 208 的核心概念是调试日志加数据块。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Debug UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day176"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day209": {
+      "why": "显示缓冲的调试数据",
+      "model": "展开结构体,逐字段显示\n\n<strong>这集的技术要点</strong>:显示缓冲的调试数据。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 209 的核心概念是显示缓冲的调试数据。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Debug UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day176"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day210": {
+      "why": "合并调试数据存储",
+      "model": "text log + structured data + performance counters 统一存储\n\n<strong>这集的技术要点</strong>:合并调试数据存储。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 210 的核心概念是合并调试数据存储。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Debug UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day176"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day211": {
+      "why": "移除记录和翻译单元",
+      "model": "清理不再需要的 debug 机制\n\n<strong>这集的技术要点</strong>:从调试代码移除记录与翻译单元。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 211 的核心概念是从调试代码移除记录与翻译单元。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Debug UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day176"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day212": {
+      "why": "调试 UI 集成到游戏代码",
+      "model": "游戏代码也能用 debug UI\n\n<strong>这集的技术要点</strong>:调试 UI 集成到游戏代码。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 212 的核心概念是调试 UI 集成到游戏代码。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Debug UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day176"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day213": {
+      "why": "调试开关变事件",
+      "model": "toggle 变化时通知监听者。观察者模式\n\n<strong>这集的技术要点</strong>:调试开关转为事件。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 213 的核心概念是调试开关转为事件。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Debug UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day176"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day214": {
+      "why": "整理永久调试值",
+      "model": "跨帧保留的 debug 值(permanent)单独管理\n\n<strong>这集的技术要点</strong>:整理永久调试值。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 214 的核心概念是整理永久调试值。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Debug UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day176"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day215": {
+      "why": "清理调试事件整理",
+      "model": "重构 Day 184 的事件整理代码\n\n<strong>这集的技术要点</strong>:清理调试事件整理。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 215 的核心概念是清理调试事件整理。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Debug UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day176"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day216": {
+      "why": "按需释放",
+      "model": "debug 系统不再用的内存及时释放\n\n<strong>这集的技术要点</strong>:按需释放。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 216 的核心概念是按需释放。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Debug UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day176"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day217": {
+      "why": "逐元素调试事件存储",
+      "model": "按 element 而非按帧存储——方便查某变量历史\n\n<strong>这集的技术要点</strong>:逐元素调试事件存储。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 217 的核心概念是逐元素调试事件存储。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Debug UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day176"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day218": {
+      "why": "调试元素哈希",
+      "model": "名称 hash → element ID,O(1) 查找\n\n<strong>这集的技术要点</strong>:调试元素哈希。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 218 的核心概念是调试元素哈希。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Debug UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day176"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day219": {
+      "why": "自动构造调试层级",
+      "model": "从 element ID 自动构造 debug 层级\n\n<strong>这集的技术要点</strong>:自动构造的调试层级。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 219 的核心概念是自动构造的调试层级。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Debug UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day176"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day220": {
+      "why": "层级中显示数据块",
+      "model": "统一 debug 数据访问\n\n<strong>这集的技术要点</strong>:在层级中显示数据块。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 220 的核心概念是在层级中显示数据块。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Debug system"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Debug UI",
+        "Introspection"
+      ],
+      "related_days": [
+        "day176"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day221": {
+      "why": "实现多层过场动画",
+      "model": "cutscene:多层叠加(背景/角色/字幕),每层独立时间线\n\n<strong>这集的技术要点</strong>:实现多层过场动画。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 221 的核心概念是实现多层过场动画。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Cutscene",
+        "Sorting algorithms"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Sort key",
+        "Radix sort"
+      ],
+      "related_days": [
+        "day089",
+        "day229"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day222": {
+      "why": "过场动画布局",
+      "model": "每层在哪/多大/何时出现。数据驱动\n\n<strong>这集的技术要点</strong>:过场动画布局。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 222 的核心概念是过场动画布局。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Cutscene",
+        "Sorting algorithms"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Sort key",
+        "Radix sort"
+      ],
+      "related_days": [
+        "day089",
+        "day229"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day223": {
+      "why": "播放多个过场动画",
+      "model": "多个 cutscene 同时或排队\n\n<strong>这集的技术要点</strong>:播放多个过场动画。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 223 的核心概念是播放多个过场动画。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Cutscene",
+        "Sorting algorithms"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Sort key",
+        "Radix sort"
+      ],
+      "related_days": [
+        "day089",
+        "day229"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day224": {
+      "why": "预取过场动画层",
+      "model": "异步预取资产\n\n<strong>这集的技术要点</strong>:预取过场动画层。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 224 的核心概念是预取过场动画层。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Cutscene",
+        "Sorting algorithms"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Sort key",
+        "Radix sort"
+      ],
+      "related_days": [
+        "day089",
+        "day229"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day225": {
+      "why": "淡入淡出",
+      "model": "窗口渐显/渐隐\n\n<strong>这集的技术要点</strong>:从 Windows 桌面淡入淡出。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 225 的核心概念是从 Windows 桌面淡入淡出。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Cutscene",
+        "Sorting algorithms"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Sort key",
+        "Radix sort"
+      ],
+      "related_days": [
+        "day089",
+        "day229"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day226": {
+      "why": "处理多个元游戏模式",
+      "model": "title/gameplay/pause/inventory 等模式\n\n<strong>这集的技术要点</strong>:处理多个元游戏模式。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 226 的核心概念是处理多个元游戏模式。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Cutscene",
+        "Sorting algorithms"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Sort key",
+        "Radix sort"
+      ],
+      "related_days": [
+        "day089",
+        "day229"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day227": {
+      "why": "模式之间切换",
+      "model": "title→gameplay→pause 状态机\n\n<strong>这集的技术要点</strong>:在元游戏模式之间切换。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 227 的核心概念是在元游戏模式之间切换。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Cutscene",
+        "Sorting algorithms"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Sort key",
+        "Radix sort"
+      ],
+      "related_days": [
+        "day089",
+        "day229"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day228": {
+      "why": "等待依赖任务",
+      "model": "模式切换时等异步任务完成\n\n<strong>这集的技术要点</strong>:元游戏模式切换时等待依赖任务。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 228 的核心概念是元游戏模式切换时等待依赖任务。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Cutscene",
+        "Sorting algorithms"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Sort key",
+        "Radix sort"
+      ],
+      "related_days": [
+        "day089",
+        "day229"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day229": {
+      "why": "🔥 排序渲染元素 + sort key",
+      "model": "每个渲染命令有 u64 sort key。key 编码 layer/z/texture_id。渲染前按 key 排序:透明后向前画,不透明 batch 同纹理\n\n<strong>这集的技术要点</strong>:排序渲染元素。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 229 的核心概念是排序渲染元素。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Cutscene",
+        "Sorting algorithms"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Sort key",
+        "Radix sort"
+      ],
+      "related_days": [
+        "day089",
+        "day229"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day230": {
+      "why": "精化排序键",
+      "model": "sort key 的 bit packing:layer(8bit) + z(16bit) + texture(24bit) + sub(16bit) = u64\n\n<strong>这集的技术要点</strong>:精化渲染器排序键。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 230 的核心概念是精化渲染器排序键。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Cutscene",
+        "Sorting algorithms"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Sort key",
+        "Radix sort"
+      ],
+      "related_days": [
+        "day089",
+        "day229"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day231": {
+      "why": "阶数表示(大 O)",
+      "model": "比较排序下界 O(n log n)。非比较排序(radix)O(n)\n\n<strong>这集的技术要点</strong>:阶数表示(大 O)。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 231 的核心概念是阶数表示(大 O)。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Cutscene",
+        "Sorting algorithms"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Sort key",
+        "Radix sort"
+      ],
+      "related_days": [
+        "day089",
+        "day229"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day232": {
+      "why": "排序算法示例",
+      "model": "冒泡/插入/归并/快排,各自适合场景\n\n<strong>这集的技术要点</strong>:排序算法示例。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 232 的核心概念是排序算法示例。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Cutscene",
+        "Sorting algorithms"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Sort key",
+        "Radix sort"
+      ],
+      "related_days": [
+        "day089",
+        "day229"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day233": {
+      "why": "归并排序能原地做吗",
+      "model": "标准归并要 O(n) 额外空间,原地版复杂\n\n<strong>这集的技术要点</strong>:归并排序能原地做吗?。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 233 的核心概念是归并排序能原地做吗?。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Cutscene",
+        "Sorting algorithms"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Sort key",
+        "Radix sort"
+      ],
+      "related_days": [
+        "day089",
+        "day229"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day234": {
+      "why": "🔥 实现基数排序(radix sort)",
+      "model": "O(n) 排序。按字节分桶(256 个),8 遍(对 u64)。渲染排序的标配。每帧排上万个 sprite\n\n<strong>这集的技术要点</strong>:实现基数排序。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 234 的核心概念是实现基数排序。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Cutscene",
+        "Sorting algorithms"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Sort key",
+        "Radix sort"
+      ],
+      "related_days": [
+        "day089",
+        "day229"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day235": {
+      "why": "🔥🔥🔥 切换到 OpenGL——HH 全剧分水岭。之前 234 集软渲染(CPU 逐像素),现在 GPU 加速。",
+      "model": "Casey 这集做的事:\n1. wglCreateContext 创建 OpenGL context\n2. 设置 pixel format(RGBA + depth buffer)\n3. 第一个 draw call(清屏)\n\nRust 端用 glutin + glow 替代 wgl。Day 088 push buffer 价值体现:游戏代码 push 命令,渲染器翻译成 OpenGL draw call,游戏代码<strong>几乎不改</strong>。\n\n<strong>这集的技术要点</strong>:在 Windows 上初始化 OpenGL。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "OpenGL initialization",
+        "GPU acceleration"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "wglCreateContext / glutin",
+        "Pixel format",
+        "OpenGL context"
+      ],
+      "related_days": [
+        "day088",
+        "day236",
+        "day240"
+      ],
+      "comparison": "Day 088 push buffer 让切 OpenGL 时游戏代码几乎不改。只换渲染器后端(软渲染→OpenGL)。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "为什么 Day 235 切 OpenGL 时游戏代码几乎不改?",
+          "a": "因为 Day 088 的 push buffer:游戏代码 push 高层命令(PushBitmap),不知道后面是软渲染还是 OpenGL。换后端只改渲染器消费代码(把 PushBitmap 翻译成 OpenGL draw call),游戏代码零改动。这是 Day 011 架构设计的红利。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day236": {
+      "why": "GPU 概念概览——GPU 是另一台电脑,有自己内存(显存)、CPU(核)、程序(shader)。",
+      "model": "GPU vs CPU:\n- CPU:4-16 核,每核复杂(乱序/预测/大 cache)。擅长复杂逻辑\n- GPU:几千核,每核简单(顺序执行)。擅长并行像素计算\n\nGPU 给它数据(顶点/纹理),它并行算每像素颜色。你的 fragment shader 对每个像素跑一次,GPU 同时跑几千个像素。\n\n<strong>这集的技术要点</strong>:GPU 概念概览。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "GPU architecture"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "GPU cores",
+        "Shader programs"
+      ],
+      "related_days": [
+        "day235",
+        "day237"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day237": {
+      "why": "用 OpenGL 显示图像——第一个三角形/四边形。把 Day 037 的 blit 搬到 GPU。",
+      "model": "OpenGL 画三角形:\n1. VAO(Vertex Array Object):描述顶点结构\n2. VBO(Vertex Buffer Object):上传顶点数据到 GPU\n3. Texture:上传位图到 GPU\n4. Vertex Shader:变换顶点(MVP 矩阵)\n5. Fragment Shader:决定每像素颜色(采样纹理)\n6. glDrawArrays:触发管线\n\nRust: glow::Context 替代 OpenGL C API。glow 是跨后端(OpenGL/WebGL/GLES)的薄封装。\n\n<strong>这集的技术要点</strong>:用 OpenGL 显示图像。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "OpenGL rendering basics"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "VAO/VBO",
+        "Texture upload",
+        "Draw call"
+      ],
+      "related_days": [
+        "day037",
+        "day238"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day238": {
+      "why": "让 OpenGL 用屏幕坐标",
+      "model": "配置正交投影矩阵让 OpenGL 坐标系和 game 的屏幕坐标一致\n\n<strong>这集的技术要点</strong>:让 OpenGL 用我们的屏幕坐标。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 238 的核心概念是让 OpenGL 用我们的屏幕坐标。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day239": {
+      "why": "通过 OpenGL 渲染游戏",
+      "model": "push buffer 命令翻译成 draw call。游戏代码不改\n\n<strong>这集的技术要点</strong>:通过 OpenGL 渲染游戏。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 239 的核心概念是通过 OpenGL 渲染游戏。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day240": {
+      "why": "🔥 渲染器移到第三层",
+      "model": "平台/游戏/渲染器三层独立。Day 026 三明治分层最终形态\n\n<strong>这集的技术要点</strong>:把渲染器移到第三层。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 240 的核心概念是把渲染器移到第三层。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day241": {
+      "why": "OpenGL VSync + sRGB",
+      "model": "vsync 防撕裂,GL_FRAMEBUFFER_SRGB 自动 sRGB↔linear 转换。Day 094 的 gamma 知识用在这里\n\n<strong>这集的技术要点</strong>:OpenGL VSync 与 sRGB 扩展。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 241 的核心概念是OpenGL VSync 与 sRGB 扩展。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day242": {
+      "why": "OpenGL 上下文升级",
+      "model": "某些功能需要更高版本 context。wglCreateContextAttribsARB\n\n<strong>这集的技术要点</strong>:OpenGL 上下文升级。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 242 的核心概念是OpenGL 上下文升级。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day243": {
+      "why": "异步纹理下载",
+      "model": "从 GPU 读数据回 CPU(screenshot/debug)。glFenceSync + PBO\n\n<strong>这集的技术要点</strong>:异步纹理下载。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 243 的核心概念是异步纹理下载。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day244": {
+      "why": "完成异步纹理下载",
+      "model": "完整实现 async readback\n\n<strong>这集的技术要点</strong>:完成异步纹理下载。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 244 的核心概念是完成异步纹理下载。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day245": {
+      "why": "wglChoosePixelFormatARB",
+      "model": "选 sRGB/multisample/depth buffer 等\n\n<strong>这集的技术要点</strong>:使用 wglChoosePixelFormatARB。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 245 的核心概念是使用 wglChoosePixelFormatARB。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day246": {
+      "why": "工作上下文创建移到主线程",
+      "model": "避免某些驱动的线程亲和性 bug\n\n<strong>这集的技术要点</strong>:工作上下文创建移到主线程。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 246 的核心概念是工作上下文创建移到主线程。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day247": {
+      "why": "简化调试值",
+      "model": "YAGNI——清理过度复杂的 debug 系统\n\n<strong>这集的技术要点</strong>:简化调试值。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 247 的核心概念是简化调试值。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day248": {
+      "why": "清理数据块显示",
+      "model": "继续清理 debug UI\n\n<strong>这集的技术要点</strong>:清理数据块显示。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 248 的核心概念是清理数据块显示。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day249": {
+      "why": "清理调试宏",
+      "model": "移除不再用的 debug 宏\n\n<strong>这集的技术要点</strong>:清理调试宏。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 249 的核心概念是清理调试宏。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day250": {
+      "why": "清理调试 GUID",
+      "model": "简化唯一标识符生成\n\n<strong>这集的技术要点</strong>:清理调试 GUID。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 250 的核心概念是清理调试 GUID。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day251": {
+      "why": "完成调试层级",
+      "model": "debug 层级系统收尾\n\n<strong>这集的技术要点</strong>:完成调试层级。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 251 的核心概念是完成调试层级。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day252": {
+      "why": "允许调试值编辑",
+      "model": "🔥 实时调参数!debug UI 里编辑变量值,游戏立刻反映\n\n<strong>这集的技术要点</strong>:允许调试值编辑。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 252 的核心概念是允许调试值编辑。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day253": {
+      "why": "重新启用更多调试 UI",
+      "model": "OpenGL 切换时禁用的功能恢复\n\n<strong>这集的技术要点</strong>:重新启用更多调试 UI。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 253 的核心概念是重新启用更多调试 UI。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day254": {
+      "why": "重新启用性能分析",
+      "model": "profiler 在 OpenGL 切换后有 bug,现在修好\n\n<strong>这集的技术要点</strong>:重新启用性能分析。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 254 的核心概念是重新启用性能分析。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day255": {
+      "why": "构建性能树",
+      "model": "profiler 数据组织成调用树。火焰图\n\n<strong>这集的技术要点</strong>:构建性能分析树。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 255 的核心概念是构建性能分析树。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day256": {
+      "why": "XBox 控制器卡顿+GL gamma",
+      "model": "修两个 bug\n\n<strong>这集的技术要点</strong>:XBox 控制器卡顿与修复 GL 位块 gamma。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 256 的核心概念是XBox 控制器卡顿与修复 GL 位块 gamma。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day257": {
+      "why": "清理 Win32 问题",
+      "model": "OpenGL 切换后旧代码清理\n\n<strong>这集的技术要点</strong>:清理一些 Win32 问题。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 257 的核心概念是清理一些 Win32 问题。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day258": {
+      "why": "修复跨代码重载的性能分析",
+      "model": "profiler 在热重载后失效(DLL 重载后指针失效)\n\n<strong>这集的技术要点</strong>:修复跨代码重载的性能分析。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 258 的核心概念是修复跨代码重载的性能分析。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day259": {
+      "why": "OpenGL 和软件渲染器清理",
+      "model": "共存时代码整理\n\n<strong>这集的技术要点</strong>:OpenGL 与软件渲染器清理。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 259 的核心概念是OpenGL 与软件渲染器清理。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    },
+    "day260": {
+      "why": "profiler 下钻",
+      "model": "点击函数展开看子函数耗时。逐层深入\n\n<strong>这集的技术要点</strong>:性能分析器实现下钻。\n\n这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。Phase 5 的核心是:profiler(rdtsc cycle 计数+火焰图+ring buffer 历史)、immediate mode UI(Day 196 每帧重新声明)、introspection(Day 206 程序枚举自己结构体字段)、radix sort O(n)(Day 234)、OpenGL 迁移(Day 235 wglCreateContext/push buffer 翻译 draw call/VSync+sRGB)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 260 的核心概念是性能分析器实现下钻。在游戏引擎架构中,这属于这集是 Phase 5(Debug 系统+OpenGL 迁移)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "OpenGL migration",
+        "Debug recovery"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "OpenGL context",
+        "Profiler",
+        "Sort key"
+      ],
+      "related_days": [
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "immediate mode UI vs retained mode UI 的核心区别?",
+          "a": "immediate:每帧重新声明整个 UI,状态用 ID 哈希记忆(Dear ImGui)。retained:UI 控件是持久对象,改属性等重绘(Qt)。immediate 简单+自动同步。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "radix sort 为什么是 O(n) 不是 O(n log n)?",
+          "a": "radix 按字节分桶(256 个),8 遍(u64)。不用比较,所以不受比较排序下界 O(n log n) 限制。但要求 key 是整数。"
+        }
+      ]
+    }
+  }
+}

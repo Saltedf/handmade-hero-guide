@@ -1,0 +1,1914 @@
+{
+  "phase_num": 3,
+  "phase_meta": {
+    "id": "phase-3",
+    "title": "Phase 3 — 3D 基础与软渲染(Day 71–110)",
+    "range": "Day 071–110 · 40 集 · 预计 6–8 周",
+    "intro": "Casey 决定把 2D 游戏扩展到 2.5D——保留俯视角玩法,但允许实体有 Z 轴(楼层、台阶、跳跃)。同时他开始把渲染管线从「画 sprite」升级为「画带光照的纹理矩形」,这一段是<strong>软件渲染器</strong>的精华。\n\n这是 HH 全剧数学密度最高的阶段:向量、矩阵、坐标变换、sRGB/gamma、法线贴图、Phong 光照——全部手写,不依赖任何 GPU。对 Rust 学习者来说,这也是 SIMD 真正派上用场的开始(`__m128` 4-wide float 向量)。",
+    "goal": "完成一个能渲染带法线贴图、带方向光的 2.5D 场景的软件渲染器,实现透视投影与分辨率无关的渲染。",
+    "exit": "屏幕上能渲染带光照、带法线贴图、带地面纹理、可透视投影的画面,完全不靠 GPU。",
+    "rust_topics": [
+      "手写 4x4 矩阵库(用 `__m128` SIMD)",
+      "`core::arch::x86_64::_rdtsc` 测量 cycle",
+      "f32 精度与 `mul_add` 的应用",
+      "sRGB ↔ linear 转换的查表实现"
+    ],
+    "cs_supplement": [],
+    "resources": []
+  },
+  "episodes": [
+    {
+      "slug": "code/day071",
+      "title_en": "Day 071: Converting to Full 3D Positioning",
+      "title_zh": "转换为完整 3D 定位",
+      "url": "https://guide.handmadehero.org/code/day071/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day072",
+      "title_en": "Day 072: Proper 3D Inclusion Tests",
+      "title_zh": "正确的 3D 包含测试",
+      "url": "https://guide.handmadehero.org/code/day072/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day073",
+      "title_en": "Day 073: Temporarily Overlapping Entities",
+      "title_zh": "临时重叠的实体",
+      "url": "https://guide.handmadehero.org/code/day073/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day074",
+      "title_en": "Day 074: Moving Entities Up and Down Stairwells",
+      "title_zh": "实体沿楼梯上下移动",
+      "url": "https://guide.handmadehero.org/code/day074/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day075",
+      "title_en": "Day 075: Conditional Movement Based on Step Heights",
+      "title_zh": "基于台阶高度的条件移动",
+      "url": "https://guide.handmadehero.org/code/day075/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day076",
+      "title_en": "Day 076: Entity Heights and Collision Detection",
+      "title_zh": "实体高度与碰撞检测",
+      "url": "https://guide.handmadehero.org/code/day076/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day077",
+      "title_en": "Day 077: Entity Ground Points",
+      "title_zh": "实体接地点",
+      "url": "https://guide.handmadehero.org/code/day077/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day078",
+      "title_en": "Day 078: Multiple Collision Volumes Per Entity",
+      "title_zh": "每个实体多个碰撞体",
+      "url": "https://guide.handmadehero.org/code/day078/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day079",
+      "title_en": "Day 079: Defining the Ground",
+      "title_zh": "定义地面",
+      "url": "https://guide.handmadehero.org/code/day079/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day080",
+      "title_en": "Day 080: Handling Traversables in the Collision Loop",
+      "title_zh": "碰撞循环中处理可遍历物",
+      "url": "https://guide.handmadehero.org/code/day080/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day081",
+      "title_en": "Day 081: Creating Ground with Overlapping Bitmaps",
+      "title_zh": "用重叠位图创建地面",
+      "url": "https://guide.handmadehero.org/code/day081/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day082",
+      "title_en": "Day 082: Caching Composited Bitmaps",
+      "title_zh": "缓存合成位图",
+      "url": "https://guide.handmadehero.org/code/day082/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day083",
+      "title_en": "Day 083: Premultiplied Alpha",
+      "title_zh": "预乘 alpha",
+      "url": "https://guide.handmadehero.org/code/day083/",
+      "difficulty": 3,
+      "duration": "1h",
+      "type": "concept",
+      "learn": "Premultiplied alpha:现代渲染基础"
+    },
+    {
+      "slug": "code/day084",
+      "title_en": "Day 084: Scrolling Ground Buffer",
+      "title_zh": "滚动地面缓冲",
+      "url": "https://guide.handmadehero.org/code/day084/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day085",
+      "title_en": "Day 085: Transient Ground Buffers",
+      "title_zh": "暂时地面缓冲",
+      "url": "https://guide.handmadehero.org/code/day085/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day086",
+      "title_en": "Day 086: Aligning Ground Buffers to World Chunks",
+      "title_zh": "地面缓冲对齐世界区块",
+      "url": "https://guide.handmadehero.org/code/day086/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day087",
+      "title_en": "Day 087: Seamless Ground Textures",
+      "title_zh": "无缝地面纹理",
+      "url": "https://guide.handmadehero.org/code/day087/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day088",
+      "title_en": "Day 088: Push Buffer Rendering",
+      "title_zh": "推送缓冲渲染",
+      "url": "https://guide.handmadehero.org/code/day088/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day089",
+      "title_en": "Day 089: Renderer Push Buffer Entry Types",
+      "title_zh": "渲染器推送缓冲条目类型",
+      "url": "https://guide.handmadehero.org/code/day089/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day090",
+      "title_en": "Day 090: Bases Part I",
+      "title_zh": "基底 第一部分",
+      "url": "https://guide.handmadehero.org/code/day090/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day091",
+      "title_en": "Day 091: Bases Part II",
+      "title_zh": "基底 第二部分",
+      "url": "https://guide.handmadehero.org/code/day091/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day092",
+      "title_en": "Day 092: Filling Rotated and Scaled Rectangles",
+      "title_zh": "填充旋转与缩放的矩形",
+      "url": "https://guide.handmadehero.org/code/day092/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day093",
+      "title_en": "Day 093: Textured Quadrilaterals",
+      "title_zh": "纹理四边形",
+      "url": "https://guide.handmadehero.org/code/day093/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day094",
+      "title_en": "Day 094: Converting sRGB to Light-linear Space",
+      "title_zh": "sRGB 转光线性空间",
+      "url": "https://guide.handmadehero.org/code/day094/",
+      "difficulty": 4,
+      "duration": "2h",
+      "type": "concept",
+      "learn": "🔥 sRGB ↔ linear 转换:光照必须在 linear 空间做"
+    },
+    {
+      "slug": "code/day095",
+      "title_en": "Day 095: Gamma-correct Premultiplied Alpha",
+      "title_zh": "Gamma 校正的预乘 alpha",
+      "url": "https://guide.handmadehero.org/code/day095/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day096",
+      "title_en": "Day 096: Introduction to Lighting",
+      "title_zh": "光照入门",
+      "url": "https://guide.handmadehero.org/code/day096/",
+      "difficulty": 4,
+      "duration": "2h",
+      "type": "concept",
+      "learn": "Phong 光照模型入门"
+    },
+    {
+      "slug": "code/day097",
+      "title_en": "Day 097: Adding Normal Maps to the Pipeline",
+      "title_zh": "管线中加入法线贴图",
+      "url": "https://guide.handmadehero.org/code/day097/",
+      "difficulty": 4,
+      "duration": "2h",
+      "type": "concept",
+      "learn": "法线贴图:低模伪装成高模"
+    },
+    {
+      "slug": "code/day098",
+      "title_en": "Day 098: Normal Map Code Cleanup",
+      "title_zh": "法线贴图代码清理",
+      "url": "https://guide.handmadehero.org/code/day098/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "refactor",
+      "learn": ""
+    },
+    {
+      "slug": "code/day099",
+      "title_en": "Day 099: Test Enviroment Maps",
+      "title_zh": "测试环境贴图",
+      "url": "https://guide.handmadehero.org/code/day099/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day100",
+      "title_en": "Day 100: Reflection Vectors",
+      "title_zh": "反射向量",
+      "url": "https://guide.handmadehero.org/code/day100/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day101",
+      "title_en": "Day 101: The Inverse and the Transpose",
+      "title_zh": "逆矩阵与转置矩阵",
+      "url": "https://guide.handmadehero.org/code/day101/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day102",
+      "title_en": "Day 102: Transforming Normals Properly",
+      "title_zh": "正确变换法线",
+      "url": "https://guide.handmadehero.org/code/day102/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day103",
+      "title_en": "Day 103: Card-like Normal Map Reflections",
+      "title_zh": "卡片式法线贴图反射",
+      "url": "https://guide.handmadehero.org/code/day103/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day104",
+      "title_en": "Day 104: Switching to Y-is-up Render Targets",
+      "title_zh": "切换到 Y 轴向上渲染目标",
+      "url": "https://guide.handmadehero.org/code/day104/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day105",
+      "title_en": "Day 105: Cleaning Up the Renderer API",
+      "title_zh": "清理渲染器 API",
+      "url": "https://guide.handmadehero.org/code/day105/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "refactor",
+      "learn": ""
+    },
+    {
+      "slug": "code/day106",
+      "title_en": "Day 106: World Scaling",
+      "title_zh": "世界缩放",
+      "url": "https://guide.handmadehero.org/code/day106/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day107",
+      "title_en": "Day 107: Fading Z Layers",
+      "title_zh": "Z 层渐隐",
+      "url": "https://guide.handmadehero.org/code/day107/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day108",
+      "title_en": "Day 108: Perspective Projection",
+      "title_zh": "透视投影",
+      "url": "https://guide.handmadehero.org/code/day108/",
+      "difficulty": 4,
+      "duration": "2h",
+      "type": "concept",
+      "learn": "透视投影矩阵推导"
+    },
+    {
+      "slug": "code/day109",
+      "title_en": "Day 109: Resolution-Independent Rendering",
+      "title_zh": "分辨率无关渲染",
+      "url": "https://guide.handmadehero.org/code/day109/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day110",
+      "title_en": "Day 110: Unprojecting Screen Boundaries",
+      "title_zh": "屏幕边界反投影",
+      "url": "https://guide.handmadehero.org/code/day110/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    }
+  ],
+  "lessons": {
+    "day071": {
+      "why": "2D 扩展到 2.5D——entity 位置从 Vec2 升级到 Vec3。z 表示高度,不是远近。",
+      "model": "Vec2 → Vec3 就多了 z 字段。2.5D 游戏里 z 的含义:「高度」——玩家站在地面 z=0,跳起来 z>0。楼梯从 z=0 到 z=32(一层楼高)。\n\n关键:不同 z 层(不同楼层)的 entity 不碰撞,即使 x/y 重叠。碰撞检测(Day 050 的 Minkowski)要加 z 维度:|az-bz| < half_z_a + half_z_b。\n\n这让多楼层游戏成为可能——楼上楼下的怪互不影响。2.5D 的视觉效果:俯视角看到多个楼层叠加(上面半透明),Day 107 fading Z layers 实现这种视觉。\n\n<strong>这集的技术要点</strong>:转换为完整 3D 定位。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "2.5D positioning",
+        "Z-axis for height"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Vec3",
+        "Z-layer collision"
+      ],
+      "related_days": [
+        "day042",
+        "day076",
+        "day107"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day072": {
+      "why": "3D 包含测试——entity 是否在某个 3D 体积内。2D AABB 加 z 维度。",
+      "model": "2D AABB 碰撞(Day 050):|ax-bx| < half_x 且 |ay-by| < half_y。3D AABB 加一个:|az-bz| < half_z。\n\n关键应用:不同楼层的 entity 不碰撞。两个 entity x/y 重叠但 z 差 > half_z_a + half_z_b → 不碰撞。这让多楼层建筑的碰撞正确——楼上玩家和楼下怪互不影响。\n\n代码:fn collide3d(a, b) -> bool { dx.abs() < a.hx+b.hx && dy.abs() < a.hy+b.hy && dz.abs() < a.hz+b.hz }。就比 Day 050 多一个比较。\n\n<strong>这集的技术要点</strong>:正确的 3D 包含测试。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "3D AABB collision"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Z-range overlap",
+        "Multi-floor separation"
+      ],
+      "related_days": [
+        "day050",
+        "day076"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day073": {
+      "why": "处理临时重叠——两个 entity 短暂重叠(跳过头顶)时不应立即碰撞。",
+      "model": "问题:玩家跳过怪的头顶,中途 z 重叠(x/y/z 都碰)。如果立即碰撞,玩家被挡住跳不过。\n\n解法:重叠时看相对速度。速度大(高速掠过)= 不碰;速度小(几乎静止)= 碰。\n\n这本质是 continuous collision detection——不只看当前位置,还看运动趋势。物理引擎(Box2D/PhysX)的 TOI(time of impact)求解就是这个思路的精确版。\n\n<strong>这集的技术要点</strong>:临时重叠的实体。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 73 的核心概念是临时重叠的实体。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Temporal overlap handling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Relative velocity check",
+        "Graze vs collide"
+      ],
+      "related_days": [
+        "day045",
+        "day072"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day074": {
+      "why": "加楼梯——entity 沿楼梯上下移动,z 随 x/y 位置线性变化。",
+      "model": "楼梯是 traversable(可遍历物)——走到楼梯上时 z 随 x/y 线性变化。楼梯从 (0,0,z=0) 到 (0,10,z=32),走到 (0,5) 时 z=16(线性插值)。\n\n实现:traversable 记录起终点 z。entity 在 traversable 上时:z = lerp(start_z, end_z, (pos - start) / (end - start))。\n\n这让多楼层之间可以走楼梯——不是传送,是连续移动。Zelda 的楼梯、Dark Souls 的梯子都是这个模式。\n\n<strong>这集的技术要点</strong>:实体沿楼梯上下移动。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Stairwell traversal",
+        "Z interpolation on traversable"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Traversable entity",
+        "Linear z interpolation"
+      ],
+      "related_days": [
+        "day071",
+        "day075"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day075": {
+      "why": "台阶高度——entity 能跨过多高的台阶?太低自动跨,太高被挡。",
+      "model": "规则:entity 前方地面比当前位置高 < max_step(比如 8 像素),自动走上;>= max_step 被挡住。\n\n实现:碰撞检测时分两步:1) 检查 x/y 是否能走(Day 029);2) 检查目标位置 z 差是否 < max_step。\n\n这让小台阶不影响移动(自动跨),大墙挡住(碰)。超级马里奥、Celeste 等平台游戏的核心手感——小台阶不卡,大墙挡住。\n\n<strong>这集的技术要点</strong>:基于台阶高度的条件移动。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 75 的核心概念是基于台阶高度的条件移动。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Step height logic"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "max_step threshold",
+        "Z difference on move"
+      ],
+      "related_days": [
+        "day074",
+        "day076"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day076": {
+      "why": "entity 有高度——碰撞体积从 2D AABB 升级到 3D AABB(x/y/z 长方体)。",
+      "model": "之前 entity 碰撞:2D AABB(x/y 矩形)。Day 076 后:3D AABB(x/y/z 长方体)。\n\n玩家身高 64 像素,从 z=0 到 z=64。碰撞 half_z = 32。两个 3D AABB 重叠 = x/y/z 三维都重叠。\n\n这让多层建筑碰撞正确:楼上玩家(z=64~128)和楼下怪(z=0~64)不碰(half_z 差 >= 64)。\n\n数据结构:entity 加 height 字段。碰撞:half_z = height / 2。center_z = floor_z + height / 2。\n\n<strong>这集的技术要点</strong>:实体高度与碰撞检测。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "3D collision volumes"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Entity height field",
+        "3D AABB"
+      ],
+      "related_days": [
+        "day072",
+        "day078"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day077": {
+      "why": "entity 接地点——entity 的「脚」在哪。判断是否站在地面/平台/楼梯上。",
+      "model": "ground_point = entity 底面中心(z 最小处)。每帧检查 ground_point 下方有什么:\n- 有 tile/platform → 站立(z 不变)\n- 无(悬空)→ 下落(z -= GRAVITY * dt * dt)\n\n这是平台游戏(超级马里奥、Celeste)的核心——重力 + 地面检测。 Casey HH 用 sim region 内的 traversable 做地面。\n\n<strong>这集的技术要点</strong>:实体接地点。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 77 的核心概念是实体接地点。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Ground detection"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Ground point",
+        "Support detection",
+        "Gravity fall"
+      ],
+      "related_days": [
+        "day074",
+        "day079"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day078": {
+      "why": "每个 entity 多个碰撞体积——玩家有「身体」(大 AABB)和「头」(小 AABB)。",
+      "model": "多碰撞体积:entity 存 Vec<AABB>。碰撞检测遍历所有体积。\n\n例子:龙有头/身/尾/翼分别判定。头被攻击伤害×2(弱点),尾被攻击伤害×0.5(护甲)。\n\nCasey 用极简:大多数 entity 一个 AABB,关键 entity(Boss)多个。碰撞规则(Day 069)按「体积类型」匹配。\n\n<strong>这集的技术要点</strong>:每个实体多个碰撞体。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 78 的核心概念是每个实体多个碰撞体。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Multiple collision volumes"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Vec<AABB>",
+        "Per-volume type"
+      ],
+      "related_days": [
+        "day076",
+        "day069"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day079": {
+      "why": "定义「地面」为 entity——之前地面是隐含的(z=0 平面),Day 079 显式定义有高度和材质。",
+      "model": "Day 079 前:地面 = z=0 平面(隐含)。Day 079 后:地面 = traversable entity(显式),有 z 高度(不一定是 0)、面积、材质(草地/石头/水)。\n\n这让多层建筑工作:一楼地面 entity z=0,二楼地面 entity z=64,各是独立 traversable。entity 站在哪个 traversable 上取决于 z 范围。\n\n<strong>这集的技术要点</strong>:定义地面。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 79 的核心概念是定义地面。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Ground as entity"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Ground entity",
+        "Traversable surface",
+        "Multi-floor"
+      ],
+      "related_days": [
+        "day077",
+        "day081"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day080": {
+      "why": "碰撞循环中处理 traversable——先 z 后 x/y 的顺序。",
+      "model": "碰撞循环顺序:\n1. 检查 traversable(地面/楼梯)→ 更新 z(站/走/跳)\n2. 检查 wall(墙)→ 更新 x/y\n\n顺序重要——先 z 后 x/y 让「走到楼梯上」自然:z 随楼梯变(第一步),然后 x/y 推进(第二步)。如果先 x/y 再 z,玩家可能卡在楼梯边缘。\n\n<strong>这集的技术要点</strong>:碰撞循环中处理可遍历物。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 80 的核心概念是碰撞循环中处理可遍历物。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Collision loop ordering"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Z-first then XY",
+        "Traversable before wall"
+      ],
+      "related_days": [
+        "day079",
+        "day068"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day081": {
+      "why": "用重叠位图创建地面——多张半透明位图叠加=自然草地。",
+      "model": "方法:多张位图 alpha blend 叠加。底层大块草地(32×32),上层随机散布花(8×8)和石头(16×16)。渲染时从下往上 blend。\n\n这比画一张复杂大图更灵活——可以动态组合不同 tile 的装饰。程序化生成可以用不同随机种子产生不同草地。\n\n<strong>这集的技术要点</strong>:用重叠位图创建地面。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 81 的核心概念是用重叠位图创建地面。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Layered bitmap composition"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Alpha-blended layers",
+        "Dynamic composition"
+      ],
+      "related_days": [
+        "day038",
+        "day082"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day082": {
+      "why": "缓存合成位图——Day 081 每帧重新合成太慢,Day 082 缓存结果。",
+      "model": "问题:Day 081 每帧 alpha-blend 5-10 张位图=大量像素运算。1000 tile × 5 层 × 1024 像素 = 500 万 blend/帧。\n\n解法:第一次合成后存到一块内存(composited bitmap)。后续帧直接 blit 缓存。缓存失效:地面变化(挖洞、放建筑)时重新合成对应区域。\n\n这是 game dev 经典优化——cache the rendered result。Day 121 tiled rendering、Day 132 texture streaming 同思路。\n\n<strong>这集的技术要点</strong>:缓存合成位图。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Bitmap caching"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Composited cache",
+        "Invalidation on change"
+      ],
+      "related_days": [
+        "day081",
+        "day084"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day083": {
+      "why": "Premultiplied alpha——Day 38 的 alpha 混合升级版。存储时 RGB 已乘 alpha,混合公式简化,解决边缘黑边。",
+      "model": "<strong>普通 alpha</strong>:存储 (R,G,B,A)。混合:out = src*A + dst*(1-A)。\n<strong>Premultiplied</strong>:存储 (R*A, G*A, B*A, A)。混合:out = src + dst*(1-A)。\n\n少一次乘法(因为 src.rgb 已经乘了 A)。\n\n<strong>为什么解决黑边</strong>:边缘像素 alpha=0.5,普通模式下 RGB 可能是 (255,255,255)(白色)+ A=0.5。blend 后:dst*0.5 + (255,255,255)*0.5。如果 dst 是 (0,0,0)(黑色背景),边缘 = (128,128,128) = 灰色边。\n\nPremultiplied:RGB 已经乘了 alpha = (128,128,128)。blend:dst*0.5 + (128,128,128) = (64,64,64)。更暗,但不突兀。\n\n现代渲染(OpenGL/Vulkan/PDF)默认 premultiplied。Casey 这集后所有渲染用 premultiplied。",
+      "map_parents": [
+        "Premultiplied alpha"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Pre-multiplied RGB",
+        "Simplified blend formula"
+      ],
+      "related_days": [
+        "day038",
+        "day095"
+      ],
+      "comparison": "普通 alpha vs premultiplied 的性能差:premultiplied 少一次乘法/像素。100 万像素=100 万次乘法=几毫秒。累积明显。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "为什么 premultiplied alpha 能消除黑边?",
+          "a": "普通 alpha 边缘像素 RGB 可能是 (255,255,255) 但 alpha=0.5。blend 后在黑色背景上 = 灰色边。Premultiplied 把 RGB 存成 (128,128,128)(已经乘了 0.5),blend 后 = (64,64,64)——渐变到背景,不突兀。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day084": {
+      "why": "滚动地面缓冲——地面缓存跟着相机滚动,不是每帧重新生成。",
+      "model": "地面缓存是一块比屏幕大的缓冲(比如 2× 屏幕)。相机移动时缓存整体平移。当缓存边缘接近屏幕边缘时,异步生成新区域。\n\n实现:维护一个 offset(camera 在缓存内的位置)。渲染时 buf[(y+offset_y) * buf_w + (x+offset_x)]。offset 随相机移动。超出缓冲范围时触发异步生成。\n\n比每帧重新合成快得多——大部分像素复用,只边缘新生成。\n\n<strong>这集的技术要点</strong>:滚动地面缓冲。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 84 的核心概念是滚动地面缓冲。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Scrolling buffer"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Buffer panning",
+        "Edge regeneration"
+      ],
+      "related_days": [
+        "day082",
+        "day086"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day085": {
+      "why": "暂时地面缓冲——临时的地面变化(爆炸坑、魔法效果)叠加但不永久修改。",
+      "model": "永久地面缓存 + 暂时效果层。渲染时:先画永久地面,再画暂时效果(alpha blend)。暂时效果有过期时间,过期删除。\n\n这是游戏特效(爆炸痕迹、弹孔)的标准做法——效果不永久改地图,只是临时叠加层。\n\n<strong>这集的技术要点</strong>:暂时地面缓冲。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 85 的核心概念是暂时地面缓冲。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Transient buffers"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Effect layer",
+        "Expiry timer"
+      ],
+      "related_days": [
+        "day084",
+        "day155"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day086": {
+      "why": "地面缓冲对齐世界区块——缓冲固定在世界网格(256×256 倍数位置),不跟相机走。",
+      "model": "问题:相机移动时缓冲平移,两个缓冲拼接处可能有缝(浮点误差)。\n\n解法:缓冲固定在世界网格(整数位置)。相机在哪个网格就用哪个缓冲。无缝因为网格是整数对齐。\n\n这和 Minecraft 的 chunk 系统(16×16 固定网格)一样——区块固定,相机选择加载哪些区块。\n\n<strong>这集的技术要点</strong>:地面缓冲对齐世界区块。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 86 的核心概念是地面缓冲对齐世界区块。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "World chunk alignment"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Grid-aligned buffers",
+        "Integer positioning"
+      ],
+      "related_days": [
+        "day084",
+        "day087"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day087": {
+      "why": "无缝地面纹理——相邻区块边缘 alpha blend 过渡,消除接缝。",
+      "model": "问题:两个 256×256 区块边缘,左边草地右边石头,有可见线。\n\n解法:边缘区域(5-10 像素)做 alpha blend——从 100% 草过渡到 100% 石头。或用 Wang tiles(边缘匹配的 tile 集,每种边缘有多种变体)。\n\n这是程序化生成的经典问题——tile 边缘自然过渡。后面 Day 130 seamless bilinear tiling 进一步发展。\n\n<strong>这集的技术要点</strong>:无缝地面纹理。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 87 的核心概念是无缝地面纹理。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Seamless textures"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Alpha transition",
+        "Wang tiling"
+      ],
+      "related_days": [
+        "day086",
+        "day130"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day088": {
+      "why": "Push buffer(推送缓冲)——HH 渲染架构里程碑。游戏代码 push 命令,渲染器消费。解耦游戏和渲染后端。",
+      "model": "之前:游戏代码直接写 back_buffer 像素。Day 088 后:游戏代码 push 命令(PushBitmap/PushRect/PushText),渲染器后端消费执行。\n\n<strong>RenderCommand enum</strong>:\n<pre><code>enum RenderCommand {\n    Clear { color: u32 },\n    Bitmap { dst: Rect, id: BitmapId, tint: u32 },\n    Rect { dst: Rect, color: u32 },\n    Text { pos: Vec2, text: String, color: u32 },\n}</code></pre>\n\n<strong>价值</strong>:Day 235 切 OpenGL 时游戏代码<strong>几乎不改</strong>——只换渲染器后端(软渲染→OpenGL)。这就是 Day 011 架构设计的红利。\n\n<strong>这集的技术要点</strong>:推送缓冲渲染。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Push buffer pattern"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "RenderCommand enum",
+        "Push/Submit API"
+      ],
+      "related_days": [
+        "day026",
+        "day235"
+      ],
+      "comparison": "push buffer 是命令模式的经典应用。所有 UI 框架(Qt display list)、3D 引擎(OpenGL VBO)、CQRS 后端都用这个模式。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "push buffer 让 Day 235 切 OpenGL 时游戏代码几乎不改,为什么?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后面是软渲染还是 OpenGL。换后端只改渲染器消费代码(把 PushBitmap 翻译成 OpenGL draw call),游戏代码零改动。这就是 Day 011 平台/游戏分离 + Day 026 update/render 分离的红利。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day089": {
+      "why": "扩展 push buffer——更多 entry types + sort key(排序键)。",
+      "model": "更多命令类型:PushClear / PushBitmap / PushRect / PushText / PushLine / PushQuad(旋转矩形)。\n\n<strong>sort key</strong>:每个命令有一个 u64 排序键。渲染前按 key 排序。key 编码多个维度:\n- bit 56-63: layer(背景/UI/overlay)\n- bit 40-55: z 深度\n- bit 24-39: texture id(同纹理 batch)\n- bit 0-23: 子排序\n\n排序后:同层在一起、同纹理在一起(减少 GPU 状态切换)、深度正确(后向前画透明)。\n\nDay 234 手写 radix sort 做 O(n) 排序。Day 229-230 精化 sort key 编码。\n\n<strong>这集的技术要点</strong>:渲染器推送缓冲条目类型。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Render command types",
+        "Sort keys"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "RenderCommand variants",
+        "Sort key bit packing"
+      ],
+      "related_days": [
+        "day088",
+        "day229"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day090": {
+      "why": "Bases(基底)——3D 渲染的坐标变换基础。一个 base = 位置 + 方向(旋转)。",
+      "model": "Base = position(世界位置) + orientation(旋转角度)。entity 在 base 局部坐标里定义,渲染时通过 base 变换到世界坐标。\n\n例子:玩家 base 在世界 (100, 50),朝向 30°。玩家手上武器在局部坐标 (10, 5)(相对玩家)。世界坐标 = rotate((10,5), 30°) + (100, 50)。\n\n后面 Day 361+ 的 3D 旋转矩阵是 base 的数学化——base 是「局部坐标系」,矩阵是「局部→世界的变换」。\n\n<strong>这集的技术要点</strong>:基底 第一部分。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Coordinate bases"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Base (pos + rotation)",
+        "Local-to-world transform"
+      ],
+      "related_days": [
+        "day088",
+        "day361"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day091": {
+      "why": "base 变换的数学——局部坐标 → 世界坐标 = 旋转 + 平移。",
+      "model": "2D 旋转矩阵:R = [[cos θ, -sin θ], [sin θ, cos θ]]。\n\n局部点 p_local 变换到世界:p_world = R × p_local + position。\n\n<strong>推导</strong>:旋转 = 绕原点转 θ 角度。数学:p' = (x cos θ - y sin θ, x sin θ + y cos θ)。这就是 R × p。加上 base 的 position(平移)。\n\n后面 Day 361+ 的 3D 旋转矩阵是 2D 的推广——绕 x/y/z 轴旋转。\n\n<strong>这集的技术要点</strong>:基底 第二部分。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "2D rotation matrix"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Rotation matrix",
+        "Position offset"
+      ],
+      "related_days": [
+        "day090",
+        "day092",
+        "day361"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day092": {
+      "why": "填充旋转和缩放的矩形——Day 037 blit 只支持轴对齐矩形,Day 092 支持任意旋转+缩放。",
+      "model": "算法:矩形 4 个角经过 base 变换(旋转+缩放+平移)得到屏幕坐标 4 个点。然后对屏幕上的四边形做光栅化——逐像素判断是否在四边形内。\n\n四边形光栅化:对每个像素,用 Day 048 的点-多边形包含测试(或者更高效的 scanline fill)。Day 093 加纹理采样。\n\n<strong>这集的技术要点</strong>:填充旋转与缩放的矩形。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 92 的核心概念是填充旋转与缩放的矩形。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Rotated scaled rectangle",
+        "Rasterization"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "4-corner transform",
+        "Point-in-quad test"
+      ],
+      "related_days": [
+        "day091",
+        "day093"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day093": {
+      "why": "纹理四边形——Day 092 的旋转矩形加纹理。4 个角有 UV,光栅化时双线性插值。",
+      "model": "四边形 4 个角有 UV 坐标(纹理上的位置)。光栅化时对四边形内每个像素,用双线性插值(bilinear)算 UV,采样纹理。\n\n双线性插值:4 个邻居像素的加权平均。权重 = 到 4 个邻居的距离。这让旋转/缩放的 sprite 看起来正确(无锯齿)。\n\nDay 235 切 OpenGL 后,这个算法交给 GPU 做——fragment shader 自动双线性采样。\n\n<strong>这集的技术要点</strong>:纹理四边形。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 93 的核心概念是纹理四边形。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Textured quad rendering"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "4-corner UV",
+        "Bilinear interpolation"
+      ],
+      "related_days": [
+        "day092",
+        "day094"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day094": {
+      "why": "sRGB → Linear 转换——HH 最重要的色彩学转折点。之前光照在 sRGB 算(错),改成 linear(对)。",
+      "model": "sRGB 是为人眼感知优化的非线性编码(暗色精度高)。物理光照是线性的(两光源=亮度×2)。在 sRGB 空间算光照=暗部权重过大、边缘黑边。\n\n<strong>正确流程</strong>:\n1. 纹理采样→sRGB 转 linear\n2. linear 空间算光照(乘/加/blend)\n3. linear 转 sRGB→输出到帧缓冲\n\n<strong>转换公式</strong>:linear = pow(srgb, 2.2)(近似)。精确版:srgb ≤ 0.04045 ? srgb/12.92 : pow((srgb+0.055)/1.055, 2.4)。\n\nOpenGL 提供 GL_SRGB8_ALPHA8 纹理格式 + GL_FRAMEBUFFER_SRGB 自动转换。Casey 这集后所有渲染在 linear 空间。\n\n<strong>这集的技术要点</strong>:sRGB 转光线性空间。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "sRGB vs Linear space",
+        "Color space conversion"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "sRGB→Linear transform",
+        "Gamma 2.2"
+      ],
+      "related_days": [
+        "day083",
+        "day241"
+      ],
+      "comparison": "sRGB 空间算光照为什么错?",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "sRGB 非线性——128+128 ≠ 256(sRGB 编码)。物理光照线性——两光源叠加=亮度翻倍。在 sRGB 算光照=暗部权重过大、亮部过曝、边缘黑边。转 linear 算完再转回 sRGB=正确。",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day095": {
+      "why": "Gamma-correct premultiplied alpha——Day 083 premultiplied + Day 094 sRGB 结合。",
+      "model": "在 sRGB 空间做 premultiplied alpha blend → 边缘黑边。解法:先把 src/dst 从 sRGB 转 linear,在 linear 做 blend,结果转回 sRGB。\n\n公式:out_linear = src_linear + dst_linear * (1 - src_a)。这保证半透明 sprite 边缘平滑无黑边。\n\nOpenGL: 开 GL_FRAMEBUFFER_SRGB,shader 输出自动转 sRGB。纹理用 GL_SRGB8_ALPHA8 格式,采样自动转 linear。\n\n<strong>这集的技术要点</strong>:Gamma 校正的预乘 alpha。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Gamma-correct blending"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Linear-space blend",
+        "Edge artifact fix"
+      ],
+      "related_days": [
+        "day083",
+        "day094"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day096": {
+      "why": "光照入门——方向光 + Lambert 漫反射。sprite 从「贴纸」变成「有立体感」。",
+      "model": "Lambert 漫反射:diffuse = albedo * max(0, dot(N, L))。\n- N = 法线(垂直于表面,单位向量)\n- L = 光源方向(从表面指向光源,单位向量)\n- dot(N,L) = N·L = cos(θ),θ=法线和光源的夹角\n\nN·L>0:面朝光(亮)。N·L=0:侧面(最暗边缘)。N·L<0:背光(clamp 到 0,全黑)。\n\n这集先做最简版——整个画面一个方向光,所有像素统一光照。Day 097+ 加法线贴图让光照更细。\n\n<strong>这集的技术要点</strong>:光照入门。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Phong diffuse lighting",
+        "Lambert model"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "dot(N, L)",
+        "Light direction"
+      ],
+      "related_days": [
+        "day042",
+        "day097",
+        "day390"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day097": {
+      "why": "法线贴图(normal map)——用纹理存逐像素法线,让低模看起来像高模(凹凸感)。",
+      "model": "法线贴图:RGB 三通道存 XYZ 法线方向([-1,1] 映射到 [0,255])。典型法线贴图偏蓝——因为大部分面朝相机,Z≈1 → B≈255。\n\nfragment shader 采样法线贴图,用它做 Day 096 的 dot(N,L) 光照。效果:平面看起来有凹凸细节——每个像素的法线不同,光照也不同。\n\n注意:法线变换要用 transpose(inverse(M))(Day 102),不是 M 本身。\n\n<strong>这集的技术要点</strong>:管线中加入法线贴图。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 97 的核心概念是管线中加入法线贴图。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Normal mapping"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Normal texture sampling",
+        "Per-pixel normals"
+      ],
+      "related_days": [
+        "day096",
+        "day102"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day098": {
+      "why": "清理法线贴图代码——修 bug:法线没归一化、光照在 sRGB 空间算、切线空间变换有误。",
+      "model": "三个 bug:\n1. 法线贴图采样后没归一化(length 可能 ≠ 1)。dot(N,L) 结果不是 cos(θ) 而是 cos(θ)×|N|。\n2. 光照在 sRGB 空间算(Day 094 说这是错的)。\n3. 切线空间(tangent space)变换矩阵有误——法线、切线、副切线要正交。\n\n修复后光照正确——法线贴图的凹凸效果自然。\n\n<strong>这集的技术要点</strong>:法线贴图代码清理。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 98 的核心概念是法线贴图代码清理。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Normal map cleanup"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Normalize normals",
+        "Linear-space lighting"
+      ],
+      "related_days": [
+        "day097"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day099": {
+      "why": "测试环境贴图(environment map)——反射效果。法线和视线的反射向量采样环境贴图。",
+      "model": "反射:R = reflect(V, N) = V - 2(V·N)N(Day 044 讲过)。用 R 采样环境贴图(cube map)。结果加到 specular 高光。\n\n这让金属表面有反光——玩家走过水面时看到倒影。Day 576+ 的 octahedral encoding 是环境贴图的压缩版。\n\n<strong>这集的技术要点</strong>:测试环境贴图。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 99 的核心概念是测试环境贴图。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Environment mapping"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Reflect(V, N)",
+        "Env map sampling"
+      ],
+      "related_days": [
+        "day044",
+        "day100",
+        "day576"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day100": {
+      "why": "反射向量计算——reflect(V, N) 的数学应用到光照。",
+      "model": "回顾 Day 044:R = V - 2(V·N)N。V=视线方向(从表面指向眼睛)。N=法线。\n\n光照应用:\n- specular 高光:dot(R, L) 大=高光强(金属感)。公式:specular = pow(max(0, dot(R, L)), shininess)。shininess 大=高光尖锐(金属),小=高光散漫(塑料)。\n- 环境反射:用 R 采样 cube map,得到反射颜色。\n\n<strong>这集的技术要点</strong>:反射向量。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 100 的核心概念是反射向量。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Reflection vectors",
+        "Specular lighting"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "reflect(V,N)",
+        "specular = pow(R·L, shininess)"
+      ],
+      "related_days": [
+        "day044",
+        "day099",
+        "day390"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day101": {
+      "why": "逆矩阵和转置矩阵——3D 渲染数学基础。M 把局部坐标变到世界。M^-1 反向。M^T 行列互换。",
+      "model": "4×4 矩阵 M = Translation × Rotation × Scale。\n- M^-1 = 反向变换(世界→局部)\n- M^T = 转置(行列互换)\n- 正交矩阵(只有旋转)的 M^-1 = M^T\n\n矩阵乘法 = 变换复合。M = T × R × S = 先缩放,再旋转,再平移。顺序重要——矩阵乘法不交换。\n\n<strong>这集的技术要点</strong>:逆矩阵与转置矩阵。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 101 的核心概念是逆矩阵与转置矩阵。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Matrix inverse and transpose"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "4x4 matrix",
+        "Inverse",
+        "Transpose"
+      ],
+      "related_days": [
+        "day089",
+        "day102",
+        "day319"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day102": {
+      "why": "法线变换必须用 transpose(inverse(M))——不是 M 本身。",
+      "model": "法线是垂直于表面的向量。表面被 M 变换(旋转+缩放+剪切)时,法线方向也变。但法线不是简单地乘 M——如果 M 有非均匀缩放,M×法线方向不对。\n\n数学证明:法线必须用 (M^-1)^T(逆的转置)变换,才能保持垂直。\n\n对于正交矩阵(只有旋转,无缩放):(M^-1)^T = M,所以不区分。但 Casey 教正确做法——如果未来加非均匀缩放,法线方向仍然对。\n\n代码:normal_world = ((M^-1)^T) × normal_local。或等价:transpose(inverse(M)) × N。\n\n<strong>这集的技术要点</strong>:正确变换法线。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Normal transformation"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "(M^-1)^T formula",
+        "Non-uniform scale"
+      ],
+      "related_days": [
+        "day101",
+        "day097"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day103": {
+      "why": "卡片式法线贴图反射——2.5D 游戏的 sprite 加法线贴图产生凹凸反射。",
+      "model": "2.5D 游戏的 sprite 是平面(卡片),但法线贴图让卡片表面「看起来」有凹凸。渲染:每像素从法线贴图读法线,算光照。\n\n效果:角色身上有盔甲反光、衣服有褶皱纹理——虽然几何上是个平面。这是 2.5D 游戏的视觉欺骗——用法线贴图模拟 3D 凹凸。\n\n<strong>这集的技术要点</strong>:卡片式法线贴图反射。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 103 的核心概念是卡片式法线贴图反射。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Card-based normal mapping"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Per-pixel normal from texture",
+        "2.5D bump effect"
+      ],
+      "related_days": [
+        "day097",
+        "day099"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day104": {
+      "why": "切换到 Y 轴向上的渲染目标——game 代码 y 向下,渲染层翻转。为 Day 235 OpenGL 做准备。",
+      "model": "game 代码用 y 向下(屏幕坐标,Day 031)。渲染目标(back buffer)改成 y 向上——渲染时 y 翻转。\n\nDay 026 update/render 分离让这次改动只影响渲染层——game 代码不改,渲染时 flip y。Day 235 切 OpenGL 时 y 方向已对齐。\n\n<strong>这集的技术要点</strong>:切换到 Y 轴向上渲染目标。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 104 的核心概念是切换到 Y 轴向上渲染目标。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Y-axis flip in renderer"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Render target Y flip"
+      ],
+      "related_days": [
+        "day031",
+        "day235"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day105": {
+      "why": "清理渲染器 API——push buffer + render target + base 统一到 Renderer 模块。",
+      "model": "Day 088-104 渲染代码累积,分散多处。Day 105 统一到 Renderer struct:持 push buffer + back buffer + camera。对外暴露 push_bitmap / push_text / submit 等接口。Casey 每 Phase 清理(Day 24/39/65/105)的延续。\n\n<strong>这集的技术要点</strong>:清理渲染器 API。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 105 的核心概念是清理渲染器 API。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Renderer API cleanup"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Renderer struct",
+        "Unified API"
+      ],
+      "related_days": [
+        "day088"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day106": {
+      "why": "世界缩放——1 世界单位可配置为多像素。方便调整游戏「视觉比例」。",
+      "model": "render 时世界坐标 × scale = 屏幕坐标。scale=2 时 1 世界单位=2 像素(放大)。这让 Casey 微调游戏视觉感。\n\n<strong>这集的技术要点</strong>:世界缩放。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 106 的核心概念是世界缩放。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "World scaling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Scale factor"
+      ],
+      "related_days": [
+        "day105",
+        "day109"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day107": {
+      "why": "Z 层渐隐——多楼层游戏中上面楼层半透明,让玩家看到下面。",
+      "model": "不同 z 层的 entity 有不同 alpha。z 高的层 alpha 低(半透明),z 低的 alpha 高(不透明)。玩家在楼下能看到楼上(半透明叠加)。\n\n<strong>这集的技术要点</strong>:Z 层渐隐。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 107 的核心概念是Z 层渐隐。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Z-layer transparency"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Per-layer alpha"
+      ],
+      "related_days": [
+        "day071",
+        "day295"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day108": {
+      "why": "透视投影——3D 渲染核心数学。远的物体看起来小。投影公式 + 除以 z。",
+      "model": "透视投影公式:screen_x = world_x / world_z × focal_length + center_x。除以 z 是关键——z 越大(远),screen 坐标越小(物体看起来小)。\n\n这是小孔成像的数学——光线从景物直线传播到底片,远处的光线角度小=在底片上的位置离中心近=看起来小。\n\nDay 359+ 切 OpenGL 后,投影矩阵由 OpenGL 管(perspective divide 在 GPU 自动做)。\n\n<strong>这集的技术要点</strong>:透视投影。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 108 的核心概念是透视投影。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Perspective projection"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Divide by Z",
+        "Projection matrix"
+      ],
+      "related_days": [
+        "day104",
+        "day359"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day109": {
+      "why": "分辨率无关渲染——不管窗口多大,游戏内容比例一致。",
+      "model": "内部渲染到固定大小 back buffer(960×540),然后缩放到窗口大小。1920×1080 窗口=2× 缩放。这让游戏在不同分辨率显示器上看起来一致。\n\n<strong>这集的技术要点</strong>:分辨率无关渲染。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 109 的核心概念是分辨率无关渲染。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Resolution-independent rendering"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Fixed internal resolution",
+        "Scaled blit"
+      ],
+      "related_days": [
+        "day106",
+        "day110"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    },
+    "day110": {
+      "why": "反投影屏幕边界——把屏幕 4 角反投影到世界,确定可见范围。",
+      "model": "unproject = project 的逆运算:从 screen (x,y) + 已知 z,反算 world (x,y,z)。用逆投影矩阵。这让渲染剔除——只渲染世界可见范围内的 entity。\n\n<strong>这集的技术要点</strong>:屏幕边界反投影。\n\n这集是 Phase 3(3D 基础与软渲染器)的一部分。Phase 3 的核心是:Vec3 z 轴(Day 071 多楼层)、premultiplied alpha(Day 083)、push buffer(Day 088 渲染命令队列)、sRGB↔linear(Day 094 光照必须在 linear 空间)、法线贴图(Day 097)、透视投影(Day 108 除以 z)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 110 的核心概念是屏幕边界反投影。在游戏引擎架构中,这属于这集是 Phase 3(3D 基础与软渲染器)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Unprojection",
+        "Frustum culling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Screen-to-world unproject"
+      ],
+      "related_days": [
+        "day108",
+        "day111"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "sRGB 和 linear 空间做 alpha blend 有什么区别?",
+          "a": "sRGB blend:暗部权重过大,边缘黑边。linear blend:物理正确。Day 094 的核心问题。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "push buffer(Day 088)为什么让 Day 235 切 OpenGL 时游戏代码不改?",
+          "a": "游戏代码 push 高层命令(PushBitmap),不知道后端。换 OpenGL 只改渲染器消费代码。"
+        }
+      ]
+    }
+  }
+}

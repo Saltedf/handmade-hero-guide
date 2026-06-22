@@ -1,0 +1,1971 @@
+{
+  "phase_num": 1,
+  "phase_meta": {
+    "id": "phase-1",
+    "title": "Phase 1 — 平台层(Day 1–25)",
+    "range": "Day 001–025 · 25 集 · 预计 4–6 周",
+    "intro": "Handmade Hero 的前 25 集是整个项目的\"地基\":Casey 手把手演示如何在 Windows 上用纯 Win32 API 创建窗口、分配后缓冲、播声音、读输入,最后把这些封装成一个可重用的\"平台层\"。这一阶段看似简单,但它示范了一个极其重要的架构原则——<strong>游戏代码与平台代码彻底分离</strong>,游戏逻辑只通过 Casey 自己设计的几个函数指针与平台通信。这是后续 600 多集健康演化的关键。\n\n对 Rust 学习者来说,这一阶段是把 Win32 翻译成 winit+softbuffer+cpal+gilrs 的实战训练。你会第一次碰到 cdylib 热重载、Rust 的 trait 设计、unsafe FFI 调用真实系统 API。",
+    "goal": "在 Linux 上搭出与 Casey 等价的跨平台平台层,屏幕上能显示跳动的彩色方框,键盘手柄能控制,改游戏代码不重启就能生效。",
+    "exit": "把 Casey 的 win32_handmade.cpp 完整翻译成 platform.rs,功能对等。改 handmade 模块不需要重启 exe,新代码立刻生效。",
+    "rust_topics": [
+      "`winit` 的 EventLoop(回调式 vs Polling)",
+      "`softbuffer::Surface` 把 Vec<u32> 显示到窗口",
+      "`cpal::Stream` 的 callback 模型与 sample format",
+      "`libloading::Library` + 函数符号查找(对应 LoadLibrary/GetProcAddress)",
+      "cdylib crate-type 与 dlopen 的关系",
+      "`std::time::Instant` 替代 QueryPerformanceCounter",
+      "`std::thread::spawn` + `parking_lot::Mutex` 替代 CRITICAL_SECTION"
+    ],
+    "cs_supplement": [],
+    "resources": []
+  },
+  "episodes": [
+    {
+      "slug": "code/day001",
+      "title_en": "Day 001: Setting Up the Windows Build",
+      "title_zh": "搭建 Windows 构建环境",
+      "url": "https://guide.handmadehero.org/code/day001/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "milestone",
+      "learn": "项目启动:配置 build 系统,编译出第一个 exe"
+    },
+    {
+      "slug": "code/day001qa",
+      "title_en": "Day 001qa: Setting Up the Windows Build - Q&A",
+      "title_zh": "搭建 Windows 构建 - Q&A",
+      "url": "https://guide.handmadehero.org/code/day001qa/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day002",
+      "title_en": "Day 002: Opening a Win32 Window",
+      "title_zh": "打开 Win32 窗口",
+      "url": "https://guide.handmadehero.org/code/day002/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "milestone",
+      "learn": "用 winit 在屏幕上打开第一个窗口"
+    },
+    {
+      "slug": "code/day002qa",
+      "title_en": "Day 002qa: Opening a Win32 Window - Q&A",
+      "title_zh": "打开 Win32 窗口 - Q&A",
+      "url": "https://guide.handmadehero.org/code/day002qa/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day003",
+      "title_en": "Day 003: Allocating a Back Buffer",
+      "title_zh": "分配后缓冲",
+      "url": "https://guide.handmadehero.org/code/day003/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day004",
+      "title_en": "Day 004: Animating the Back Buffer",
+      "title_zh": "让后缓冲动起来",
+      "url": "https://guide.handmadehero.org/code/day004/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "milestone",
+      "learn": "让彩色方框在窗口里动起来——主循环首次跑通"
+    },
+    {
+      "slug": "code/day005",
+      "title_en": "Day 005: Windows Graphics Review",
+      "title_zh": "Windows 图形学回顾",
+      "url": "https://guide.handmadehero.org/code/day005/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day006",
+      "title_en": "Day 006: Gamepad and Keyboard Input",
+      "title_zh": "手柄与键盘输入",
+      "url": "https://guide.handmadehero.org/code/day006/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day007",
+      "title_en": "Day 007: Initializing DirectSound",
+      "title_zh": "初始化 DirectSound",
+      "url": "https://guide.handmadehero.org/code/day007/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day008",
+      "title_en": "Day 008: Writing a Square Wave to DirectSound",
+      "title_zh": "向 DirectSound 写方波",
+      "url": "https://guide.handmadehero.org/code/day008/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "milestone",
+      "learn": "第一次听到声音:向音频设备写方波样本"
+    },
+    {
+      "slug": "code/day009",
+      "title_en": "Day 009: Variable-Pitch Sine Wave Output",
+      "title_zh": "变调正弦波输出",
+      "url": "https://guide.handmadehero.org/code/day009/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day010",
+      "title_en": "Day 010: QueryPerformanceCounter and RDTSC",
+      "title_zh": "QueryPerformanceCounter 与 RDTSC",
+      "url": "https://guide.handmadehero.org/code/day010/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day011",
+      "title_en": "Day 011: The Basics of Platform API Design",
+      "title_zh": "平台 API 设计基础",
+      "url": "https://guide.handmadehero.org/code/day011/",
+      "difficulty": 3,
+      "duration": "2h",
+      "type": "concept",
+      "learn": "🔥 HH 全剧最重要的架构决策:平台/游戏分层"
+    },
+    {
+      "slug": "code/day012",
+      "title_en": "Day 012: Platform-independent Sound Output",
+      "title_zh": "平台无关的声音输出",
+      "url": "https://guide.handmadehero.org/code/day012/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day013",
+      "title_en": "Day 013: Platform-independent User Input",
+      "title_zh": "平台无关的用户输入",
+      "url": "https://guide.handmadehero.org/code/day013/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day014",
+      "title_en": "Day 014: Platform-independent Game Memory",
+      "title_zh": "平台无关的游戏内存",
+      "url": "https://guide.handmadehero.org/code/day014/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day015",
+      "title_en": "Day 015: Platform-independent Debug File I/O",
+      "title_zh": "平台无关的调试文件 I/O",
+      "url": "https://guide.handmadehero.org/code/day015/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day016",
+      "title_en": "Day 016: VisualStudio Compiler Switches",
+      "title_zh": "VisualStudio 编译器开关",
+      "url": "https://guide.handmadehero.org/code/day016/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day017",
+      "title_en": "Day 017: Unified Keyboard and Gamepad Input",
+      "title_zh": "统一的键盘与手柄输入",
+      "url": "https://guide.handmadehero.org/code/day017/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day018",
+      "title_en": "Day 018: Enforcing a Video Frame Rate",
+      "title_zh": "强制视频帧率",
+      "url": "https://guide.handmadehero.org/code/day018/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day019",
+      "title_en": "Day 019: Improving Audio Synchronization",
+      "title_zh": "改进音频同步",
+      "url": "https://guide.handmadehero.org/code/day019/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day020",
+      "title_en": "Day 020: Debugging the Audio Sync",
+      "title_zh": "调试音频同步",
+      "url": "https://guide.handmadehero.org/code/day020/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day021",
+      "title_en": "Day 021: Loading Game Code Dynamically",
+      "title_zh": "动态加载游戏代码",
+      "url": "https://guide.handmadehero.org/code/day021/",
+      "difficulty": 4,
+      "duration": "2h",
+      "type": "concept",
+      "learn": "🔥 热重载:游戏代码改成 cdylib,libloading 加载"
+    },
+    {
+      "slug": "code/day022",
+      "title_en": "Day 022: Instantaneous Live Code Editing",
+      "title_zh": "瞬时实时代码编辑",
+      "url": "https://guide.handmadehero.org/code/day022/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day023",
+      "title_en": "Day 023: Looped Live Code Editing",
+      "title_zh": "循环实时代码编辑",
+      "url": "https://guide.handmadehero.org/code/day023/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day024",
+      "title_en": "Day 024: Win32 Platform Layer Cleanup",
+      "title_zh": "Win32 平台层清理",
+      "url": "https://guide.handmadehero.org/code/day024/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "refactor",
+      "learn": ""
+    },
+    {
+      "slug": "code/day025",
+      "title_en": "Day 025: Finishing the Win32 Prototyping Layer",
+      "title_zh": "完成 Win32 原型层",
+      "url": "https://guide.handmadehero.org/code/day025/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "milestone",
+      "learn": "🎉 M1 完成:平台层完工"
+    }
+  ],
+  "lessons": {
+    "day001": {
+      "why": "你想想看,如果让你从零开始一个游戏项目,你会先动手做什么?可能很多人会急着写游戏代码——画面、角色、玩法。但 Casey 偏偏不,他从最「无聊」的事情开始:<strong>让 build 系统跑起来</strong>。\n\n为什么?因为 build 系统是后面 666 集所有工作的<strong>地基</strong>。没有它,你写的代码无法变成可执行的程序;没有它,你每次改一行代码就要手动敲十几个命令;没有它,Day 21 的热重载根本无从谈起。把这一步做对,后面整个项目的迭代速度就有了保证。\n\n还有一个 Casey 没明说但很重要的理由:<strong>心理锚点</strong>。Handmade Hero 是两年的马拉松,你需要尽早看到一个 exe 在屏幕上跑起来——哪怕它什么都不做——这种「我搞出来了」的反馈会支撑你走完 666 集。\n\n值得注意的细节是,Casey 没有用 Visual Studio 这种 IDE 的项目文件,而是手写了 <code>build.bat</code> 批处理。这个选择背后有他的教学哲学:IDE 把构建过程藏在按钮后面,你看不到 cl.exe 的参数、看不到链接器吃了哪些 .lib;而一个 50 行的批处理完全透明,你打开就能读懂每一步在干什么。\n\n对你来说用 Rust 跟做的话,这集几乎是「对照理解」——<code>cargo</code> 已经把 Casey 想要的全做了。但你要停下来想清楚:cargo 帮我做的这些事情,在 Casey 的世界里需要手动写出来。",
+      "model": "我打个比方:build 系统就像一个<strong>翻译官</strong>。你说的是人类语言(Rust / C++ 源代码),CPU 听的是机器语言(0 和 1)。中间需要一个翻译官,把你写的源代码翻译成 CPU 能直接执行的二进制。cargo 就是这个翻译官。\n\n具体一点,你给它喂一个 <code>Cargo.toml</code>(声明「我要用什么依赖」)和一堆 <code>.rs</code> 文件(你写的代码),它会自动做四件事:\n\n第一步,它读 Cargo.toml,看你声明了哪些依赖。如果依赖还没下载,它会去 crates.io 拉。\n\n第二步,它把所有依赖按依赖图排好顺序——先编译没依赖的,最后编译你的主 crate。这一步叫 <strong>topological sort</strong>(拓扑排序),保证不会出现「A 依赖 B 但 B 还没编译」的错误。\n\n第三步,它调用 <code>rustc</code>(真正的编译器)一个一个编译。每个 .rs 文件被翻译成一个 <code>.rlib</code> 或 <code>.o</code> 文件,里面是机器码但还不能直接跑。\n\n第四步,它调用<strong>链接器</strong>(Linux 上是 <code>ld</code> 或 <code>mold</code> / <code>lld</code>),把所有 .rlib 拼成一个最终的二进制——可能是 <code>target/debug/handmade-hero</code>(可执行),也可能是 <code>libhandmade.so</code>(动态库,Day 21 热重载要用)。\n\n这里有一个新手容易踩的坑:很多人以为 IDE 就是 build 系统。其实不是——IDE 只是一个壳,按钮背后调用的还是 build 系统。Visual Studio 调用 MSBuild,IntelliJ 调用 Gradle 或 Maven。Casey 选择直接面对 build 系统本身,这就是为什么他用 build.bat 而不是 .sln。\n\n另一个容易踩的坑:以为 build 系统只负责「编译」。其实它管的远不止编译——依赖管理、增量缓存、并行调度、跨平台适配,这些都是 build 系统的活。Casey 在后面 Day 192 让游戏自己调用 build 系统做自重编译时,你会更深刻地体会到这一点。\n\nCasey 这集真正写的代码非常少——一个空的 <code>WinMain</code> 函数(Windows 程序的入口,等价于 Linux 的 <code>main</code>),返回 0。但 build.bat 里有几个关键参数值得你对照理解:<code>-Zi</code>(生成调试信息,Rust 端默认就有)、<code>-FC</code>(把错误输出到 stdout 方便看)、<code>user32.lib</code>(链接 Windows 的 user32 库,等价于 Rust 里 <code>extern crate</code> 某个 Windows 绑定 crate)。",
+      "map_parents": [
+        "软件工程流程(编辑→构建→测试→部署)",
+        "可重现性(别人拿到代码也能跑)",
+        "多人协作的统一接口"
+      ],
+      "map_siblings": [
+        {
+          "name": "make",
+          "note": "Unix 老爷爷,基于文件依赖图,简单透明,但不管依赖下载"
+        },
+        {
+          "name": "CMake",
+          "note": "C++ 跨平台事实标准,语法怪,通常生成 Makefile/Ninja"
+        },
+        {
+          "name": "Ninja",
+          "note": "底层 build,设计目标就是快,Chrome / LLVM 用"
+        },
+        {
+          "name": "Bazel",
+          "note": "Google 出品,monorepo 友好,强可重现强缓存"
+        },
+        {
+          "name": "cargo",
+          "note": "build + 包管理 + 测试 + 文档一体化,体验最丝滑"
+        },
+        {
+          "name": "build.bat / shell",
+          "note": "裸脚本,抽象最低但最透明——Casey 的选择"
+        }
+      ],
+      "map_children": [
+        "编译器(rustc / cl / gcc)",
+        "链接器(ld / mold / lld)",
+        "包管理(crates.io / npm)",
+        "缓存系统(target/ 目录)"
+      ],
+      "related_days": [
+        "day021",
+        "day192",
+        "day441"
+      ],
+      "comparison": "<strong>共通点</strong>:所有 build 系统都在解决「源码 → 可执行」的问题,都用某种依赖图,都支持增量编译(改了一行不重新编译整个项目)。\n\n<strong>本质差别</strong>:抽象层级(cargo 一句话 vs make 写规则)、依赖管理深度(make 不管 / cargo 一体化)、跨平台能力(make 在 Unix / cargo 全平台)、可重现性(Bazel 最强)。这些 trade-off 背后是设计哲学:cargo 为了「零配置开箱即用」,Bazel 为了「十万行代码也能稳定 build」,Casey 的 build.bat 为了「教学透明」。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "现在你回头想想,Casey 这集为什么坚持用 <code>build.bat</code> 而不是 Visual Studio 项目文件?你能不能至少给出 3 个理由?试着用自己的话讲一遍,不要照搬上面的文字。",
+          "a": "老师讲解版:第一个理由是<strong>透明</strong>——IDE 把构建过程藏在按钮后面,你看不到 cl.exe 的实际参数;批处理每行都看得见,你能 echo 出来调试。第二个理由是<strong>编辑器自由</strong>——一旦你绑定 .sln,就被 VS 绑架了;但 .bat 谁都能调用,你可以用 Vim、Emacs、任何编辑器。第三个理由是<strong>版本控制友好</strong>——.bat 是纯文本,几十行,git diff 一目了然;.sln/.vcxproj 是 XML 但充满 GUID 和机器特定路径,合并冲突是噩梦。\n\n其实还有第四个理由 Casey 没明说:<strong>教学价值</strong>。让你看到 build 不是魔法,而是一系列可理解的步骤。这是 Handmade Hero 整个系列的精神——拒绝黑盒。"
+        },
+        {
+          "level": 2,
+          "type": "practice",
+          "q": "咱们来真做一点事。打开你的 Rust 项目,在根目录创建一个 <code>build.rs</code> 文件——这是 Cargo 的「构建脚本」,它会在主 crate 编译之前先被编译运行。试着写一段代码,让 build 时打印 <code>Building handmade-hero-rs, started at &lt;当前时间&gt;</code>。\n\n提示:用 <code>std::time::SystemTime::now()</code> 拿当前时间。还有一行 <code>println!(\"cargo:rerun-if-changed=build.rs\");</code> 很关键,告诉 cargo 什么时候重新跑这个脚本。",
+          "a": "<pre><code>// build.rs\nfn main() {\n    let now = std::time::SystemTime::now()\n        .duration_since(std::time::UNIX_EPOCH)\n        .unwrap()\n        .as_secs();\n    println!(\"cargo:rerun-if-changed=build.rs\");\n    println!(\"Building handmade-hero-rs, started at unix={}\", now);\n}</code></pre>\n\n做完后跑 <code>cargo build</code>,你应该能在输出里看到你的打印。这能让你体会:cargo 不是黑盒,它有钩子让你介入构建过程。Day 192 的「自重编译」机制就是利用这些钩子。"
+        },
+        {
+          "level": 3,
+          "type": "transfer",
+          "q": "现在我们把视角拉远一点。Casey 这集把所有 build 逻辑写在一个 <code>build.bat</code> 文件里——这是「集中式」。但 Rust 生态倾向于「分散配置」:声明放 Cargo.toml、构建脚本放 build.rs、工具链版本放 rust-toolchain.toml、全局配置放 .cargo/config.toml。\n\n为什么 Rust 要这么「散」?这种设计在什么场景下有利,什么场景下反而不方便?更进一步的:假设你要做一个<strong>只活 3 天的快速原型</strong>,你会选哪种风格?那如果是一个<strong>要维护 10 年、5 个人协作</strong>的项目呢?",
+          "a": "老师给你的思路:分散配置的好处是<strong>工具友好</strong>——rust-analyzer 只需要读 Cargo.toml,rustup 只需要读 rust-toolchain.toml,每个工具读自己的文件,互不干扰。还有<strong>可组合</strong>——你可以把多个项目的 .cargo/config.toml 用 symlink 共享。\n\n集中式(单文件)的好处是<strong>易理解、低抽象成本</strong>——一个文件看完就懂了,不需要记一堆约定。Casey 用 build.bat 的核心原因就是这个:让初学者不被一堆「约定优于配置」的隐藏规则淹没。\n\n短期原型,集中式赢——你不需要花时间理解 cargo 的所有扩展点。长期多人项目,分散配置赢——每种配置都有专人管,文件之间解耦,演进时不会一处改全部炸。\n\n更深一层:这是「约定优于配置」 vs 「显式优于隐式」的经典 trade-off。Rails 是约定派的代表(魔法多);Go 和 Rust 倾向显式。两者没有绝对的对错,看场景。"
+        },
+        {
+          "level": 4,
+          "type": "design",
+          "q": "如果你完成了 Lv 3,来挑战一下开放设计。假设你是新 build 系统的设计者,目标是<strong>最快的热重载速度</strong>——用户改一行代码,从保存到屏幕变化,目标是 100ms 以内。你会怎么设计?考虑:增量编译、并行化、缓存、链接器加速。你的系统跟 cargo 比,牺牲了什么?换来了什么?",
+          "a": "参考方向:看 Bazel 的 remote cache(分布式缓存)、<code>sccache</code> / <code>ccache</code>(内容寻址缓存)、<code>mold</code> 链接器(并行链接,比 ld 快 10 倍)、<code>lld</code>(LLVM 的链接器)。能写出 500 字的设计草稿就很好了。\n\n核心洞察:cargo 通用(各种项目都能用),你的专门为热重载——专用工具总是能比通用工具快。代价是你的工具不能跨项目复用。"
+        }
+      ],
+      "supplements": [
+        {
+          "title": "📚 Arch Linux 上装 Rust:rustup vs pacman,选哪个?",
+          "body": "你在 Arch 上装 Rust 有两个主流选择,各有利弊,我帮你梳理一下。\n\n第一种是直接用 pacman:<code>sudo pacman -S rust</code>。这种装的是 Arch 官方仓库的 rust 包,优点是和系统集成最好,系统更新时一起更新;缺点是<strong>版本固定</strong>,你只能用 Arch 当前稳定版,不能轻易切 nightly 或特定版本。\n\n第二种是用 rustup:<code>curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh</code>。这是 Rust 官方推荐的工具链管理器,可以装多个 Rust 版本(stable / beta / nightly),按项目切换。\n\n我的建议是<strong>用 rustup</strong>,理由:\n- Handmade Hero 后面会用 SIMD intrinsics,某些场景需要 nightly 才能跑(<code>portable-simd</code> 还在稳定化)\n- 你可能跟多个 Rust 项目,不同项目可能需要不同版本,rustup 的 <code>rust-toolchain.toml</code> 让每个项目自己声明工具链\n- 跟 Casey 的精神一致:你掌控工具,不是工具掌控你\n\nArch 的 wiki 上推荐用 pacman 装 rustup,再用 rustup 装 rust:<code>sudo pacman -S rustup</code>,然后 <code>rustup default stable</code>。这样两全其美。\n\n装完记得:<code>rustup component add rust-src rust-analyzer clippy rustfmt</code>。"
+        },
+        {
+          "title": "📚 Rust 知识补充:cargo 的两个 profile(debug vs release)",
+          "body": "你跑 <code>cargo build</code> 和 <code>cargo build --release</code>,得到的二进制<strong>差别巨大</strong>——大到 10-100 倍性能差。\n\n<code>cargo build</code>(默认 debug profile):编译快,但运行慢。Rust 编译器不做激进优化,只为让你快速看到代码改动效果。生成的二进制在 <code>target/debug/</code>。\n\n<code>cargo build --release</code>(release profile):编译慢(可能 5-10 倍于 debug),但运行快。Rust 编译器做完整 LLVM 优化(SIMD 自动向量化、内联、死代码消除)。生成的二进制在 <code>target/release/</code>。\n\n这对 Handmade Hero 学习者意味着什么?Day 1-100 阶段,你主要是写游戏逻辑、跑通流程,debug 模式够用。但到了 Day 112+ 开始优化性能、Day 121 SIMD marathon,你必须用 release 模式,否则性能差异让你怀疑人生。\n\n实际操作:在 Cargo.toml 里可以调 profile:\n\n<pre><code>[profile.dev]\nopt-level = 1  # debug 也开一点优化(不影响调试)\n\n[profile.release]\nopt-level = 3\nlto = true  # 链接时优化,跨 crate 内联\ncodegen-units = 1  # 单线程代码生成,优化更好但慢</code></pre>\n\n注意一个坑:debug 模式下整数溢出会 panic(默认),release 模式会 wrap。所以有些代码 debug 跑得好好的,release 崩——这是新手常踩的坑。Casey 在 C 里没有这个保护(整数溢出 silent wrap),你要意识到差别。"
+        },
+        {
+          "title": "📚 编程技巧:cargo watch 让热重载更顺",
+          "body": "后面 Day 21+ 你要做热重载——改一行代码,游戏立刻反映。但每次手动跑 <code>cargo build</code> 太烦。推荐装一个工具:<code>cargo install cargo-watch</code>。\n\n装完之后,跑 <code>cargo watch -x build</code>,它会监听项目里所有 .rs 文件,你一保存就自动 <code>cargo build</code>。配合 HH 的热重载机制(平台层检测 .so 文件 mtime 变化自动 reload),你的工作流变成:\n\n1. 改一行代码,保存\n2. cargo-watch 自动 cargo build(几百毫秒)\n3. 你的游戏 exe 检测到 .so 变化,自动 reload\n4. 下一帧就用新代码\n\n整个过程你<strong>不需要切到终端</strong>,完全在编辑器里干活。这是 Rust 学习者跟 Casey 的 C 工作流相比,体验上唯一明显更好的地方(C 的 cl 编译速度比 rustc 快)。\n\n另一个有用的工具是 <code>cargo install cargo-binstall</code>,它可以装预编译的二进制版本的 cargo 子命令(包括 cargo-watch),省去编译等待。"
+        }
+      ]
+    },
+    "day002": {
+      "why": "Day 001 让你有了 build 系统,现在你手里有一个能编译通过但什么都不做的 exe。Day 002 给它配上一双「眼睛」——一个能在屏幕上显示的窗口。\n\n你想想,如果没有窗口,你的游戏画给谁看?CPU 算出来一堆像素值,得有一个地方让它们变成可见的光——这就是窗口。听起来简单,但 Win32 让你打开一个窗口要写<strong>几百行代码</strong>。Casey 这集主要就是带我们走完这几百行,把每一行是干什么的讲清楚。\n\n为什么要学这么底层的细节?用 Rust 的话,winit 一行代码就开窗口了啊。原因是:<strong>理解 Win32 帮你理解 winit 在替你做什么</strong>。当 winit 在某些细节上和 Win32 不一致(比如 DPI 缩放、Wayland 下的特殊行为),你才知道问题出在哪。Day 235 切换 OpenGL 时,这些底层知识会再次派上用场。",
+      "model": "Casey 这集核心教的是 Win32 的「窗口编程模型」——一种<strong>事件驱动</strong>的架构。我把它拆成 4 个关键概念讲。\n\n<strong>概念一:Window Class(窗口类)</strong>\n\nWindows 不让你随便创窗口,你得先<strong>注册一个「类」</strong>,告诉系统「我要的窗口长这样」。这个类里包含:窗口的名字(字符串)、图标、光标、背景色、还有一个最关键的——<strong>窗口过程函数</strong>(WindowProc)的函数指针。\n\n注册用的 API 是 <code>RegisterClassEx</code>,吃一个 <code>WNDCLASSEX</code> 结构。结构里 cbSize(结构大小)、lpfnWndProc(那个函数指针)、lpszClassName(类名,后面创窗口要用)是必填的。\n\n<strong>概念二:CreateWindowEx(创建窗口实例)</strong>\n\n有了类,你就可以创建这个类的实例。这步像 OOP 里的 <code>new</code>——类是模板,实例是具体一个窗口。你告诉系统:用我刚注册的那个类、窗口标题叫什么、位置在哪、大小多大、样式是什么(overlapped / popup / child)。系统给你返回一个 <code>HWND</code>(窗口句柄),后面所有操作都要拿这个句柄。\n\n<strong>概念三:Message Loop(消息循环)</strong>\n\nWindows 是<strong>事件驱动</strong>的——窗口的任何动作(被点击、被拖动、被关闭、被绘制)都会变成「消息」放进队列。你的程序要不停地从队列里取消息(<code>GetMessage</code>),翻译(<code>TranslateMessage</code>),派发(<code>DispatchMessage</code>)。\n\n派发是干嘛的?把消息送给对应的窗口的 WindowProc 函数处理。你的程序就是一个无穷循环,不停地转,直到拿到 <code>WM_QUIT</code> 消息才退出。\n\n<strong>概念四:WindowProc(窗口过程)</strong>\n\n这是<strong>你写的</strong>函数,系统会调用它(回调)。每个窗口类都要指定一个 WindowProc。函数签名是 <code>LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM)</code>——HWND 是哪个窗口、UINT 是消息类型(WM_PAINT / WM_CLOSE / WM_KEYDOWN 等)、WPARAM 和 LPARAM 是消息参数(每个消息自己的格式)。\n\n你的 WindowProc 通常是个大 <code>switch</code> 语句,根据消息类型处理。处理完返回 0 表示「我搞定了」。如果不处理,要传给 <code>DefWindowProc</code>(默认处理)。\n\n<strong>Win32 → Rust(winit)映射</strong>\n\n你用 Rust 不用碰这些。但你要知道 winit 帮你做了什么:\n\n- RegisterClass + CreateWindowEx → <code>WindowBuilder::new().build(&event_loop)</code>\n- GetMessage 循环 → <code>event_loop.run(|event, target| { ... })</code>\n- WindowProc → event_handler 闭包里 match event 的 <code>WindowEvent::CloseRequested</code> / <code>WindowEvent::KeyboardInput</code> / 等等\n\nwinit 还帮你做了<strong>跨平台</strong>:同样的代码在 Windows / Linux(X11 / Wayland) / macOS 都能跑。但它藏起来的代价是:你不知道 KDE Wayland 下窗口为什么会闪一下(Day 40 会讲)。理解 Win32 模型,你才有诊断能力。",
+      "map_parents": [
+        "事件驱动编程(event-driven programming)",
+        "GUI 编程基础",
+        "OS 抽象:窗口 = 屏幕一块区域 + 接收输入"
+      ],
+      "map_siblings": [
+        {
+          "name": "X11 / Xlib",
+          "note": "Linux 老牌窗口系统,API 也繁琐"
+        },
+        {
+          "name": "Wayland",
+          "note": "Linux 新一代,你 KDE 用的就是这个,更现代但要适配"
+        },
+        {
+          "name": "macOS Cocoa",
+          "note": "苹果家的,Obj-C / Swift 风格"
+        },
+        {
+          "name": "SDL2",
+          "note": "跨平台抽象,但藏细节(违背 HH 精神,Casey 不用)"
+        },
+        {
+          "name": "winit",
+          "note": "Rust 跨平台窗口库,我们用它"
+        },
+        {
+          "name": "GLFW",
+          "note": "OpenGL 友好的窗口库,C++ 老牌"
+        }
+      ],
+      "map_children": [
+        "WNDCLASSEX 结构(注册时填)",
+        "HWND(窗口句柄,后面所有操作都靠它)",
+        "GetMessage / TranslateMessage / DispatchMessage(消息循环三件套)",
+        "WindowProc 回调(你写的事件处理函数)",
+        "DefWindowProc(默认处理)"
+      ],
+      "related_days": [
+        "day001",
+        "day003",
+        "day004",
+        "day006",
+        "day040",
+        "day235"
+      ],
+      "comparison": "<strong>共通点</strong>:所有 GUI 系统都有「窗口」概念,都有「事件/消息」机制,都让你写一个回调函数处理事件。\n\n<strong>差别</strong>:Win32 是<strong>同步 pull 模型</strong>(你主动 GetMessage);winit 是<strong>回调 push 模型</strong>(系统调你的闭包)。Wayland 协议本身是<strong>异步消息</strong>(客户端和服务端通过 socket 通信),所以 Wayland 应用本质上是网络编程——这就是为什么 Wayland 下某些 Win32 风格的同步调用会卡。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 注册窗口类时,要填一个 <code>WindowProc</code> 函数指针。问题来了:为什么是函数指针,不能直接调用?换句话说,为什么 Windows 不让你写 <code>handle_message(hwnd, msg)</code> 自己处理,而是要系统反过来调用你的函数?",
+          "a": "这是经典的<strong>回调(callback)模式</strong>。原因是<strong>控制反转</strong>:你不知道什么时候会有消息(用户随时点鼠标、按键),所以你不能「主动调用」处理函数。但你又想自定义处理逻辑——所以你把函数指针告诉系统,系统在消息来的时候调你。\n\n类比:餐厅点餐。你(应用程序)不能每秒问一次服务员「菜好了吗?」(那是 polling);服务员(系统)在菜好时喊你(回调)。你告诉服务员「我坐 5 号桌」(注册函数指针 = 注册窗口类),服务员就知道往哪喊你。\n\nRust 里的对应:winit 的 <code>event_loop.run(|event, target| { ... })</code>,那个闭包就是你的「WindowProc」。winit 在事件来时调你的闭包。"
+        },
+        {
+          "level": 2,
+          "type": "practice",
+          "q": "用 Rust+winit 写一个最小窗口程序。要求:\n\n1. 创建一个 800x600 的窗口,标题叫「Hello Handmade Hero」\n2. 点窗口的 X 按钮能正常退出\n3. 在终端打印每次收到的键盘事件(scancode + state)\n\n提示:用 <code>Window::default_attributes().with_title(...).with_inner_size(...)</code> 设置标题和大小。<code>WindowEvent::KeyboardInput</code> 拿键盘事件。",
+          "a": "<pre><code>use winit::application::ApplicationHandler;\nuse winit::event::{WindowEvent, KeyEvent, ElementState};\nuse winit::event_loop::EventLoop;\nuse winit::window::Window;\n\nstruct App { window: Option<Window> }\n\nimpl ApplicationHandler for App {\n    fn resumed(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {\n        self.window = Some(event_loop.create_window(\n            Window::default_attributes()\n                .with_title(\"Hello Handmade Hero\")\n                .with_inner_size(winit::dpi::LogicalSize::new(800, 600))\n        ).unwrap());\n    }\n\n    fn window_event(&mut self, event_loop: &winit::event_loop::ActiveEventLoop,\n                    _id: winit::window::WindowId, event: WindowEvent) {\n        match event {\n            WindowEvent::CloseRequested => event_loop.exit(),\n            WindowEvent::KeyboardInput { event: KeyEvent { state, physical_key, .. }, .. } => {\n                println!(\"key {:?} {:?}\", physical_key, state);\n            }\n            _ => (),\n        }\n    }\n}\n\nfn main() {\n    let event_loop = EventLoop::new().unwrap();\n    let mut app = App { window: None };\n    event_loop.run_app(&mut app).unwrap();\n}</code></pre>\n\n跑起来后,试试点窗口、按键、拖动,看终端输出。你会发现 winit 帮你处理了所有底层细节——但你能感受到它「在做什么」,这就是 Day 002 的价值。"
+        },
+        {
+          "level": 3,
+          "type": "transfer",
+          "q": "现在你理解了 Win32 的「事件驱动 + 回调」模型。这种模型不是 Windows 独有的——它出现在很多地方:JavaScript 的 addEventListener、Node.js 的 callback、Rust 的 future / async。问题来了:为什么这种模型如此普遍?它解决了什么本质问题?对比「轮询(polling)」模型,各自的优缺点是什么?",
+          "a": "本质问题是<strong>「谁来主动」</strong>。两种模型:\n\n<strong>Polling(轮询)</strong>:你的代码主动检查「事件来了吗?」\n- 优点:控制流清晰,容易调试\n- 缺点:CPU 占用高(空转等待),延迟高(两次 check 之间的事件要等下次 check)\n- 例子:DOS 时代游戏循环、嵌入式 super-loop\n\n<strong>Callback(回调)</strong>:你注册函数,系统在事件来时调你\n- 优点:CPU 可休眠(没事干时真的睡),延迟低(事件立刻触发)\n- 缺点:控制流颠倒(你的代码被系统调用,栈在哪?谁负责生命周期?),调试难(回调链长)\n- 例子:所有现代 GUI、Web、async I/O\n\n为什么现代系统都是 callback?因为现代系统是<strong>多任务</strong>的——你不想让一个程序独占 CPU。操作系统调度器需要你的程序「能让出 CPU」(sleep),它就 sleep;事件来时,系统唤醒你。这就是 callback 模型。\n\n游戏是个有趣的例外:游戏循环本质是 polling(每帧自己跑 60 次),不是 callback。所以 HH 的「游戏代码」部分是 polling 风格,但「平台层」收事件是 callback 风格——平台层把 callback 事件转成 polling 数据(每帧开始时拿一个 input snapshot)。这是 Day 011 的核心架构决策。"
+        }
+      ],
+      "supplements": [
+        {
+          "title": "📚 Wayland 注意事项(你 KDE 用的就是它)",
+          "body": "你用 KDE on Wayland,有几个 Day 002 相关的坑值得提前知道。\n\n<strong>坑一:窗口位置</strong>。Win32 让你 CreateWindowEx 时指定 x/y,你可以「窗口出现在 (100, 100)」。Wayland 不让你这么做——客户端不能决定自己在屏幕哪里,只有<strong>合成器(KWin)</strong>能。这是 Wayland 的安全模型(防止恶意程序记录你鼠标位置)。winit 的 <code>with_position</code> 在 Wayland 下会被忽略,正常运行。\n\n<strong>坑二:窗口装饰</strong>。Win32 的 WS_OVERLAPPEDWINDOW 给你标准的标题栏 + 边框。Wayland 下,标题栏由合成器画(KDE 默认会画 SSD —— Server Side Decoration)。你的程序不能强制 CSD(Client Side Decoration),除非用 <code>with_decorations(false)</code> 自己画。\n\n<strong>坑三:DPI 缩放</strong>。KDE 在 4K 屏上默认开 1.5x 或 2x 缩放。winit 给你的窗口大小可能是 logical(逻辑像素)或 physical(物理像素),你要搞清楚——否则你以为开了 800x600 窗口,实际是 1200x900。\n\n<strong>坑四:键盘布局</strong>。Casey 在视频里假设是 US QWERTY 键盘。你可能是其他布局(中文输入法、Colemak 等)。winit 给你的 KeyEvent 里 <code>physical_key</code> 是 scancode(物理位置,布局无关),<code>logical_key</code> 是经过布局转换的字符。游戏用 <code>physical_key</code> 才符合直觉(WASD 在所有布局下位置都一样)。"
+        },
+        {
+          "title": "📚 Rust 知识补充:闭包(closure)",
+          "body": "你在 winit 的 <code>event_loop.run(...)</code> 里写了一个 <code>|event, target| { ... }</code>,这叫<strong>闭包</strong>(closure)——Rust 里的匿名函数。可能你只用过 <code>fn</code> 定义函数,我简单讲一下。\n\n<strong>普通函数</strong>:<code>fn add(a: i32, b: i32) -> i32 { a + b }</code>。名字 add,有类型签名,定义后随时调用。\n\n<strong>闭包</strong>:<code>let add = |a, b| a + b;</code>。没名字(可以绑给变量),参数类型可以省略(编译器推断),代码更紧凑。\n\n为什么 winit 要用闭包?因为它要「回调你」,但你的处理逻辑里可能用到外部的变量(比如 <code>&mut self.window</code>)。闭包可以「捕获」外部变量,普通函数不能。\n\n三种捕获方式(对应三种闭包 trait):\n- <code>Fn</code>:只读借用外部变量(<code>&T</code>)\n- <code>FnMut</code>:可变借用(<code>&mut T</code>),可以改外部变量\n- <code>FnOnce</code>:消耗所有权(<code>T</code>),只能调一次\n\nwinit 的 <code>ApplicationHandler</code> trait 里 <code>window_event(&mut self, ...)</code> 用 <code>&mut self</code>,所以你的 handler 可以改自己的状态。这就是为什么我们能 <code>self.window = Some(...)</code> 创建窗口。\n\n建议跟做时遇到闭包先死记:它是「能捕获变量的匿名函数」。后面 Day 21 热重载、Day 122 多线程会大量用到。"
+        }
+      ]
+    },
+    "day003": {
+      "why": "Day 002 你有了窗口。Day 003 给它配上一块「画布」——后缓冲(back buffer)。\n\n什么是后缓冲?你想想,屏幕每秒刷新 60 次(60Hz),每次刷新会从<strong>前缓冲</strong>(front buffer)读像素显示。如果你的程序一边画一边让屏幕读,画面会撕裂——上半部分是上一帧的,下半部分是这一帧的。解决方案是<strong>双缓冲</strong>:程序画到后缓冲(看不见),画完后让前后缓冲交换(swap),屏幕永远从稳定的前缓冲读。\n\n这集 Casey 做的事就是<strong>分配一块内存当后缓冲</strong>。听起来很简单——就是 malloc 一块 (width × height × 4 字节) 的内存——但这里有一个游戏渲染的核心抽象:你的「画布」就是一块连续的 <code>u32</code> 数组,每个 u32 是一个像素(ARGB 或 RGBA)。",
+      "model": "我打个比方:后缓冲就像一张<strong>超级大的 Excel 表格</strong>,每格存一个数字。表格的每一行就是屏幕的一行,每一列就是屏幕的一列。每个格子里的数字代表那个像素的颜色——具体编码是 0xAARRGGBB(A=透明度,R=红,G=绿,B=蓝,每个 8 位)。\n\n Casey 这集核心写法:\n\n<pre><code>// 后缓冲就是一块 u32 数组\nstruct GameOffscreenBuffer {\n    width: i32,\n    height: i32,\n    bytes_per_pixel: i32, // = 4\n    memory: *mut u8,      // 指向 width*height*4 字节的内存\n    pitch: i32,           // 一行多少字节 = width * 4\n}</code></pre>\n\nRust 端更简单,你不用裸指针,用 <code>Vec&lt;u32&gt;</code>:\n\n<pre><code>let width = 960;\nlet height = 540;\nlet mut back_buffer = vec![0u32; (width * height) as usize];\n// back_buffer[y * width + x] = 0xFF_00_00_FF; // 在 (x,y) 画一个红色像素</code></pre>\n\n为什么是 <code>y * width + x</code> 而不是 <code>x * height + y</code>?因为<strong>内存是按行存的</strong>——第 0 行的所有像素先存,然后第 1 行,以此类推。这是 <strong>row-major order</strong>(行优先),几乎所有图像格式都用这个。\n\nCasey 在视频里还讨论了一个细节:<strong> pitches vs strides</strong>。pitch 是「一行多少字节」,可能比 width × 4 大(系统可能要求每行 16 字节对齐)。但 Casey 这集暂时让 pitch = width × 4,简化处理。\n\n这集最后 Casey 还写了一段把后缓冲显示到屏幕的代码——Win32 用 <code>StretchDIBits</code>(Stretch Device-Independent Bits)。Rust 端你用 <code>softbuffer::Surface::buffer_mut()</code> 拿到目标 buffer,把自己的 back_buffer 拷过去(或者直接画在 softbuffer 给你的 buffer 上)。\n\n<strong>一个关键概念</strong>:Casey 故意自己管 back_buffer,而不是直接画到 Windows 给的 GDI surface。原因有二:\n1. <strong>平台无关</strong>:游戏代码不知道后面是 GDI / Direct3D / OpenGL / 软渲染——它只往自己 back_buffer 写像素,平台层负责显示\n2. <strong>性能</strong>:自己管的内存布局你说了算(可以 SIMD 友好),系统 surface 可能格式怪异\n\n这是 Day 011 「平台无关抽象」的雏形——Casey 在这集还没明说,但已经埋下伏笔。",
+      "map_parents": [
+        "双缓冲(double buffering)—— 防止画面撕裂",
+        "内存布局:row-major order",
+        "平台无关抽象的雏形"
+      ],
+      "map_siblings": [
+        {
+          "name": "Triple buffering",
+          "note": "三缓冲,游戏 + 渲染 + 显示各一块,无锁但延迟略高"
+        },
+        {
+          "name": "Vulkan / D3D12 mailbox",
+          "note": "现代 API 用 mailbox 模式,vsync 但低延迟"
+        },
+        {
+          "name": "VSync",
+          "note": "垂直同步,帧率和显示器刷新率对齐"
+        }
+      ],
+      "map_children": [
+        "像素格式(ARGB / RGBA / BGRA)",
+        "pitch / stride(行字节数,可能比 width*4 大)",
+        "StretchDIBits / softbuffer::Surface(把 back buffer 显示到屏幕)"
+      ],
+      "related_days": [
+        "day002",
+        "day004",
+        "day011",
+        "day014",
+        "day036"
+      ],
+      "comparison": "<strong>共通点</strong>:所有实时渲染系统都用某种双缓冲,因为屏幕刷新和程序画图是异步的——必须解耦。\n\n<strong>差别</strong>:谁来管理缓冲?Win32 GDI 让你自己 malloc 一块然后 StretchDIBits 上去;OpenGL 用 Framebuffer Object(FBO)由 GPU 管;Vulkan 让你 explicit 管 3-4 块 buffer 轮转。Casey 选最简单的——自己管一块,平台层负责显示。这种简单方案 Day 235 切 OpenGL 时要小改——但其实改的只是平台层,游戏代码不变。这就是 Day 011 抽象的威力。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "为什么游戏要用「双缓冲」?如果只用单缓冲(程序直接画到屏幕显示的那块内存),会发生什么?",
+          "a": "<strong>画面撕裂(screen tearing)</strong>。屏幕每 16.67ms 刷新一次(60Hz),从上到下逐行扫描。如果你的程序正在画——比如画了一半新像素,一半旧像素——屏幕这时候扫过来,就显示了「上半新下半旧」的画面。看起来像被一刀横切。\n\n双缓冲解决:程序永远画到「看不见」的后缓冲,画完后<strong>原子地</strong>交换前后缓冲(VSync 时交换)。屏幕永远只看完整的前缓冲,撕裂消失。\n\n代价:多一块内存(几百 KB ~ 几 MB,无所谓),延迟略增(最多一帧,16ms)。"
+        },
+        {
+          "level": 2,
+          "type": "practice",
+          "q": "在你的 winit 程序里加上 softbuffer,把 back_buffer 显示出来。要求:\n\n1. 维护一个 <code>Vec&lt;u32&gt;</code> 作为 back_buffer,大小 960×540\n2. 每帧把 back_buffer 全部填成某个颜色(比如纯蓝 0xFF_00_00_FF)\n3. 用 softbuffer 把 back_buffer 拷到窗口\n\n提示:cargo add softbuffer。用法:<code>Surface::new(&context, window.clone())</code>,然后 <code>surface.buffer_mut()</code> 拿到目标 slice。",
+          "a": "<pre><code>use softbuffer::Surface;\nuse std::num::NonZeroU32;\nuse std::sync::Arc;\n\n// 在 App struct 里加\nstruct App {\n    window: Option<Arc<Window>>,\n    surface: Option<Surface<Arc<Window>, Arc<Window>>>,\n    back_buffer: Vec<u32>,\n}\n\n// 在 resumed 里初始化\nlet window = Arc::new(event_loop.create_window(...).unwrap());\nlet context = softbuffer::Context::new(window.clone()).unwrap();\nlet mut surface = softbuffer::Surface::new(&context, window.clone()).unwrap();\nsurface.resize(NonZeroU32::new(960).unwrap(), NonZeroU32::new(540).unwrap()).unwrap();\n\n// 在 window_event 处理 RedrawRequested 时\nfor pixel in back_buffer.iter_mut() {\n    *pixel = 0xFFFF0000; // ARGB 红色\n}\nlet mut buffer = surface.buffer_mut().unwrap();\nbuffer.copy_from_slice(&back_buffer);\nbuffer.present().unwrap();</code></pre>\n\n跑起来,你应该看到一个红色窗口。试着改 back_buffer 里某些位置的像素(比如画一条对角线),看效果。这就是后面所有 2D 渲染的基础。"
+        },
+        {
+          "level": 3,
+          "type": "transfer",
+          "q": "Casey 这集让 back_buffer 是 <code>width × height × 4</code> 字节(每个像素 4 字节 ARGB)。但有些系统用 BGRA(颜色顺序不同)、有些用 RGB(3 字节,无 alpha)、有些用 RGBA16F(每个通道 16 位浮点)。\n\n为什么会有这么多像素格式?各自适合什么场景?如果你要做一个跨平台的图像处理库,你怎么设计 API 来兼容这些格式?",
+          "a": "<strong>为什么多格式</strong>:历史 + 硬件 + 用途。\n\n- <strong>ARGB vs RGBA vs BGRA</strong>:纯历史原因。Windows GDI 用 ARGB(因为 Intel CPU 是 little-endian,读 0xAARRGGBB 时字节顺序是 BB GG RR AA);OpenGL 用 RGBA(因为 GL 是 SGI 的,big-endian 历史);macOS / iOS 用 BGRA(因为 PowerPC 历史)。\n- <strong>RGB vs ARGB</strong>:ARGB 多 1 字节但支持透明。RGB 省 25% 内存但不能 blend——DC 是不带 alpha 的(屏幕显示不需要 alpha)。\n- <strong>RGBA16F / RGBA32F</strong>:HDR 渲染用。亮度可能超过 1.0(光直接看会眼瞎),用浮点存。Day 94 sRGB 会用到。\n\n<strong>设计 API</strong>:把「像素格式」做成枚举,buffer 用 <code>Vec&lt;u8&gt;</code>(原始字节),提供 <code>set_pixel(x, y, color)</code> 方法根据格式写入。或者更现代:用泛型 <code>Pixel</code> trait,不同格式实现它。\n\n现实:大多数游戏引擎对外只暴露 RGBA8(对外统一),内部按 GPU 要求转。Casey 选 ARGB 是 Win32 默认,简化处理。"
+        }
+      ],
+      "supplements": [
+        {
+          "title": "📚 Rust 知识补充:Vec 与所有权",
+          "body": "你 Day 1 学过 <code>cargo</code>,但 Rust 本身的关键概念还没系统讲。这集的 <code>Vec&lt;u32&gt;</code> 涉及<strong>所有权</strong>(ownership),Rust 最核心的概念,我借机讲一下。\n\n<strong>Vec 是什么?</strong> 一个可变长度的数组,在堆(heap)上分配。你创建 <code>vec![0u32; 1000]</code> 时:1) Rust 在堆上分配 4000 字节;2) 初始化为 0;3) 返回一个 Vec「拥有」这块内存。\n\n<strong>所有权</strong>:这个 Vec 变量「拥有」这块内存。当 Vec 变量离开作用域(函数返回、被 drop),Rust 自动释放这块内存——不需要手动 free。\n\n<strong>借用</strong>:别人想读这块内存,不取走所有权,叫「借用」。 <code>&back_buffer</code> 是只读借用,<code>&mut back_buffer</code> 是可变借用。\n\nRust 的<strong>借用规则</strong>(编译期检查):\n- 任意多个只读借用 OR 一个可变借用,不能同时\n- 借用的生命周期不能超过被借用者\n\n这两条规则保证<strong>没有数据竞争</strong>——这是 Rust 的核心承诺。\n\n这集的 back_buffer:<code>let mut back_buffer = vec![0u32; w*h];</code> 创建。<code>back_buffer[y*w+x] = ...</code> 是可变借用(下标操作)。函数返回 Vec 就把所有权转移给调用者。\n\n坑:如果你想在多个地方用同一块 back_buffer,要么 <code>clone()</code>(深拷贝,贵),要么 <code>Rc&lt;RefCell&lt;Vec&gt;&gt;</code>(引用计数 + 运行时借用检查),要么重新设计避免共享。游戏循环通常用「单一所有权者」结构——主循环持有所有数据,各系统借用。Day 26 会展开讲。"
+        },
+        {
+          "title": "📚 Wayland 注意事项:softbuffer 在 KDE 下",
+          "body": "softbuffer 在 Linux 下默认走 wl_shm(Wayland 共享内存),对你的 back_buffer 做一次 memcpy 到共享内存,合成器(KWin)读那块内存。\n\n<strong>性能注意</strong>:每帧 memcpy 一整块 1080p 的 back_buffer(8MB)在 PCIe 上不算便宜。Casey 在 Windows 用 StretchDIBits 也是类似机制。两种缓解:\n1. <strong>更小 back_buffer</strong>:你不需要 1080p 渲染,960×540 内部 + scale 到 1080p 也够(Day 109 Resolution-Independent)。\n2. <strong>dirty rectangle</strong>:只更新变化的区域(但 Casey 不用,因为他每帧重画整个屏幕)。\n\n<strong>格式坑</strong>:softbuffer 给你 <code>buffer_mut()</code> 返回的 slice 期望的像素格式取决于平台!Linux/Wayland 上通常是 <strong>XBGR8 或 XRGB32</strong>(可能 X 表示忽略 alpha,也可能是 BGR 顺序)。一定要看 <code>Surface::buffer_mut()</code> 的文档,或者直接对位测试一个像素。\n\nCasey 假设 ARGB,你 Rust 在 Linux 上可能要调整。建议:画一个纯红像素,看屏幕是红还是蓝;如果是蓝,说明顺序是 BGRA,要 <code>0xFF_00_00_FF</code> 反过来写成 <code>0xFF_FF_00_00</code>。"
+        }
+      ]
+    },
+    "day004": {
+      "why": "Day 003 你有了 back_buffer,但里面只填了静止的颜色。Day 004 让它<strong>动起来</strong>——这是你的程序第一次成为「实时图形程序」。\n\n这集 Casey 做的事情朴素:让一个绿色的方块在屏幕上左右移动,每帧位置改变一点。但这件事背后藏着游戏开发的<strong>核心概念:基于时间的动画</strong>。我帮你拎清楚,因为后面 666 集都建立在这个基础上。\n\n为什么要专门讲「动画」?因为人脑天生对运动敏感——静止画面无趣,运动画面吸引。游戏的「有趣」很大程度来自「我做了动作,画面立刻反映了」这种反馈。Day 004 就是建立这个反馈链的第一步。",
+      "model": "我打个比方:动画就像翻页本(flip book)。你在每页画一个稍微不同的图,快速翻过去,大脑就觉得是连续运动。游戏的「页」就是<strong>帧</strong>(frame),每秒翻 60 页(60 FPS)。\n\n每一帧,你的程序做三件事:\n\n<strong>1. 算时间增量(dt)</strong>\n\n上一帧到现在过了多久?记作 dt(delta time)。Casey 用 Win32 的 <code>QueryPerformanceCounter</code> 拿当前 tick,减去上一帧的 tick,得到 dt。Rust 端你用 <code>std::time::Instant::now()</code>,更简单。\n\n<strong>2. 更新状态</strong>\n\n基于 dt 更新游戏世界。这集只有一个方块,所以更新就是 <code>x += speed * dt</code>。speed 是方块速度(像素/秒),dt 是这帧耗时(秒),乘起来就是这帧该移动多少像素。\n\n这是基于时间的核心公式:<strong>位置变化 = 速度 × 时间</strong>。物理课上学过的 <code>s = vt</code>。无论帧率多少(60 / 30 / 144 FPS),方块移动<strong>速度看起来都一样</strong>,因为 dt 自适应。\n\n如果你写成 <code>x += 5</code>(每帧加 5),那 60 FPS 时方块每秒走 300 像素,144 FPS 时每秒走 720 像素——同一个游戏在不同电脑上速度不同!这是新手必踩的坑,Casey 在 Day 018 专门讨论帧率锁定。\n\n<strong>3. 渲染</strong>\n\n把当前状态画到 back_buffer。这集就是 for-loop 填方块覆盖的像素为绿色,其他为蓝色。然后 swap 显示。\n\n<strong>完整循环(伪代码)</strong>:\n\n<pre><code>let mut last_time = Instant::now();\nlet mut x = 0.0;\nloop {\n    let now = Instant::now();\n    let dt = (now - last_time).as_secs_f32();\n    last_time = now;\n    \n    // 更新\n    x += 100.0 * dt;  // 100 像素/秒\n    if x > screen_width as f32 { x = 0.0; }\n    \n    // 渲染\n    clear_buffer(&mut back_buffer, BLUE);\n    fill_rect(&mut back_buffer, x as i32, 100, 50, 50, GREEN);\n    swap_buffers();\n}</code></pre>\n\nCasey 还讨论了一个细节:<strong>不要 VSync 卡死主循环</strong>。SwapBuffers 在 Windows 上默认会等 VSync(60Hz),如果你这一帧渲染只用 5ms,SwapBuffers 会等 11.67ms。这种「sleep 等 VSync」是正常的,但你要意识到它在发生——否则你以为循环跑得很快,其实每帧 16.67ms。",
+      "map_parents": [
+        "实时图形渲染(real-time rendering)",
+        "数值积分(Euler 法:x += v*dt)",
+        "感知:大脑的视觉暂留(persistence of vision)"
+      ],
+      "map_siblings": [
+        {
+          "name": "Stop-motion animation",
+          "note": "拍实物照片翻动,Wallace & Gromit 那种"
+        },
+        {
+          "name": "Sprite animation",
+          "note": "2D 游戏经典:每帧是一张图,循环切换"
+        },
+        {
+          "name": "Skeletal animation",
+          "note": "3D 游戏:骨骼 + 顶点权重,Day 273+"
+        },
+        {
+          "name": "Procedural animation",
+          "note": "代码生成,Day 274 弹簧物理"
+        }
+      ],
+      "map_children": [
+        "dt(delta time,帧间时长)",
+        "FPS(frames per second)",
+        "VSync(垂直同步)",
+        "主循环结构(update + render)",
+        "State mutation based on time"
+      ],
+      "related_days": [
+        "day003",
+        "day010",
+        "day018",
+        "day043",
+        "day274"
+      ],
+      "comparison": "<strong>共通点</strong>:所有动画本质都是「快速翻页给大脑看」。帧率越高越流畅,但 24 FPS 以上大脑就觉得连续(电影是 24 FPS,游戏推荐 60+)。\n\n<strong>差别</strong>:电影是<strong>预录</strong>(每帧固定);游戏是<strong>实时计算</strong>(每帧时间不固定,因为场景复杂度、玩家输入都影响)。所以游戏必须用 dt-based 动画——电影不需要。\n\n另一个差别:<strong>响应性</strong>。电影你只能被动看;游戏你按键立刻反应。这种「输入到画面」的延迟(input latency)对游戏体验至关重要—— Casey 在 Day 018 详细讨论。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 用 <code>x += speed * dt</code> 而不是 <code>x += 5</code>。如果用后者,具体会发生什么问题?给一个例子:60 FPS 和 144 FPS 下方块速度差多少?",
+          "a": "假设 <code>x += 5</code>:\n- 60 FPS:每秒 60 帧,每帧 +5,每秒 +300 像素\n- 144 FPS:每秒 144 帧,每帧 +5,每秒 +720 像素\n\n同一个游戏在高刷新率显示器上速度快 2.4 倍!这就是为什么<strong>必须用 dt 缩放</strong>。\n\n用 <code>x += speed * dt</code>(speed = 300):\n- 60 FPS:每帧 dt ≈ 0.0167,每帧 +5,每秒 +300\n- 144 FPS:每帧 dt ≈ 0.0069,每帧 +2.08,每秒 +300\n\n完美一致。这就是「帧率无关」(frame-rate independent)动画。"
+        },
+        {
+          "level": 2,
+          "type": "practice",
+          "q": "把 Day 003 的静止红色窗口改成<strong>左右移动</strong>的绿色方块。要求:\n\n1. back_buffer 每帧清成蓝色\n2. 一个 50×50 的绿色方块从左到右移动,速度 200 像素/秒\n3. 到右边后从左边重新开始\n4. 用 Instant 测 dt\n\n提示:fill_rect 函数签名 <code>fn fill_rect(buf: &mut [u32], w: i32, h: i32, x: i32, y: i32, rw: i32, rh: i32, color: u32)</code>。",
+          "a": "<pre><code>let mut x = 0.0;\nlet mut last_time = Instant::now();\n\n// 在主循环里\nlet now = Instant::now();\nlet dt = (now - last_time).as_secs_f32();\nlast_time = now;\n\n// 更新\nx += 200.0 * dt;\nif x > (width - 50) as f32 { x = 0.0; }\n\n// 渲染\nfor px in back_buffer.iter_mut() { *px = 0xFFFF0000; }  // 清蓝\nfor dy in 0..50 {\n    for dx in 0..50 {\n        let px = (100 + dy) * width + (x as i32 + dx);\n        back_buffer[px as usize] = 0xFF00FF00;  // 绿\n    }\n}\nswap_buffers();</code></pre>\n\n跑起来你应该看到绿方块从左到右循环。试着把速度改 100、500、1000,感受差别。把 dt 打印出来,看实际帧率。"
+        },
+        {
+          "level": 3,
+          "type": "transfer",
+          "q": "dt-based 动画解决了「不同帧率速度一致」的问题。但有一个新问题:如果<strong>某一帧卡了 1 秒</strong>(比如系统突然卡了),dt = 1.0,这一帧方块会跳 200 像素,可能直接跳过墙!\n\n这种<strong>大 dt 问题</strong>(spiral of death)在物理模拟里更严重——会穿透碰撞。Casey 这集没讨论,你想想该怎么解决?",
+          "a": "三种主流方案:\n\n<strong>方案 1:clamp dt</strong>。设上限,比如 <code>let dt = dt.min(0.1);</code>。简单粗暴,但会让游戏在卡顿时变慢(用户体验略差,但稳定)。Casey 在后面就是这样做的。\n\n<strong>方案 2:fixed timestep</strong>。固定 dt = 1/60,每帧调用 update N 次,N 由实际经过时间决定。如果卡了 1 秒,这帧 update 60 次,追上时间。物理引擎常用这种(Bullet / PhysX)。代价:卡顿时这帧 CPU 飙升,可能继续卡(spiral of death)。\n\n<strong>方案 3:continuous collision detection</strong>。物理引擎用 sweep test,不依赖离散步骤,直接算「这一帧物体从 A 到 B,中间有没有撞到东西」。复杂但精确。\n\n游戏选择:简单游戏用方案 1;物理仿真用方案 2;严肃物理引擎用方案 3。\n\nHH Casey 用方案 1——简单可控,适合教学。"
+        }
+      ],
+      "supplements": [
+        {
+          "title": "📚 Rust 知识补充:Instant 和 Duration",
+          "body": "这集用到的 <code>std::time::Instant</code> 和 <code>Duration</code>,我讲一下。\n\n<code>Instant::now()</code> 拿一个时间戳(monotonic clock,单调递增,不受系统时间调整影响)。两次 now 相减得到 <code>Duration</code>。\n\n<code>Duration</code> 是一段时间。API:\n- <code>as_secs_f32()</code>:秒数,f32(精度够用)\n- <code>as_millis()</code>:毫秒数,u128\n- <code>as_nanos()</code>:纳秒数,u128\n\n为什么 Rust 用单独的类型而不是 f64 秒数?<strong>类型安全</strong>——你不能 <code>Instant + Instant</code>(没意义),只能 <code>Instant - Instant</code> 得 Duration,或 <code>Instant + Duration</code> 得新 Instant。编译期防错。\n\n对比 Casey 在 C 里用 <code>QueryPerformanceCounter</code>(返回 int64 计数),然后除以 <code>QueryPerformanceFrequency</code>(每秒多少 count)得秒数。Rust 的 Instant 把这些都封装了——内部在 Linux 上其实是 <code>clock_gettime(CLOCK_MONOTONIC)</code>。\n\n性能注意:Instant::now() 不是免费的——大概 20-50ns。游戏循环里多次调用没问题,但别在 hot inner loop 里调用。"
+        }
+      ]
+    },
+    "day005": {
+      "why": "Day 005 是 Handmade Hero 全剧少有的<strong>纯概念课</strong>——Casey 这一集几乎不写代码,而是讨论 Windows 上的图形 API 选型。为什么要花一整集讲这个?因为 Casey 需要解释他<strong>为什么选 StretchDIBits 而不是 DirectDraw / OpenGL / Direct3D</strong>——这个选择背后是 Windows 图形 API 的演化史。\n\n对你 Rust 学习者来说,这一集有两个价值:一是<strong>建立背景</strong>,理解为什么后面 200 多集都用软渲染,Day 235 才切 OpenGL;二是<strong>对比思考</strong>,你在 Linux 上选 softbuffer 而不是 wgpu/Vulkan,理由和 Casey 类似但又不完全一样。",
+      "model": "Casey 这集讨论了 Windows 图形 API 的几个层级,从高到低:\n\n<strong>GDI(Graphics Device Interface)</strong>:Win16 时代的 2D API。Casey 用的 <code>StretchDIBits</code> 属于这一层。简单——你给一块内存,它帮你画到屏幕。慢——没有硬件加速,纯 CPU 拷贝。<strong>这就是为什么 Casey 现在用它</strong>:简单,适合学习阶段。后期性能不够了再换。\n\n<strong>DirectDraw</strong>:DirectX 7 时代的 2D 硬件加速 API。已经被淘汰,合并进 Direct2D / Direct3D。Casey 不用——已经过时,且复杂度太高。\n\n<strong>OpenGL</strong>:跨平台 3D API。Day 235 才用。为什么不在 Day 1 就用?因为 OpenGL 学习曲线陡(你要懂 shader / VAO / VBO),会喧宾夺主——前 234 集 Casey 要教的是<strong>渲染原理</strong>(光栅化、混合、光照),不是 OpenGL 这个特定 API。学会原理后切 OpenGL 就是「换个后端」的事。\n\n<strong>Direct3D</strong>:Microsoft 的 3D API,Windows 专属。Casey 不用——Handmade Hero 要尽量跨平台精神。\n\nCasey 这集的<strong>核心决策</strong>:用 GDI + StretchDIBits 走完前 234 集。理由:\n1. <strong>简单</strong>:几行代码就能显示像素,不浪费教学时间在 API 上\n2. <strong>透明</strong>:软渲染你能看到每一行代码,OpenGL 是黑盒\n3. <strong>够用</strong>:Day 121 tiled marathon 前,性能不是瓶颈\n\n到了 Day 235,他需要 GPU 加速,这才切 OpenGL。\n\n<strong>你 Rust 端的对应选择</strong>:用 <code>softbuffer</code>(纯 CPU 拷贝到屏幕)走完前 234 集,Day 235 切 <code>glutin + glow</code>。理由和 Casey 一样:简单透明。\n\n有些人会问:为什么不用 <code>wgpu</code>?因为 wgpu 太现代——它假设你已经懂 GPU 编程,直接给你 pipeline / bind group / render pass 这些抽象。Casey 教的是这些抽象背后的<strong>原理</strong>,你用 wgpu 等于跳过了原理学习。\n\n这个思考方式值得你内化:<strong>工具的选择应该匹配你的学习目标</strong>。学「游戏引擎架构」用 SDL2 没问题;学「渲染原理」必须从软渲染开始;学「现代 GPU 编程」用 wgpu/Vulkan 才合适。",
+      "map_parents": [
+        "API 抽象层级设计",
+        "硬件加速 vs 软件实现",
+        "学习路径:从原理到工程"
+      ],
+      "map_siblings": [
+        {
+          "name": "GDI / GDI+",
+          "note": "Windows 2D,Casey 这集用"
+        },
+        {
+          "name": "DirectDraw",
+          "note": "DirectX 7 时代 2D 加速,已淘汰"
+        },
+        {
+          "name": "OpenGL",
+          "note": "跨平台 3D,Day 235 用"
+        },
+        {
+          "name": "Direct3D 9/11/12",
+          "note": "Windows 3D,层次递进"
+        },
+        {
+          "name": "Vulkan",
+          "note": "现代显式 GPU API,最复杂但最快"
+        },
+        {
+          "name": "Metal",
+          "note": "Apple 专属 GPU API"
+        },
+        {
+          "name": "wgpu",
+          "note": "Rust 的 WebGPU 实现,跨现代后端"
+        },
+        {
+          "name": "softbuffer",
+          "note": "纯 CPU 拷贝,我们前 234 集用"
+        }
+      ],
+      "map_children": [
+        "设备上下文(Device Context,DC)",
+        "位图格式(DIB)",
+        "硬件加速 vs CPU 拷贝",
+        "驱动模型(WDDM)"
+      ],
+      "related_days": [
+        "day003",
+        "day121",
+        "day235",
+        "day236"
+      ],
+      "comparison": "<strong>共通点</strong>:所有图形 API 都解决「你的内存里的像素 → 屏幕显示」的问题。中间都有一层驱动,翻译通用 API 调用到具体硬件。\n\n<strong>本质差别</strong>:抽象层级和性能。\n- softbuffer / GDI StretchDIBits:<strong>最低层</strong>,你就给一块内存,API 拷贝到屏幕。CPU 干活。\n- OpenGL / Direct3D 11:<strong>中层</strong>,你描述「画什么」(三角形/纹理),GPU 干活,你不用管 GPU 内部。\n- Vulkan / Direct3D 12:<strong>最高层(显式)</strong>,你<strong>精确控制</strong> GPU 内存、同步、调度。最快但最难。\n- wgpu:类似 Vulkan 的抽象但跨平台。\n\n为什么 Vulkan 显式?因为现代 GPU 太复杂(几千个核心、几个 GB 显存、PCIE 带宽),驱动做隐式调度效率不够好,把控制权给应用。代价:Vulkan 一个三角形要 1000 行代码,OpenGL 只要 50 行。Day 235 Casey 选 OpenGL 不是 Vulkan,理由就是教学复杂度。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 在这集选择用 StretchDIBits(GDI),而不是 OpenGL。他给出的主要理由是什么?你能不能用自己的话复述?",
+          "a": "三个核心理由:\n\n1. <strong>简单</strong>:GDI 几行代码就能把内存显示到屏幕,所有复杂度都在 Casey 自己写的软渲染器里。如果用 OpenGL,前 20 集就要花在 shader / VAO / 状态机上,喧宾夺主。\n\n2. <strong>透明</strong>:软渲染每一行代码 Casey 写,你能看到。OpenGL 是黑盒——你给数据,它做魔法,你看不到像素怎么算出来的。Handmade Hero 的精神就是「拒绝黑盒」。\n\n3. <strong>够用</strong>:Day 121 tiled marathon 之前,性能瓶颈不是显示,而是渲染本身(每像素算光照)。把像素送到屏幕这步用 GDI 够了。到 Day 235 GPU 真的有用时再切。\n\n总结:这不是「GDI 比 OpenGL 好」,而是「学习渲染原理时,GDI 更合适」。"
+        },
+        {
+          "level": 2,
+          "type": "practice",
+          "q": "这集没有代码,但你有一个思考实验要做。假设你是新游戏引擎的设计者,面临 Day 1 的选择:GDI / OpenGL / Vulkan / wgpu / softbuffer。每个选择给一个具体场景,让那个场景下的选择明显是最优的。\n\n例子:做 Web 浏览器内的 2D Canvas → 用 wgpu(因为要跨 WebGPU / Metal / Vulkan,且现代 Web 标准要求)。你试着给另外 4 个 API 找它们的最佳场景。",
+          "a": "参考:\n\n- <strong>softbuffer</strong>:做 GUI 库的「最小渲染后端」(iced / druid 这种)。你想跨平台,但渲染逻辑足够简单(矩形、文字、位图),不需要 GPU 加速。\n\n- <strong>GDI / GDI+</strong>:做传统 Windows 应用(老软件维护)。GDI 是 Windows 自带的,免依赖。新项目不会用,但维护老项目必须懂。\n\n- <strong>OpenGL</strong>:做跨平台 3D 游戏(独立游戏、教育项目)。OpenGL 老但成熟,文档多,教程多。Casey Day 235+ 用它就是因为这个。\n\n- <strong>Vulkan</strong>:做 AAA 级引擎(虚幻 / id Tech 这种)。你需要榨干 GPU 性能,精确控制内存和同步。学习成本极高,但回报是性能上限最高。\n\n- <strong>wgpu</strong>:做 Web / 跨平台应用(用 Rust 写、想编译到 Web)。wgpu 的目标是「现代 API 抽象,跨平台」,所以你写一份代码,跑在 Vulkan / Metal / DX12 / WebGPU 上。Bevy 引擎就用 wgpu。"
+        },
+        {
+          "level": 3,
+          "type": "transfer",
+          "q": "Casey 这集体现了一个重要原则:<strong>工具的选择应该匹配你的目标</strong>。但很多人(包括 Casey 早期)会犯一个错——「永远用最新的、最强的工具」。这种心态有什么问题?\n\n反过来,「永远用最熟悉的工具」又有什么问题?你怎么在这两个极端之间找平衡?",
+          "a": "<strong>「永远用最新最强」的问题</strong>:\n- <strong>学习成本</strong>:新工具通常更复杂(Vulkan 比 OpenGL 复杂 20 倍),学习曲线陡\n- <strong>不一定匹配场景</strong>:杀鸡用牛刀。简单 GUI 用 Vulkan 等于自虐\n- <strong>生态不成熟</strong>:新工具的库 / 教程 / 调试器都少\n- <strong>性能未必更好</strong>:某些场景下简单方案反而快(没有抽象开销)\n\n<strong>「永远用最熟」的问题</strong>:\n- <strong>技术债</strong>:用 2010 年的工具做 2025 年的事,可能做不到\n- <strong>市场淘汰</strong>:某些工具会消失(Flash / Silverlight)\n- <strong>错失效率提升</strong>:新工具通常有理由存在(更快 / 更安全 / 更易用)\n\n<strong>平衡的方法</strong>:\n1. <strong>明确目标</strong>:这个项目要解决什么问题?\n2. <strong>列出候选</strong>:有哪些工具能解决?\n3. <strong>评估每个候选</strong>:学习成本?维护成本?性能?生态?匹配度?\n4. <strong>选最匹配的</strong>,不是最新或最熟的\n\nCasey 选 GDI 不是因为他不熟 OpenGL,而是 GDI 最匹配「教学渲染原理」这个目标。这就是成熟工程师的选择标准。"
+        }
+      ],
+      "supplements": [
+        {
+          "title": "📚 Rust 图形生态速览",
+          "body": "你后面会接触好几个 Rust 图形 crate,我提前给你一张地图:\n\n<strong>窗口与事件</strong>:\n- <code>winit</code>:跨平台窗口和事件循环(我们用)\n- <code>glfw</code>:OpenGL 友好的老牌窗口库\n- <code>sdl2</code>:跨平台多媒体库(包括图像/音频/输入),但藏细节\n\n<strong>显示后缓冲</strong>:\n- <code>softbuffer</code>:纯 CPU 拷贝到屏幕(我们前 234 集用)\n- <code>minifb</code>:类似但更老,API 更简单\n- <code>pixels</code>:基于 wgpu 的更高层封装\n\n<strong>OpenGL</strong>:\n- <code>glutin</code>:跨平台 OpenGL context 管理(Day 235+ 用)\n- <code>glow</code>:跨后端 OpenGL 函数加载(glutin 配套)\n- <code>glium</code>:已废弃,曾经是高层 OpenGL 封装\n\n<strong>现代 GPU</strong>:\n- <code>wgpu</code>:WebGPU 实现,跨 Vulkan/Metal/DX12(我们不用,太现代)\n- <code>vulkano</code>:Vulkan 的安全封装\n- <code>ash</code>:Vulkan 的薄封装(unsafe,接近原生)\n\n<strong>音频</strong>:\n- <code>cpal</code>:跨平台音频 I/O(我们用)\n- <code>rodio</code>:基于 cpal 的高层封装(藏 mixer,不用)\n- <code>kira</code>:游戏音频库,有调度器\n\n<strong>输入</strong>:\n- <code>gilrs</code>:游戏手柄(我们用)\n- <code>winit</code> 自带键盘鼠标\n- <code>device_query</code>:全局键盘鼠标监听\n\n<strong>热重载</strong>:\n- <code>libloading</code>:动态加载 .so/.dll(我们用)\n- <code>hot-lib-reloader</code>:基于 libloading 的高层热重载\n\n不混乱的关键:知道每个 crate 解决什么问题、谁依赖谁、谁抽象谁。这张地图够你跟 667 集不迷茫。"
+        }
+      ]
+    },
+    "day006": {
+      "why": "Day 006 之前你的窗口能显示画面,但你只能看不能控制——X 按钮是唯一的「输入」。Day 006 让你的程序第一次能响应<strong>玩家操作</strong>:键盘按键 + 手柄按键。\n\n为什么键盘和手柄放一起讲?因为对游戏来说它们是<strong>同一类输入</strong>——「按钮被按下/松开」。Casey 这集的目标是抽象出一个统一的「按钮状态」概念,无论来源是键盘还是手柄,游戏代码处理方式一样。这是后面 Day 017 「统一输入」的雏形。\n\n这集还涉及一个游戏特有的细节:<strong>按键的「按下/松开」时机</strong>。Win32 给你 <code>WM_KEYDOWN</code> 和 <code>WM_KEYUP</code> 消息,但你不能在消息处理函数里立刻改游戏状态——因为消息可能在主循环任何时刻来,而游戏更新只在每帧开始时做。Casey 的做法是:把按键状态记下来,每帧开始时拍快照,游戏代码读快照。这就是「输入轮询 vs 事件驱动」的核心 trade-off,Day 011 会详细讨论。",
+      "model": "Casey 这集讲两类输入。\n\n<strong>键盘</strong>\n\nWin32 给你的键盘事件是 <code>WM_KEYDOWN</code> / <code>WM_KEYUP</code> 消息,WindowProc 收到。消息里 WPARAM 是虚拟键码(VK_ESCAPE = 0x1B、VK_SPACE = 0x20、'A' = 0x41 等),LPARAM 是一些标志位(重复计数、scan code 等)。\n\nCasey 的处理:维护一个 <code>bool[256]</code> 数组,收到 KEYDOWN 就 set true,KEYUP set false。每帧开始时游戏代码读这个数组。\n\n<strong>手柄(XInput)</strong>\n\nXbox 360+ 手柄在 Windows 用 <code>XInput</code> API。结构 <code>XINPUT_STATE</code> 包含:\n- <strong>Buttons</strong>:16 位 bitfield,每位代表一个按钮(A/B/X/Y/Start/LB/RB/...)\n- <strong>Thumbsticks</strong>:左右摇杆,各 2 个 int16(x 和 y,范围 -32768 到 32767)\n- <strong>Triggers</strong>:左右扳机,各 1 个 u8(0 到 255)\n\n调用 <code>XInputGetState(dwUserIndex, &state)</code> 拿状态。Casey 每帧调用一次。\n\nXInput 的妙处是<strong>状态 polling</strong>——你随时调函数拿当前状态,不需要处理事件。这和键盘的消息机制不一样,Casey 在代码里把两者抽象到统一接口。\n\n<strong>Win32 → Rust 映射</strong>\n\n键盘:winit 的 <code>WindowEvent::KeyboardInput</code>,字段 <code>KeyEvent { state, physical_key, logical_key }</code>。同样维护一个状态数组(用 <code>HashSet&lt;KeyCode&gt;</code> 或 <code>bool[KeyCode::COUNT]</code>)。\n\n手柄:Rust 用 <code>gilrs</code> crate。名字意思是 Generic Input Library for Rust。API:\n\n<pre><code>let mut gilrs = gilrs::Gilrs::new().unwrap();\n// 主循环里\nwhile let Some(event) = gilrs.next_event() {\n    // 处理事件(可选)\n}\nfor (id, gamepad) in gilrs.gamepads() {\n    let left_stick = gamepad.state().left_stick();  // Vec2,范围 -1.0..1.0\n    let a_pressed = gamepad.is_pressed(Button::South);\n}</code></pre>\n\ngilrs 比 XInput 强很多——它支持所有厂商(微软 / 索尼 / 任天堂),并且统一了按钮命名(South = A on Xbox, Cross on PlayStation)。\n\n<strong>关键概念:按钮 edge vs level</strong>\n\n这是输入处理的经典区分,Casey 这集埋下伏笔:\n- <strong>Level(电平)</strong>:「现在这个键被按着吗?」true / false\n- <strong>Edge(边沿)</strong>:「这个键刚被按下吗?」(这一帧从 false→true 的瞬间)\n\nLevel 用于连续动作(移动、转向);Edge 用于瞬时动作(开火、跳跃、确认菜单)。Casey 用两个 bit 表示:was_down + is_down,通过它们的组合算 edge:\n- is_down && !was_down → Pressed(edge)\n- !is_down && was_down → Released(edge)\n- is_down && was_down → Held(level)\n- !is_down && !was_down → Idle(level)",
+      "map_parents": [
+        "实时输入处理",
+        "事件驱动 vs 轮询(游戏用 polling)",
+        "信号 edge vs level(电子工程概念借用)"
+      ],
+      "map_siblings": [
+        {
+          "name": "X11 XInput2",
+          "note": "Linux 老牌输入协议,键盘鼠标 + 多指针"
+        },
+        {
+          "name": "libinput",
+          "note": "Wayland 时代的统一输入抽象,KDE 用"
+        },
+        {
+          "name": "evdev",
+          "note": "Linux 内核级输入事件,winit/gilrs 底层"
+        },
+        {
+          "name": "SDL2 input",
+          "note": "跨平台抽象,藏细节"
+        },
+        {
+          "name": "Raw Input(Win32)",
+          "note": "比 XInput 更底层的 Windows 输入 API"
+        }
+      ],
+      "map_children": [
+        "虚拟键码(VK_xxx)",
+        "scancode vs virtual key(物理位置 vs 字符)",
+        "bitfield(用位压缩多个 bool)",
+        "edge detection(was_down / is_down 二元状态)"
+      ],
+      "related_days": [
+        "day002",
+        "day011",
+        "day013",
+        "day017",
+        "day046"
+      ],
+      "comparison": "<strong>共通点</strong>:所有输入 API 都解决「物理设备状态 → 程序可用数据」的问题。都有「按下/松开」概念。\n\n<strong>差别</strong>:Win32 键盘是<strong>事件驱动</strong>(消息队列),XInput 是<strong>状态轮询</strong>(直接读)。Rust 端 winit 也是事件驱动,gilrs 既支持事件也支持轮询。\n\n游戏循环是 polling 模型,所以事件驱动输入要「翻译」成 polling——这是 Day 011 平台抽象的关键工作之一。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 维护了一个 <code>bool[256]</code> 数组记录键盘状态,每帧读它。为什么不在收到 <code>WM_KEYDOWN</code> 消息时<strong>直接</strong>改游戏状态(比如玩家位置)?这样做有什么问题?",
+          "a": "两个核心问题:\n\n<strong>1. 时序不确定</strong>。<code>WM_KEYDOWN</code> 可能在主循环的任何阶段来——渲染到一半、物理更新到一半。如果你直接改状态,这个改动会被部分用于「当前帧」、部分用于「下一帧」,产生不可预测的行为。\n\n<strong>2. 一帧内多次触发</strong>。Windows 默认按住键会重复发 KEYDOWN(系统级的 key repeat)。如果你在消息处理里立刻开火,玩家按住一秒可能开了 30 枪(系统 key repeat 频率)。但游戏期望可能是「按住 = 1 发」或「按住 = 持续开火直到松开」。\n\n正确做法:<strong>消息只更新状态</strong>(记录 is_down = true),<strong>游戏循环统一处理</strong>(每帧开始时根据状态决定行为)。这种「生产者-消费者」解耦让时序清晰、行为可预测。\n\n这就是为什么 Casey 维护一个 bool 数组,而不是直接处理消息。Day 011 会把这个模式抽象成「input snapshot」概念。"
+        },
+        {
+          "level": 2,
+          "type": "practice",
+          "q": "扩展 Day 004 的移动方块程序,让它能<strong>用方向键控制</strong>方块:\n- 上/下/左/右键移动方块\n- ESC 退出程序\n\n要求:维护一个 <code>HashSet&lt;KeyCode&gt;</code> 记录当前按下的键,主循环读它决定移动方向。",
+          "a": "<pre><code>use std::collections::HashSet;\nuse winit::keyboard::KeyCode;\n\nstruct App {\n    // ...\n    keys: HashSet<KeyCode>,\n    pos: (f32, f32),  // 方块位置\n}\n\nimpl ApplicationHandler for App {\n    fn window_event(&mut self, event_loop, _id, event) {\n        match event {\n            WindowEvent::KeyboardInput { event: KeyEvent { state, physical_key, .. }, .. } => {\n                match state {\n                    ElementState::Pressed => { self.keys.insert(physical_key); }\n                    ElementState::Released => { self.keys.remove(&physical_key); }\n                }\n                if physical_key == KeyCode::Escape { event_loop.exit(); }\n            }\n            WindowEvent::RedrawRequested => {\n                // 用 dt 移动\n                let speed = 200.0;\n                if self.keys.contains(&KeyCode::ArrowLeft) { self.pos.0 -= speed * dt; }\n                if self.keys.contains(&KeyCode::ArrowRight) { self.pos.0 += speed * dt; }\n                if self.keys.contains(&KeyCode::ArrowUp) { self.pos.1 -= speed * dt; }\n                if self.keys.contains(&KeyCode::ArrowDown) { self.pos.1 += speed * dt; }\n                \n                // 渲染\n                render(&self.pos);\n            }\n            _ => ()\n        }\n    }\n}</code></pre>\n\n跑起来,你应该能用方向键自由移动方块。试着加一些「按键瞬间」效果(比如空格 = 跳跃)——需要 edge detection,可以记上一帧的 keys,对比。"
+        },
+        {
+          "level": 3,
+          "type": "transfer",
+          "q": "这集涉及的「edge vs level」概念出现在很多地方——按钮、传感器、状态机、网络包。问题来了:为什么电子工程师和游戏开发者都这么在乎这个区分?它的本质是什么?\n\n进一步:Rust 类型系统怎么帮你防止把 edge 和 level 混淆?试着设计一个 Input API,让用户<strong>不能</strong>把「刚按下」和「按住」搞混。",
+          "a": "<strong>本质</strong>:时间语义。\n- Level 是<strong>状态</strong>:某时刻的值(「现在」)\n- Edge 是<strong>转换</strong>:两个状态的差异(「变化」)\n\n混淆的后果:你想做「按一下开火」,但写成 level 判断,结果按住时持续开火;或者你想做「按住前进」,但写成 edge,结果只前进一帧。这是新手必踩的坑。\n\n为什么所有领域都重视:人类思考本身就是「状态 vs 变化」二分。物理学:位置 vs 速度。经济学:存量 vs 流量。编程:值 vs 副作用。\n\n<strong>Rust 类型设计</strong>:\n\n<pre><code>enum ButtonState {\n    Idle,           // 整个周期没按\n    JustPressed,    // 这帧刚按下(edge!)\n    Held,           // 持续按着(level)\n    JustReleased,   // 这帧刚松开(edge!)\n}\n\nstruct Input {\n    buttons: HashMap<Button, ButtonState>,\n}\n\nimpl Input {\n    // 只读 accessors,清晰区分\n    pub fn is_held(&self, b: Button) -> bool { ... }\n    pub fn just_pressed(&self, b: Button) -> bool { ... }\n}</code></pre>\n\n关键点:<strong>不让用户直接读 bool</strong>,只能通过语义化方法。这样编译器帮你防止「if button.x { fire() }」这种隐式 level 误用。\n\n这种「让错误的状态不可表达」(make illegal states unrepresentable)是 Rust 类型设计的核心思想,后面 Day 011 平台 API 设计会大量体现。"
+        }
+      ],
+      "supplements": [
+        {
+          "title": "📚 Wayland/KDE 输入坑:libinput 和键盘布局",
+          "body": "KDE on Wayland 下,winit 底层走 libinput + Kernel evdev。有几个坑值得知道:\n\n<strong>坑 1:键盘布局</strong>。Casey 假设 US QWERTY。你 KDE 上可能装了 fcitx5 / ibus 中文输入法,或 Dvorak / Colemak 布局。winit 给你的 KeyEvent 有两个键:\n- <code>physical_key</code>:<strong>scancode</strong>,物理位置,布局无关。键盘第 5 个字母键永远是 KeyQ(在 QWERTY 上是 Q,在 Dvorak 上可能是其他字符)\n- <code>logical_key</code>:经过布局转换的字符\n\n游戏<strong>必须</strong>用 <code>physical_key</code>。否则用户用 Dvorak 布局时,WASD 跑到了别处。\n\n<strong>坑 2:输入法和游戏</strong>。中文输入法激活时,键盘事件可能被截获。winit 给你 <code>ImeInput</code> 事件代替。游戏一般忽略 IME,但要处理「玩家输入法激活时游戏收不到键盘」这种情况——告诉用户「打字时关掉输入法」。\n\n<strong>坑 3:Wayland repeat</strong>。X11 下键盘 repeat 由 X server 处理,Wayland 下由合成器(KWin)处理。KWin 的 repeat 间隔可能和你预期不同。建议游戏自己做 repeat(基于 edge detection + 计时器),不依赖系统。\n\n<strong>坑 4:多显示器 + 全屏</strong>。Day 040 会讲全屏,Wayland 全屏的输入处理和窗口模式不同(键盘可能被合成器拦截)。KDE 在某些版本有 bug,全屏 + IME 不工作。这是 KDE Wayland 的已知问题。"
+        },
+        {
+          "title": "📚 Rust 知识补充:HashSet 和 HashMap",
+          "body": "这集用到 <code>HashSet&lt;KeyCode&gt;</code>,我简单讲下。\n\n<code>HashSet&lt;T&gt;</code> 是「不重复元素的集合」。它基于 HashMap 实现,key 是元素本身,value 是空。\n\n核心操作:\n- <code>insert(x)</code>:加入,返回是否之前没有(如果是新元素返回 true)\n- <code>remove(&x)</code>:删除,返回是否之前存在\n- <code>contains(&x)</code>:查询\n\n这集用法:维护「当前按下的键」集合。按键事件:Pressed 时 insert,Released 时 remove。\n\n<strong>对比 Vec</strong>:Vec 是有序数组,查询要 O(n)。HashSet 查询 O(1)。对 256 个键来说差别不大,但对大量元素(比如粒子)就明显。\n\n<strong>HashMap&lt;K, V&gt;</strong>:有 key 和 value。比如 <code>HashMap&lt;PlayerId, Player&gt;</code>。\n\n<strong>坑:不可迭代时改</strong>。你不能边迭代边 insert/remove,会触发运行时 panic。Rust 借用检查器在编译期阻止这种:\n\n<pre><code>// 编译错误!\nfor k in set.iter() {\n    if some_condition(k) {\n        set.remove(k);  // 借用冲突\n    }\n}</code></pre>\n\n解决:先收集要改的元素,迭代结束后再改。\n\n<pre><code>let to_remove: Vec<_> = set.iter().filter(|k| cond(k)).cloned().collect();\nfor k in to_remove {\n    set.remove(&k);\n}</code></pre>\n\nDay 063 sim region 会大量用到这种模式。"
+        }
+      ]
+    },
+    "day007": {
+      "why": "Day 007 之前你的游戏是哑巴——画面动但没声音。Day 007 让程序第一次<strong>出声</strong>。具体说,这集是<strong>初始化 DirectSound</strong>——把声卡硬件抽象出来,准备好后面几集向里面填音频数据。\n\n你想想,出声这件事在硬件层面是怎么发生的?声卡有一个叫 DAC(Digital-to-Analog Converter)的芯片,把数字样本(比如 0.5、-0.3、0.7)转成模拟电压,送到喇叭,喇叭膜片震动产生声音。问题是 DAC 需要你<strong>持续喂样本</strong>——每秒 44100 个,不能断,断了声音就卡顿(underrun)。\n\n这集 Casey 做的事是初始化这块:打开 DirectSound、创建一块 buffer、设置格式(stereo / 44100Hz / 16bit),准备后面填数据。Day 008 才真的写入样本产生声音。\n\n对你 Rust 学习者,这集的核心是<strong>理解音频输出的本质</strong>:不是「播放一个 mp3」,而是「持续不断地把数字样本塞给声卡」。理解了这个,后面 Day 138 自己写 WAV decoder、Day 139 写 mixer 就水到渠成。",
+      "model": "我打个比方:声卡是一个<strong>贪吃的录音机</strong>,它每秒吞 44100 个数字样本,你给它就播,不给就静音。你的程序要做的就是<strong>不停地喂</strong>。\n\n这集 Casey 走的步骤(对应 DirectSound API):\n\n<strong>1. DirectSoundCreate</strong>\n\n创建一个 DirectSound 对象,代表「声卡设备」。Rust 端 cpal 等价:<code>cpal::default_host().default_output_device()</code>。\n\n<strong>2. SetCooperativeLevel</strong>\n\n告诉 Windows「我要用声卡,别人别抢」。Win16 时代遗留——多个程序同时出声需要协调。Rust/cpal 不需要这一步,现代 OS 自动协调。\n\n<strong>3. 创建 Secondary Buffer</strong>\n\n这是<strong>你要写入的 buffer</strong>。你告诉 DirectSound:我要一个 stereo(2 声道)、44100Hz、16-bit 的 buffer,多大(比如 1 秒 = 44100 × 2 × 2 = 176400 字节)。\n\nDirectSound 是<strong>环形 buffer</strong>(circular buffer):你写到末尾会绕回头继续写。声卡有一个「播放指针」(play cursor),你有一个「写指针」(write cursor),你要保证写指针<strong>不超过</strong>播放指针太多(否则覆盖还没播的数据)。\n\n<strong>4. Play</strong>\n\n告诉 DirectSound 开始播放。从现在开始,声卡每秒消费 44100 个样本——你必须不停地补,否则就 underrun(声音断断续续)。\n\n<strong>核心难点:同步</strong>\n\n声卡的播放指针是<strong>异步</strong>移动的——它在自己的时钟上跑,你的 CPU 不能精确知道它在哪。如果你写太快,会覆盖未播数据;写太慢,会出现「静音段」。Casey 在 Day 019-020 专门调试这个问题。\n\n<strong>Win32 → Rust(cpal)映射</strong>\n\ncpal 的设计完全不同——它是<strong>回调驱动</strong>。你给 cpal 一个闭包,声卡需要数据时调你的闭包:\n\n<pre><code>let stream = device.build_output_stream(\n    &config,\n    |data: &mut [f32], _| {\n        // 声卡需要 data.len() 个样本,你填进去\n        for sample in data.iter_mut() {\n            *sample = 0.0; // 静音\n        }\n    },\n    |err| eprintln!(\"error: {}\", err),\n    None\n)?;\nstream.play()?;</code></pre>\n\ncpal 帮你处理环形 buffer、播放指针同步——你的回调只要「给我 N 个样本」。这是更高层抽象,你不用直接管 DirectSound 的细节。代价:回调里不能阻塞(否则 underrun),不能做重计算。\n\nCasey 手写 DirectSound 是为了理解原理,你 Rust 用 cpal 是工程合理。但你<strong>应该理解</strong> cpal 在做什么——这就是这集的价值。",
+      "map_parents": [
+        "数字音频基础(PCM: Pulse Code Modulation)",
+        "环形缓冲(circular buffer)",
+        "实时 I/O:生产者(你的程序) vs 消费者(声卡)"
+      ],
+      "map_siblings": [
+        {
+          "name": "ALSA",
+          "note": "Linux 内核音频接口,底层"
+        },
+        {
+          "name": "PulseAudio",
+          "note": "Linux 老牌用户态音频服务器"
+        },
+        {
+          "name": "PipeWire",
+          "note": "现代 Linux 音频服务器,Arch + KDE 默认"
+        },
+        {
+          "name": "CoreAudio",
+          "note": "macOS / iOS 音频"
+        },
+        {
+          "name": "WASAPI",
+          "note": "Windows 现代音频 API(替代 DirectSound)"
+        },
+        {
+          "name": "cpal",
+          "note": "Rust 跨平台抽象,我们用"
+        },
+        {
+          "name": "Web Audio API",
+          "note": "浏览器内的音频"
+        }
+      ],
+      "map_children": [
+        "采样率(sample rate,典型 44100 / 48000 Hz)",
+        "位深(bit depth,16-bit / 24-bit / float32)",
+        "声道数(channel,1=mono / 2=stereo)",
+        "play cursor / write cursor(播放/写入指针)",
+        "underrun(欠载,数据供应不上)"
+      ],
+      "related_days": [
+        "day008",
+        "day009",
+        "day019",
+        "day020",
+        "day138",
+        "day139"
+      ],
+      "comparison": "<strong>共通点</strong>:所有数字音频系统本质都是「持续喂样本」。无论是 DirectSound / ALSA / PulseAudio / CoreAudio,底层都是「声卡每秒消费 N 个样本」。\n\n<strong>差别</strong>:抽象层级。\n- <strong>DirectSound / ALSA</strong>:底层,你直接管环形 buffer\n- <strong>WASAPI / CoreAudio</strong>:中层,系统帮你管 buffer,你处理回调\n- <strong>cpal / PulseAudio / PipeWire</strong>:高层,回调驱动 + 自动重采样 + 多设备路由\n\ncpal 在 Linux 上其实走 PulseAudio 或 ALSA,在 macOS 上走 CoreAudio,在 Windows 上走 WASAPI——抽象屏蔽了平台差异。\n\nPipeWire 是 KDE 默认,它<strong>同时兼容</strong> PulseAudio 和 JACK API,所以 cpal 在 PipeWire 下也能跑(走 PulseAudio 兼容层)。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 这集创建了一个 1 秒长度的 Secondary Buffer(176400 字节)。为什么是环形 buffer?如果用<strong>线性 buffer</strong>(从头写到尾,然后从头再开始)会发生什么?",
+          "a": "环形 buffer 解决「声卡和 CPU 同时访问」的问题。\n\n线性 buffer 的问题:你写完整个 buffer(填满 1 秒数据),怎么继续?选项:\n1. <strong>等声卡播完再写</strong>——但这要同步等待,延迟 1 秒,而且声卡播完那一刻你就立刻要写,有竞争窗口\n2. <strong>分配两块 buffer,交替使用(double buffering)</strong>——可行但管理复杂\n\n环形 buffer 把两块合一:写指针和播指针在同一个 buffer 里转圈。声卡读 buffer[播指针],你写 buffer[写指针]。只要写指针 <strong>不追上</strong> 播指针(转一圈),就没冲突。\n\n这种「单 buffer + 两个独立指针」比「双 buffer 切换」更高效——少一次内存拷贝,且天然处理「写多少都行」。\n\n代价:你需要算「能写多少」= (播指针 - 写指针) mod buffer 大小。Casey 在 Day 019 调试这个算法花了点功夫。"
+        },
+        {
+          "level": 2,
+          "type": "practice",
+          "q": "用 cpal 打开默认输出设备,写一个回调把所有样本填 0(静音)。运行后,你的程序应该「正在播放静音」(在 KDE 音量面板里能看到程序占用了音频流)。\n\n提示:<code>cpal::default_host().default_output_device()</code> 拿设备。<code>device.build_output_stream(&config, callback, err_callback, None)</code> 创建 stream。<code>stream.play()</code> 启动。\n\n程序运行期间不要退出(用一个 <code>park().consume()</code> 或 sleep 保持运行)。",
+          "a": "<pre><code>use cpal::{Data, StreamConfig, Sample, SampleFormat};\n\nfn main() {\n    let host = cpal::default_host();\n    let device = host.default_output_device().unwrap();\n    let config = device.default_output_config().unwrap();\n    let sample_format = config.sample_format();\n    let config: StreamConfig = config.into();\n    \n    let stream = match sample_format {\n        SampleFormat::F32 => device.build_output_stream(\n            &config,\n            |data: &mut [f32], _| {\n                for sample in data.iter_mut() {\n                    *sample = 0.0;\n                }\n            },\n            |err| eprintln!(\"error: {}\", err),\n            None\n        ).unwrap(),\n        _ => panic!(\"unsupported format\"),\n    };\n    stream.play().unwrap();\n    \n    std::thread::park();  // 保持程序运行\n}</code></pre>\n\n跑起来,在 KDE 系统设置 → 音频 → 应用程序,你应该看到你的程序占用了一个音频流(虽然静音)。这就是「声卡已经在等你喂样本」的状态。Day 008 你会真的喂样本产生声音。"
+        },
+        {
+          "level": 3,
+          "type": "transfer",
+          "q": "这集体现的设计模式 ——「生产者持续喂消费者」—— 出现在很多地方。举三个例子:\n\n1. 视频流(YouTube、Netflix)\n2. 网络传输(TCP socket)\n3. 流水线 CPU(指令 cache)\n\n问题:这三个场景各自怎么解决「生产者/消费者速度不匹配」?和音频 underrun 类比。",
+          "a": "三个场景的解法:\n\n<strong>1. 视频流</strong>:生产者=网速,消费者=播放器 60Hz。如果网速慢,会缓冲(buffering——你看到的「loading」)。本质是「加大 buffer 容忍速度差」。代价:延迟增加(看直播有 5-10 秒延迟)。\n\n<strong>2. TCP socket</strong>:生产者=发送方,消费者=接收方。如果发送方太快,数据堆积在网络缓冲;如果接收方不读,buffer 满了发送方被 block(TCP flow control)。本质是「back-pressure」——消费者告诉生产者「慢点」。\n\n<strong>3. 流水线 CPU</strong>:生产者=指令 fetch,消费者=执行单元。如果 cache miss,fetch 卡住,执行单元闲置(stall)。本质是「branch prediction + prefetch」——提前预测哪些指令会用到,提前 fetch。\n\n<strong>音频 underrun 的对应</strong>:音频 buffer 太小(消费者=声卡固定 44100Hz,生产者=CPU 不稳定)。如果 CPU 卡了一下(比如 GC、page fault),buffer 被声卡读光,出现静音段。\n\n<strong>通用解法</strong>:\n1. <strong>大 buffer</strong>:容忍度高,但延迟大\n2. <strong>实时优先级</strong>:操作系统保证生产者不被抢占(音频线程高优先级)\n3. <strong>分离线程</strong>:生产者独占线程,不受主循环卡顿影响\n\nCasey 后面 Day 019 调试音频同步,就是这三招的组合。Rust 端 cpal 自动用单独线程(回调在你的 stream 线程跑),你不用自己管。"
+        }
+      ],
+      "supplements": [
+        {
+          "title": "📚 PipeWire(KDE Wayland 默认音频)",
+          "body": "Arch + KDE 现在默认用 PipeWire,这是 PulseAudio 的现代替代品。值得知道几件事:\n\n<strong>PipeWire 是什么</strong>:一个多媒体服务器,统一处理音频和视频流。它<strong>同时实现</strong> PulseAudio API 和 JACK API,所以老的 Pulse 应用(包括 cpal)不用改代码就能跑。\n\n<strong>检查是否在用 PipeWire</strong>:跑 <code>pactl info | grep 'Server Name'</code>。如果是 <code>PulseAudio (on PipeWire)</code> 就是 PipeWire 后端。\n\n<strong>KDE 上调节</strong>:KDE 系统设置 → 音频。你能看到应用程序音量、设备路由(哪个程序的声音去哪个输出)。这些 Casey 在 Win32 都没有——PipeWire 给的体验比 DirectSound 强很多。\n\n<strong>延迟</strong>:PipeWire 默认 buffer 大小决定了音频延迟。KDE 默认配置大概是 10ms 级别,游戏够用。专业音频(JACK)可以到 1ms。\n\n<strong>常见问题</strong>:\n- <strong>程序没声音</strong>:检查 KDE 音量面板,程序是否被 mute\n- <strong>爆音</strong>:可能是 cpal 请求的 buffer 太小。在 build_output_stream 时用更大的 buffer_size\n- <strong>程序 crash 后无声音</strong>:PipeWire 偶尔卡死,跑 <code>systemctl --user restart pipewire</code> 重启\n\n你跟做 HH 时遇到音频问题,先查 PipeWire 状态再查代码,经常是配置问题。"
+        },
+        {
+          "title": "📚 Rust 知识补充:闭包捕获 + Send/Sync",
+          "body": "这集 cpal 的回调是一个闭包。我深入讲一下 Rust 的闭包,因为你后面会大量遇到。\n\n<strong>闭包捕获方式</strong>:\n- <code>move</code>:强制获取所有权,把外部变量 move 到闭包里\n- 不写 move:按需借用(只读用 & ,可变用 &mut)\n\n这集 cpal 回调通常不需要捕获外部状态(声卡给的数据直接填),但如果要捕获,必须 <code>move</code>(因为回调可能在另一个线程跑)。\n\n<strong>Send / Sync</strong>:Rust 多线程的核心 trait。\n- <code>Send</code>:类型可以在线程间转移所有权(T 可以从线程 A move 到线程 B)\n- <code>Sync</code>:类型可以在线程间共享引用(&T 可以跨线程)\n\n几乎所有的 Rust 类型都自动 Send + Sync,除了:\n- <code>Rc&lt;T&gt;</code>:不是 Sync(引用计数非原子)\n- <code>Cell&lt;T&gt;</code> / <code>RefCell&lt;T&gt;</code>:不是 Sync(运行时借用检查不能跨线程)\n- 裸指针 <code>*const T</code> / <code>*mut T</code>:不是 Send 也不是 Sync\n\ncpal 的回调要求 <code>Send + Fn</code>(或 FnMut)。所以你捕获的变量必须 Send。Rc 不能跨线程,要用 Arc。Day 122 多线程会详细讲。\n\n<strong>实用 tip</strong>:如果你的回调需要共享可变状态,用 <code>Arc&lt;Mutex&lt;T&gt;&gt;</code>。这有锁开销,但音频回调一般不频繁(N=128 ~ 1024 samples / 44100Hz = 3 ~ 23ms 一次),锁可以接受。\n\n更好的做法:用无锁 ring buffer(<code>heapless::spsc::Queue</code> 或自己写)。这是 Day 019-020 的主题。"
+        }
+      ]
+    },
+    "day008": {
+      "why": "Day 007 你初始化好了声卡,但它没声音——你的回调一直喂 0 样本(静音)。Day 008 你开始喂<strong>真样本</strong>,具体说是一个方波(square wave)——程序第一次出声!\n\n为什么从方波开始?因为方波是<strong>最简单</strong>的非静音波形——值只有 +amplitude 和 -amplitude 两个,每秒切换频率 f 次。生成方波只需要一个计数器和一个 if,Casey 几行代码就讲清楚。\n\n但方波背后藏着一个深刻的话题:<strong>声音的本质是什么</strong>?为什么一段数字数组能变成「哔」的声音?这集 Casey 隐式地讲了<strong>数字音频原理</strong>——你写出来的样本值经过 DAC 变成模拟电压,推动喇叭膜片震动,产生空气压力波,传到耳朵,大脑解释为「声音」。理解这条链路,你才能理解为什么采样率是 44100Hz、为什么位深影响动态范围。",
+      "model": "我打个比方:声波就像<strong>水波</strong>。你扔一块石头到湖里,水面上下起伏,形成波纹向四周传开。声音也一样——喇叭膜片快速前后震动,推动空气形成压力波(高于大气压=密、低于=疏),传到你耳朵,耳膜跟着震动,大脑解释为声音。\n\n声音的<strong>频率</strong>(每秒震动次数,Hz)决定音高——440Hz 是标准音 A。震幅决定响度。波形决定音色——同样 440Hz,正弦波听起来像纯音,方波听起来像老式游戏机的「哔」。\n\n<strong>方波</strong>:波形是矩形,值在 +1 和 -1 之间切换。频率 f 表示每秒切换多少个完整周期。\n\n<pre>时间 →\n+1  ┌──┐  ┌──┐  ┌──┐\n    │  │  │  │  │  │\n 0  ─┼──┼──┼──┼──┼──┼──\n    │  │  │  │  │  │\n-1     └──┘  └──┘  └──┘\n\n   ←T=1/f→\n   (一个周期)</pre>\n\n<strong>怎么生成方波样本</strong>\n\n你的回调收到 <code>data: &mut [f32]</code>,要填 N 个样本。每秒采样率 sample_rate = 44100。要生成频率 f 的方波:\n\n<pre><code>// 方波:前半个周期 +1,后半个周期 -1\nlet samples_per_period = (sample_rate / f) as usize;\nlet half = samples_per_period / 2;\n\nfor (i, sample) in data.iter_mut().enumerate() {\n    let t = (write_offset + i as u32) % samples_per_period as u32;\n    *sample = if t < half as u32 { 0.3 } else { -0.3 };\n}\nwrite_offset = write_offset.wrapping_add(data.len() as u32);</code></pre>\n\n注意 amplitude 0.3 不是 1.0——因为 1.0 太响(可能伤耳朵或失真)。0.3 大概是 -10dB,柔和。\n\n<strong>核心概念</strong>:<strong>样本索引 → 时间 → 波形值</strong>。你有一个全局的样本计数器(已经写了多少样本),每个样本对应一个时刻(样本索引 / 采样率 = 时间)。在那一刻,根据波形函数算输出值。\n\n这是<strong>数字音频的核心心智模型</strong>:声音 = 离散样本序列。你后面写 mixer、WAV 解码、变调,都是这个模型的延伸。\n\n<strong>Day 007 的 DirectSound vs cpal 差别</strong>\n\nCasey 直接写 buffer,要算 play cursor 和 write cursor,确保不覆盖未播数据。你用 cpal 不用管——cpal 给你 data slice,你填进去就行,ring buffer 由 cpal 管。代价是你<strong>看不到</strong> ring buffer 在哪,Casey 是<strong>亲手实现</strong>了它。这是「教学 vs 工程」的经典差别。",
+      "map_parents": [
+        "PCM(Pulse Code Modulation,数字音频基础)",
+        "波形:正弦 / 方波 / 三角 / 锯齿",
+        "Nyquist 采样定理"
+      ],
+      "map_siblings": [
+        {
+          "name": "正弦波",
+          "note": "纯音,Day 009 用"
+        },
+        {
+          "name": "三角波",
+          "note": "柔和的方波"
+        },
+        {
+          "name": "锯齿波",
+          "note": "Reese bass / 小号音色"
+        },
+        {
+          "name": "噪声(white/pink)",
+          "note": "随机样本,用于打击乐"
+        }
+      ],
+      "map_children": [
+        "样本索引 → 时间映射",
+        "频率 / 周期 / 振幅",
+        "DAC(Digital-to-Analog Converter)",
+        "中位过滤(防止方波的 aliasing 高频伪影)"
+      ],
+      "related_days": [
+        "day007",
+        "day009",
+        "day019",
+        "day138",
+        "day139"
+      ],
+      "comparison": "<strong>共通点</strong>:所有波形都是「样本 = f(t)」的函数,在离散时刻取值。\n\n<strong>差别</strong>:音色。\n- 方波:奇次谐波多,听起来「蜂鸣」「复古游戏机」\n- 正弦波:无谐波,纯音\n- 锯齿波:奇偶次谐波都多,听起来「明亮」「铜管」\n- 噪声:全频段均匀,听起来「沙沙」\n\n傅立叶分析告诉我们:任何周期波形 = 多个不同频率正弦波的叠加。方波的「蜂鸣」感来自它的奇次谐波(3f、5f、7f...)。Casey 在 Day 009 会演示从方波到正弦的过渡。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "方波值是 +0.3 或 -0.3,正弦波值是连续的 <code>0.3 * sin(2πft)</code>。为什么 Casey Day 008 先用方波,Day 009 才用正弦波?\n\n提示:从「代码复杂度」和「教学价值」两个角度想。",
+          "a": "<strong>代码复杂度</strong>:方波生成只要 if/else,正弦要 <code>sin()</code> 函数调用(数学库)+ 角度计算。Casey 想先让程序「能出声」,再升级到「能控制音高」。\n\n<strong>教学价值</strong>:方波直观——你看到代码就知道「哦,前一半样本 +0.3,后一半 -0.3,所以是方波」。学生能立即把代码和波形联系起来。正弦波需要懂「sin 函数 / 弧度 / 频率」,认知负荷更大。\n\n这是典型的「incremental learning」——先做最简单的能跑的版本,再加复杂度。这和「Day 005 不用 OpenGL,Day 235 才用」是同一个教学哲学。"
+        },
+        {
+          "level": 2,
+          "type": "practice",
+          "q": "扩展 Day 007 的 cpal 程序:回调里改成生成<strong>440Hz 方波</strong>(标准音 A)。amplitude 用 0.3,避免太大声。程序运行时应该听到清晰的「哔」。\n\n提示:维护一个全局样本计数器 <code>AtomicU64</code>(跨线程),每次回调时算每个样本的方波值。",
+          "a": "<pre><code>use std::sync::atomic::{AtomicU64, Ordering};\n\nstatic SAMPLE_OFFSET: AtomicU64 = AtomicU64::new(0);\nconst FREQ: f32 = 440.0;\nconst AMP: f32 = 0.3;\n\nlet stream = device.build_output_stream(\n    &config,\n    move |data: &mut [f32], info: &cpal::OutputCallbackInfo| {\n        let sample_rate = config.sample_rate.0 as f32;\n        let period = (sample_rate / FREQ) as u64;\n        let half = period / 2;\n        let mut offset = SAMPLE_OFFSET.load(Ordering::Relaxed);\n        \n        for sample in data.iter_mut() {\n            let t = offset % period;\n            *sample = if t < half { AMP } else { -AMP };\n            offset += 1;\n        }\n        SAMPLE_OFFSET.store(offset, Ordering::Relaxed);\n    },\n    |err| eprintln!(\"{}\", err),\n    None\n)?;</code></pre>\n\n跑起来你应该听到稳定的「哔」。试着改 FREQ 到 220(低八度)、880(高八度),听差别。这就是音乐的「八度」概念——频率翻倍。"
+        },
+        {
+          "level": 3,
+          "type": "transfer",
+          "q": "这集的核心抽象是「<strong>声音 = 时间序列</strong>」。这个抽象一旦建立,所有音频处理都变得自然。举三个例子,验证你理解了:\n\n1. 为什么 WAV 文件本质上就是一个数组 + 头部?\n2. 为什么 audio mixer(混音)就是「多个数组对应相加」?\n3. 为什么「音量降低」=「每个样本乘以 0.5」?",
+          "a": "三个例子都验证同一个心智模型:<strong>音频 = 离散样本数组,样本值正比于气压</strong>。\n\n<strong>1. WAV 文件</strong>:它就是「文件头 + PCM 样本数组」。文件头告诉播放器「采样率、位深、声道数」,后面就是连续的样本字节。解码 WAV = 读头部 + 把字节解析成样本。Day 138 Casey 手写 WAV parser,你会看到这有多简单。\n\n<strong>2. Mixer</strong>:多个声音同时播放,物理上气压是<strong>叠加</strong>的(线性叠加原理)。所以数字上,样本对应相加就行:<code>mixed[i] = sound_a[i] + sound_b[i]</code>。注意防 clip(超过 1.0 会失真)。Day 139 Casey 写 mixer,本质就是几个 for 循环相加。\n\n<strong>3. 音量</strong>:气压强度正比于振幅,数字上振幅 = 样本绝对值。「音量减半」=「振幅减半」=「每个样本 × 0.5」。同理,淡入淡出就是「样本 × 渐变系数」。\n\n这个心智模型的威力:任何音频效果(回声、混响、低通、均衡)都是<strong>对样本数组的数学运算</strong>。Casey 后面 Day 142 写 volume interpolation、Day 143 写 pitch shifting,本质都是数组运算。"
+        }
+      ],
+      "supplements": [
+        {
+          "title": "📚 数字音频基础:采样率 / 位深 / Nyquist",
+          "body": "这集涉及几个音频核心概念,我系统讲一下。\n\n<strong>采样率(sample rate)</strong>:每秒多少个样本。CD = 44100Hz,DVD = 48000Hz,Hi-Res = 96000Hz+。\n\n为什么 CD 是 44100Hz?因为人耳听觉 20-20000Hz,<strong>Nyquist 定理</strong>说采样率 ≥ 2 × 最高频率才能重建。所以 40000Hz 就够,44100 是为了和视频帧率兼容(44100 = 441 × 100,441 = 3 × 147 = 9 × 49,能整除很多视频相关数字)。\n\n<strong>位深(bit depth)</strong>:每个样本多少 bit。\n- 8-bit:256 个值,有「沙沙」量化噪声\n- 16-bit:CD 标准,65536 个值,动态范围 96dB(足够人耳)\n- 24-bit:专业录音,1600 万个值\n- float32:HDR 音频,值是 -1.0 到 1.0 浮点\n\n位深高 = 安静部分的细节更精确 = 动态范围大。游戏音频通常用 float32(混音方便,不会 clip)。\n\n<strong>声道</strong>:mono=1、stereo=2、5.1=6、7.1=8。stereo 在内存里是<strong>交错</strong>的:L R L R L R...,不是分两段。\n\n<strong>Nyquist 定理实战</strong>:生成 1000Hz 方波,采样率 44100,听到的是清晰的 1000Hz 蜂鸣。生成 30000Hz 方波(超过 Nyquist 22050Hz),你会听到一个不相关的低频——这是 <strong>aliasing</strong> 伪影,高频「折叠」回低频。专业音频要避免 aliasing,加低通滤波。Casey 在视频里简化了,没处理。"
+        },
+        {
+          "title": "📚 Rust 知识补充:AtomicU64 和原子操作",
+          "body": "上面 Lv 2 答案用了 <code>AtomicU64</code>,我讲一下。\n\n<strong>问题</strong>:cpal 的回调在<strong>音频线程</strong>跑,你的主循环在<strong>主线程</strong>跑。两个线程要共享 SAMPLE_OFFSET 计数器。如果用普通 <code>u64</code>,会有数据竞争——一个线程读时另一个线程写到一半,读到垃圾值。\n\n<strong>解法</strong>:\n- <code>Mutex&lt;u64&gt;</code>:加锁,简单但每次访问几十纳秒\n- <code>AtomicU64</code>:原子操作,CPU 保证读改写不可中断,无锁更快\n\n<code>AtomicU64</code> 的方法:\n- <code>load(ordering)</code>:读\n- <code>store(val, ordering)</code>:写\n- <code>fetch_add(n, ordering)</code>:原子加,返回旧值\n- <code>compare_exchange_weak(expected, new, ...)</code>:CAS,无锁算法基础\n\n<strong>Ordering 参数</strong>:控制内存序。Rust 提供 5 种:\n- <code>Relaxed</code>:只保证本操作原子,不管其他变量的顺序。计数器适用。\n- <code>Release</code>:写操作,保证之前的读写不会被重排到这之后\n- <code>Acquire</code>:读操作,保证之后的读写不会被重排到这之前\n- <code>AcqRel</code>:Acquire + Release\n- <code>SeqCst</code>:最强,全局顺序\n\n<strong>经验法则</strong>:简单计数用 Relaxed(最快),跨线程传数据用 Acquire/Release 配对,不确定就 SeqCst(慢但稳)。\n\n这集 SAMPLE_OFFSET 只用作「时间索引」,不参与跨线程数据传递,用 Relaxed 安全。Day 122 多线程会深入讲。"
+        }
+      ]
+    },
+    "day009": {
+      "why": "Day 008 你听到 440Hz 方波,但音高是写死的。Day 009 让程序能<strong>动态变调</strong>——音高随时间变化,程序第一次有「音乐感」。\n\n这集 Casey 实际做的是:<strong>用正弦波替代方波</strong>(音色更柔和),并且<strong>频率可以在运行时改变</strong>(不像 Day 008 是常量)。\n\n为什么变调是大事?因为变调是<strong>游戏音频的第一个非平凡应用</strong>——所有音效(脚步、攻击、UI 反馈)都需要在不同时刻用不同音高。理解了变调,你就理解了「音频是动态生成的」这个概念,Day 139 写 mixer 才有基础。",
+      "model": "我打个比方:正弦波是<strong>最纯粹的音</strong>——只用一个频率,没有泛音。物理上,任何声音都可以分解成多个正弦波的叠加(傅立叶分析),所以正弦波是声音的「原子」。\n\n数学上正弦波是 <code>y = A × sin(2πft)</code>,A=振幅,f=频率,t=时间。你生成样本时:<code>sample[i] = A × sin(2π × f × i / sample_rate)</code>。\n\n<strong>实现细节:维护「相位」而非「时间」</strong>\n\nCasey 的关键技巧:不要每次重新算 <code>2π × f × t</code>(浮点开销 + 累积误差),而是维护一个<strong>相位变量</strong> <code>phase</code>(0 到 2π),每次样本递增 <code>2π × f / sample_rate</code>。\n\n<pre><code>let mut phase = 0.0;\nlet phase_step = 2.0 * PI * freq / sample_rate;\n\nfor sample in data.iter_mut() {\n    *sample = AMP * phase.sin();\n    phase += phase_step;\n    if phase >= 2.0 * PI { phase -= 2.0 * PI; }  // wrap\n}</code></pre>\n\n这种「维护相位」的好处:<strong>频率可以中途改变</strong>。如果 freq 在样本中途变化,你只要改 phase_step,phase 继续累加——新的频率立刻生效,且<strong>没有相位跳变</strong>(连续)。\n\n如果用 <code>sample[i] = sin(2π × f × t)</code>,当 f 变化时,t 不变但 f 变了,sin 输出会有跳变——听起来像爆音(click)。\n\n<strong>变调的物理本质</strong>\n\n频率 f 决定音高。f 越高音越尖,f 越低音越沉。\n- 440Hz = 标准 A(La)\n- 高八度 = 2 × 440 = 880Hz(高一倍的频率)\n- 低八度 = 440 / 2 = 220Hz\n\n<strong>音分(cent)</strong>:1 个半音 = 100 cent,1 个八度 = 1200 cent。频率比例 = 2^(cent/1200)。音乐里「升一个半音」= 频率 × 2^(1/12) ≈ × 1.0595。\n\n<strong>Win32 → Rust 映射</strong>\n\nDay 007 cpal 回调结构不变,只是回调里用上面的算法。Rust 用 <code>std::f32::consts::PI</code> 拿 π常量。<code>phase.sin()</code> 是 sin 函数调用,大概 5ns。\n\n注意一个 Rust 性能坑:f32 的 <code>sin()</code> 在 release 模式下 LLVM 会自动用 SIMD 优化,但 debug 模式不会。所以 release 比 debug 快很多——这是为什么游戏都要 release 跑。",
+      "map_parents": [
+        "正弦波数学:sin/cos/相位",
+        "音高与频率的关系:音乐理论基础",
+        "平滑变调 vs 跳变调(相位连续性)"
+      ],
+      "map_siblings": [
+        {
+          "name": "三角波",
+          "note": "sin/cos 的近似线性版"
+        },
+        {
+          "name": "锯齿波",
+          "note": "周期性从 -1 线性到 +1"
+        },
+        {
+          "name": "PWM(Pulse Width Modulation)",
+          "note": "方波占空比可变"
+        }
+      ],
+      "map_children": [
+        "相位(phase)累积",
+        "phase_step = 2π × f / sample_rate",
+        "频率倍频(2× = 八度)",
+        "音分(cent,1 半音 = 100 cent)"
+      ],
+      "related_days": [
+        "day007",
+        "day008",
+        "day143"
+      ],
+      "comparison": "<strong>共通点</strong>:所有周期波形都要管「相位」或「时间索引」。<strong>差别</strong>:正弦波相位连续,变调平滑;方波切换瞬间有 click(虽然听不太出来);三角波和锯齿波各有特殊点。\n\n现代音频引擎(包括 synth)都用「<strong>相位累积器 + 查表</strong>」:维护 0-1 的相位,每次加 phase_step,mod 1。需要 sin 值时查 sin 表(预计算的 1024-4096 个 sin 值)。这比每帧 sin() 调用快 10 倍。\n\nCasey 这集没用查表,因为 sin() 够快(44100Hz × 几个声音 = 几十万次/秒,CPU 毫无压力)。但 Day 144 SSE mixer 会触及 SIMD 优化,可能用查表。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 这集的聪明之处是<strong>维护相位</strong>而非<strong>每次重算 sin(2π × f × t)</strong>。这两种实现听起来一样,但有一个关键差别。你能想到是什么吗?\n\n提示:想想「频率在中途改变」的场景。",
+          "a": "差别是<strong>相位连续性</strong>。\n\n<strong>用 phase 累积</strong>:f 变化时,只改 phase_step。phase 继续累积,sin 输出连续。变调瞬间平滑过渡。\n\n<strong>用 sin(2πft)</strong>:f 变化时,同一时刻 t 算出的 sin 值会跳变。这种跳变在数学上叫 phase discontinuity,在声音上叫 click——一个短暂的「啪」杂音。\n\n类比:开车。phase 累积 = 你持续踩油门,加速度平滑变化。sin(2πft) = 你每次重新算位置,路标换了你就瞬移过去——乘客(听众)感觉到跳。\n\n这是数字信号处理的基础原则:<strong>连续性</strong>。所有平滑信号处理(混音、淡入淡出、变调)都靠维护连续性。Casey 后面 Day 142 写 volume interpolation 也用类似思路。"
+        },
+        {
+          "level": 2,
+          "type": "practice",
+          "q": "扩展 Day 008 的方波程序,改成<strong>正弦波</strong>,并且让<strong>频率随时间变化</strong>:从 220Hz 慢慢上升到 880Hz,再回落,循环。这种效果叫「siren」(警报器)。\n\n要求:维护 phase 累积器,freq 按时间正弦变化(slow LFO)。用 <code>AtomicU64</code> 的样本计数器算时间。",
+          "a": "<pre><code>static SAMPLE_OFFSET: AtomicU64 = AtomicU64::new(0);\n\nmove |data: &mut [f32], _: &cpal::OutputCallbackInfo| {\n    let sr = config.sample_rate.0 as f32;\n    let mut offset = SAMPLE_OFFSET.load(Ordering::Relaxed);\n    let mut phase = PHASE.load(Ordering::Relaxed);\n    \n    for sample in data.iter_mut() {\n        let t = offset as f32 / sr;\n        // freq 在 220-880 之间以 0.5Hz 慢慢振荡\n        let freq = 550.0 + 330.0 * (2.0 * PI * 0.5 * t).sin();\n        let phase_step = 2.0 * PI * freq / sr;\n        *sample = 0.3 * phase.sin();\n        phase += phase_step;\n        if phase >= 2.0 * PI { phase -= 2.0 * PI; }\n        offset += 1;\n    }\n    SAMPLE_OFFSET.store(offset, Ordering::Relaxed);\n    PHASE.store(phase, Ordering::Relaxed);\n}</code></pre>\n\n注意我们还需要一个 <code>static PHASE: AtomicU64</code>(用 bits 存 f32)。或更简单:把状态封装在一个 <code>Arc&lt;Mutex&lt;State&gt;&gt;</code> 里。跑起来,你应该听到「呜——呜——」的警报声。\n\n试着把 LFO 频率改 0.1Hz、5Hz,效果完全不同。0.1Hz 是慢周期,5Hz 是「颤音」。"
+        },
+        {
+          "level": 3,
+          "type": "transfer",
+          "q": "正弦波这集的核心心智模型是「<strong>样本 = phase 的 sin</strong>」,相位随时间累积。这个心智模型可以推广到很多场景。\n\n问题:用 phase 累积思路,怎么实现:\n1. <strong>颤音(vibrato)</strong>:音高周期性微变化(小提琴揉弦)\n2. <strong>和弦(chord)</strong>:同时播 3 个不同频率\n3. <strong>低通滤波(low-pass filter)</strong>:让低频通过,高频衰减\n\n每个给一个思路,不用写完整代码。",
+          "a": "<strong>1. 颤音</strong>:频率本身随另一个慢振荡变化。代码:freq = base_freq × (1 + 0.02 × sin(2π × 5 × t))(5Hz 颤音,2% 深度)。本质是「频率的频率」。\n\n<strong>2. 和弦</strong>:维护<strong>多个 phase</strong>,一个 phase 一个音,样本相加。\n<pre><code>let s = 0.3/3 * (phase_c.sin() + phase_e.sin() + phase_g.sin());</code></pre>\n\nC 大三和弦 = C4(262) + E4(330) + G4(392)。三个 phase 独立累积,样本相加。注意 amplitude 除以 3(防止相加后 clip)。\n\n<strong>3. 低通滤波</strong>:不用 phase 思路。用 <strong>IIR 滤波</strong>:<code>out[i] = α × in[i] + (1-α) × out[i-1]</code>。α 控制截止频率——α 小=更平滑=低频通过更多。本质是「当前输出 = 当前输入和上次输出的混合」。\n\n低通滤波对游戏音频重要:脚步声、爆炸声都含高频成分,低通后听起来「闷」一些,真实。\n\n这三个例子都基于「音频 = 时间序列」心智模型。Casey 后面 Day 139 mixer、Day 143 pitch shift、Day 144 SSE 优化都用这个基础。"
+        }
+      ],
+      "supplements": [
+        {
+          "title": "📚 音乐理论基础(给程序员的速成)",
+          "body": "这集涉及一些音乐概念,我用程序员视角讲。\n\n<strong>音高(pitch)= 频率</strong>:440Hz 是国际标准 A4(钢琴中央 C 上面的 A)。每个音对应固定频率。\n\n<strong>十二平均律</strong>:把一个八度(2× 频率)分成 12 个等比,\n\n<strong>音分(cent)</strong>:1 半音 = 100 cent,1 八度 = 1200 cent。频率比例 = 2^(cent/1200)。所以「升 1 半音」= 频率 × 1.0595(2 的 12 次方根)。\n\n<strong>音符 vs 频率</strong>:常见音\n- C4(中央 C)= 261.63Hz\n- A4 = 440Hz(国际标准)\n- A5 = 880Hz(高八度)\n- A3 = 220Hz(低八度)\n\n<strong>和弦</strong>:多个音同时播\n- 大三和弦:基音 + 大三度(×1.26) + 纯五度(×1.5)。如 C-E-G = 262+330+392\n- 小三和弦:基音 + 小三度(×1.19) + 纯五度。如 C-Eb-G = 262+311+392(听起来更「悲伤」)\n\n<strong>游戏音频的实用乐理</strong>:\n- 4-5 个音符循环就能做简单 BGM\n- 不同场景用不同调性(大调=欢快、小调=忧伤)\n- 音效可以无音高(爆炸、风声),用噪声 + 滤波\n\n你后面如果想给 HH 加 BGM,这些基础够用了。"
+        }
+      ]
+    },
+    "day010": {
+      "why": "Day 010 之前你用 <code>Instant::now()</code> 测时间,但 Casey 这集讨论的是 Win32 下的两个底层时间 API:<code>QueryPerformanceCounter</code>(QPC)和 <code>__rdtsc</code>(read TSC)。\n\n为什么要花一集讲计时?因为<strong>游戏对时间精度极敏感</strong>。一帧 = 16.67ms,你测的 dt 不准,游戏就抖动。Casey 这集带你深入到 CPU 硬件层面,看时间是怎么来的。\n\n对你 Rust 学习者,这集主要价值是<strong>理解时间 API 的精度</strong>:为什么 <code>Instant::now()</code> 比 <code>SystemTime::now()</code> 更适合游戏?<code>std::time::Instant</code> 内部就是 QPC,精度约 100ns。<code>SystemTime</code> 是 wall clock,精度 1ms+,且会受 NTP 调整影响(系统时间会被改),不能用于游戏循环。",
+      "model": "Casey 这集讲两个时间源,从高到低层级:\n\n<strong>1. QueryPerformanceCounter(QPC)</strong>\n\nWindows 的「高精度计时器」。返回一个 64-bit 计数,代表「从某个时刻开始的 tick 数」。配合 <code>QueryPerformanceFrequency</code>(每秒多少 tick),你可以换算成秒。\n\n典型频率是 10MHz(每 tick 100ns)。精度极高,适合游戏循环。\n\nQPC 是<strong>单调的</strong>(monotonic)——不会回退(除非硬件 bug)。它也是<strong>独立于系统时间</strong>的——你改系统时间不影响 QPC。\n\n<strong>2. RDTSC(Read Time-Stamp Counter)</strong>\n\n更底层。x86 CPU 有一个 64-bit 寄存器叫 TSC,每个 CPU 时钟周期 +1。RDTSC 指令读它。理论上精度 = 1 个 CPU 周期(0.3ns 在 3GHz CPU 上)。\n\nTSC 是<strong>最快</strong>的时间源(几个 cycle 就读到),但有几个坑:\n- 多核 CPU 每个核有自己的 TSC,可能不同步\n- CPU 频率变化(节能模式)会让 TSC 速度变化(虽然现代 CPU 有 invariant TSC 解决这个)\n- OS 可能虚拟化 TSC(虚拟机里)\n\n所以 RDTSC 通常不直接用,而是被 OS 包装成 QPC。\n\n<strong>3. Rust 的 Instant</strong>\n\n<code>std::time::Instant::now()</code> 在 Linux 上是 <code>clock_gettime(CLOCK_MONOTONIC)</code>,在 Windows 上是 QPC,在 macOS 上是 mach_absolute_time。它是<strong>跨平台 QPC</strong>,精度约 100ns,单调,适合游戏。\n\nRust 还提供 <code>Instant::elapsed()</code> 算从某时刻到现在多久,返回 Duration。\n\n<strong>Casey 的实战讨论</strong>\n\nCasey 这集主要想搞清楚「该用 QPC 还是 RDTSC」。结论:<strong>QPC</strong>。\n\n理由:\n1. RDTSC 太底层,平台差异大(AMD vs Intel,笔记本节能)\n2. QPC 是 OS 包装,稳定且足够快(几百 ns 开销)\n3. 调试工具(perf, vtune)都基于 QPC\n\n但 Casey 也演示了 RDTSC 的用法,让你知道有这个东西。某些场景(微基准测试)RDTSC 仍然有用——精度 100× 于 QPC。\n\n<strong>使用建议</strong>\n\n游戏循环:用 Instant / QPC。精度够,跨平台。\n微基准(测一个函数几 cycle):用 RDTSC,但要注意 warm-up + 多次取平均。\n日志时间戳:用 SystemTime(可读性好,精度不重要)。",
+      "map_parents": [
+        "计时(horology)",
+        "单调时钟 vs 墙上时钟",
+        "硬件计数器:TSC、HPET"
+      ],
+      "map_siblings": [
+        {
+          "name": "clock_gettime(CLOCK_MONOTONIC)",
+          "note": "Linux 高精度计时,Instant 内部用"
+        },
+        {
+          "name": "mach_absolute_time",
+          "note": "macOS 高精度计时"
+        },
+        {
+          "name": "GetTickCount",
+          "note": "Windows 低精度(10-16ms)计时"
+        },
+        {
+          "name": "time()",
+          "note": "POSIX 秒级,精度太低"
+        },
+        {
+          "name": "chrono::Instant",
+          "note": "更高层,但 Instant::now() 够用"
+        }
+      ],
+      "map_children": [
+        "TSC register(CPU 内部 64-bit 计数器)",
+        "QPC frequency(每秒 tick 数)",
+        "monotonic(单调,不回退)",
+        "wall clock(墙上时钟,可被改)"
+      ],
+      "related_days": [
+        "day004",
+        "day018",
+        "day019",
+        "day113"
+      ],
+      "comparison": "<strong>共通点</strong>:所有计时 API 本质都是「读一个递增计数器,除以频率得秒」。差别只在「读哪个计数器」和「精度多高」。\n\n<strong>核心差别</strong>:\n- 精度:TSC(0.3ns)> QPC(100ns)> GetTickCount(10ms)> time(1s)\n- 稳定性:QPC > TSC(因 TSC 多核/节能问题)\n- 跨平台:Instant/QPC > RDTSC(x86 专属)\n\n游戏选 QPC/Instant:精度够,稳定,跨平台。\n\n一个常被忽视的点:<strong>Instant 调用本身有开销</strong>(几十 ns)。如果你在 1ms 的循环里调 1000 次 Instant::now(),你测出来的时间会被测量本身污染。所以要避免「在 hot inner loop 频繁测时间」。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 这集选择 QPC 而不是 RDTSC。但 RDTSC 精度比 QPC 高 100 倍——为什么 Casey 不选精度高的?\n\n至少给 2 个理由。",
+          "a": "<strong>1. 多核不同步</strong>:每个 CPU 核有自己的 TSC,可能略有差异。游戏线程在核之间迁移(由 OS 调度),用 RDTSC 可能测出负数。QPC 是 OS 级抽象,自动处理这个。\n\n<strong>2. 节能模式</strong>:笔记本 / 手机 CPU 会动态调频(2GHz → 500MHz 省电)。如果 TSC 跟着 CPU 频率变,时间测量就错了。现代 CPU 有 invariant TSC 解决这个,但老 CPU 没有。QPC 不依赖 CPU 频率。\n\n<strong>3. 平台差异</strong>:RDTSC 是 x86 指令,ARM 没有。QPC 是 OS 抽象,跨架构。Casey 虽然 Win32-only,但精神上倾向跨平台。\n\n<strong>4. 调试生态</strong>:profiler(perf、vtune、superluminal)都基于 QPC/QPC-like。用 RDTSC 自己测的数据要和 profiler 对齐很麻烦。\n\n总结:RDTSC 是「跑分工具」(测几个 cycle 的微基准),QPC 是「生产工具」(稳定可靠)。游戏用 QPC。"
+        },
+        {
+          "level": 2,
+          "type": "practice",
+          "q": "用 Instant 写一个<strong>基准测试</strong>:测量「<code>vec![0u32; 1000]</code>」10000 次的平均耗时,纳秒级精度。\n\n要求:\n1. 用 Instant 测每次耗时\n2. 排除前 100 次(warm-up)\n3. 打印平均、最小、最大、p99\n\n提示:用 <code>Instant::now()</code> + <code>elapsed().as_nanos()</code>。",
+          "a": "<pre><code>use std::time::Instant;\n\nfn main() {\n    let mut times = Vec::new();\n    \n    // warm-up\n    for _ in 0..100 {\n        let _ = vec![0u32; 1000];\n    }\n    \n    // measure\n    for _ in 0..10000 {\n        let t0 = Instant::now();\n        let _ = vec![0u32; 1000];\n        let dt = t0.elapsed().as_nanos() as u64;\n        times.push(dt);\n    }\n    \n    times.sort();\n    let avg = times.iter().sum::<u64>() / times.len() as u64;\n    let min = times[0];\n    let max = *times.last().unwrap();\n    let p99 = times[(times.len() as f32 * 0.99) as usize];\n    println!(\"avg={}ns min={}ns max={}ns p99={}ns\", avg, min, max, p99);\n}</code></pre>\n\n跑起来你应该看到 min ≈ 200-500ns(分配 4KB)。注意 max 可能很大(几千 ns,GC 或 page fault)。这就是为什么基准要看 p99 而不是 max——max 总是异常值。\n\n这种「warm-up + measure + percentile」是基准测试的标准模式。Day 113 性能计数器会更深入。"
+        },
+        {
+          "level": 3,
+          "type": "transfer",
+          "q": "时间测量在分布式系统里是<strong>极困难</strong>的问题。Google 的 Spanner 数据库为了跨数据中心同步时间,用了原子钟 + GPS。\n\n问题:为什么分布式系统对时间精度要求这么高?具体场景是什么?如果时间测不准会怎样?\n\n提示:想想「事务的先后顺序」怎么定义。",
+          "a": "<strong>核心场景</strong>:<strong>分布式事务的一致性</strong>。\n\n例子:数据库 A 和数据库 B 在不同数据中心,用户转账 100 元。\n- 如果 A 先扣款,B 后加款——顺序明确\n- 如果 A 和 B 同时执行——谁先谁后?需要全局时间确定\n\n如果两个数据中心时间差 100ms,可能出现「A 看到 10:00:00.001,B 看到 10:00:00.050」——同一时刻两个数据中心 disagree。这就是<strong>因果顺序</strong>问题。\n\n<strong>解法</strong>:\n1. <strong>NTP</strong>:网络时间协议,精度 10-100ms(太粗)\n2. <strong>PTP</strong>:精密时间协议,精度亚毫秒(需要硬件支持)\n3. <strong>Google TrueTime</strong>:Spanner 用,原子钟 + GPS,精度 7ms,且 API 给出「时间区间」[t-e, t+e] 而非点\n4. <strong>逻辑时钟</strong>(Lamport):不用绝对时间,用「事件计数器」定义偏序\n\n<strong>为什么难</strong>:光速限制。两个数据中心相距 1000km,信号单程 3ms。任何同步都有这个物理下限。\n\n游戏单机不涉及这些(本地时钟够用),但<strong>多人游戏</strong>涉及!你按下攻击键的「时刻」在不同玩家电脑上记录不同,服务器要做 reconciliation(和解)。游戏用 client-side prediction + server reconciliation(客户端预测 + 服务端纠正),本质是逻辑时钟思路。\n\nDay 046 HH 加 multiplayer 支持时会触及这个问题(虽然 Casey 简化了)。"
+        }
+      ],
+      "supplements": [
+        {
+          "title": "📚 Rust 知识补充:Instant vs SystemTime",
+          "body": "Rust 有两个时间类型容易混淆:<code>Instant</code> 和 <code>SystemTime</code>。我帮你区分。\n\n<code>Instant</code>:\n- <strong>单调时钟</strong>(monotonic),永远不会回退\n- 不对应任何「现实时间」,只是两个 Instant 相减得 Duration\n- 内部:Linux 用 CLOCK_MONOTONIC,Windows 用 QPC,macOS 用 mach_absolute_time\n- <strong>用途</strong>:测时间间隔(「这帧花多久」「这个函数多快」)\n\n<code>SystemTime</code>:\n- <strong>墙上时钟</strong>(wall clock),表示「现在几点」\n- <strong>可以回退</strong>(NTP 调整、用户改时间、夏令时)\n- 内部:Linux 用 clock_gettime(CLOCK_REALTIME),Windows 用 GetSystemTimeAsFileTime\n- <strong>用途</strong>:时间戳(「日志记于 2026-06-19 14:30:00」「文件 mtime」)\n\n<strong>游戏必须用 Instant</strong>。如果用 SystemTime,玩家在游戏中改了系统时间,游戏会突然「跳」——dt 变成天文数字或负数。Instant 不会。\n\n<strong>坑</strong>:SystemTime 减法可能失败(返回 Result),因为可回退——「现在 - 过去」可能负数。Instant 减法永远成功。\n\n<strong>性能</strong>:Instant::now() 大概 30-50ns。SystemTime::now() 类似。两者都很快。\n\n记住口诀:<strong>测时长用 Instant,记时间戳用 SystemTime</strong>。"
+        }
+      ]
+    },
+    "day011": {
+      "why": "Day 011 是 HH 全剧最重要的<strong>架构奠基集</strong>之一。Casey 暂停了之前的具体编码(窗口、声音、输入),花一整集讨论「<strong>平台 API 怎么设计</strong>」——也就是游戏代码和平台层之间的接口。\n\n为什么这集这么重要?因为前面 10 集里,你的代码<strong>所有</strong>事情都直接调 Win32 / cpal / winit。这种代码有个致命问题:<strong>换平台就全废</strong>。如果你以后想把游戏移植到 macOS / Linux / Web,你要重写所有 Win32 调用。\n\nCasey 这集提出的解法是<strong>三层分离</strong>:平台层(Win32)、游戏代码(平台无关)、未来可能的渲染器层。游戏代码通过几个固定接口(函数签名 + 数据结构)和平台层通信。换平台时只换平台层,游戏代码一字不改。\n\n这个决策影响后面 656 集—— Casey 后面 Day 235 切 OpenGL 时,游戏代码几乎没改,就是因为 Day 011 的抽象做对了。我建议你<strong>这集反复看 2-3 遍</strong>,因为它是「Handmade Hero 之所以是 Handmade Hero」的核心。",
+      "model": "Casey 这集的设计哲学用一句话总结:<strong>「游戏代码是平台无关的纯函数」</strong>。\n\n我详细展开。先看 Casey 设计的<strong>核心数据结构</strong>:\n\n<pre><code>// 一帧的输入(从平台层 → 游戏代码)\nstruct GameInput {\n    buttons: [ButtonState; 6],  // 6 个按钮(上下左右 A B)\n    dt: f32,                    // 这帧耗时(秒)\n}\n\nstruct ButtonState {\n    is_down: bool,\n}\n\n// 游戏状态(由平台层分配,游戏代码用)\nstruct GameMemory {\n    permanent_storage: *mut u8,    // 永久状态(整个游戏生命周期)\n    permanent_storage_size: usize,\n    transient_storage: *mut u8,    // 临时状态(每帧重置)\n    transient_storage_size: usize,\n}\n\n// 一帧的输出(游戏代码 → 平台层)\nstruct GameOffscreenBuffer {\n    memory: *mut u32,  // 像素数组\n    width: i32,\n    height: i32,\n    pitch: i32,\n}\n\n// 游戏代码暴露的唯一函数\nfn update_and_render(\n    memory: &mut GameMemory,\n    input: &GameInput,\n    buffer: &mut GameOffscreenBuffer,\n    dt: f32,\n);</code></pre>\n\n这就是 Casey 设计的「平台无关 API」。<strong>注意几个关键设计决策</strong>:\n\n<strong>1. game_memory 由平台层分配,游戏代码使用</strong>\n\n平台层启动时 malloc 一大块内存(比如 100MB),把指针传给游戏代码。游戏代码用 <code>transmute</code>(或 reinterpret_cast)把它当成自己的状态结构。\n\n为什么这样?因为<strong>热重载</strong>(Day 21+)。如果游戏状态在游戏代码的全局变量里,DLL 重载时全局变量重置,状态丢失。状态在 game_memory 里(由平台层管),DLL 重载时状态保留。\n\n这是「状态外置」设计——游戏代码变成「无状态函数」,所有状态显式参数传入。\n\n<strong>2. 输入是结构,不是事件</strong>\n\n平台层收到 Win32 事件(WM_KEYDOWN 等),把它<strong>累加</strong>到 game_input 结构。每帧开始时拍快照,游戏代码读快照。\n\n这把「事件驱动」(callback 风格)翻译成「轮询」(polling 风格)——游戏代码风格统一,不混 event 和 state。\n\n<strong>3. 渲染输出是内存块,不是 API 调用</strong>\n\n游戏代码不调用 <code>glDrawArrays</code> 这种 API,而是直接写像素到 game_offscreen_buffer.memory。平台层负责把这个内存显示到屏幕(GDI / OpenGL / 任何后端)。\n\n这种<strong>命令缓冲</strong>(command buffer)模式让渲染后端可换。Casey Day 235 切 OpenGL,游戏代码几乎不改。\n\n<strong>4. 游戏代码不知道时间</strong>\n\ndt 由平台层测量并传入,游戏代码用 dt 但不主动读时钟。这让游戏可测试(喂 mock dt)、可慢放/快放(调试时 dt × 0.5)、可重放(记录每帧 dt 序列)。\n\n<strong>架构图</strong>\n\n<pre>           ┌───────────────────────────────┐\n           │  平台层 platform.rs            │\n           │  (Win32 / winit + cpal + ...) │\n           │                               │\n           │  • 分配 GameMemory             │\n           │  • 收集事件 → GameInput        │\n           │  • 测量 dt                     │\n           │  • 调用 update_and_render       │\n           │  • 显示 GameOffscreenBuffer    │\n           │  • 输出音频                     │\n           └───────────┬───────────────────┘\n                       │ 固定接口(函数签名 + 数据结构)\n                       ▼\n           ┌───────────────────────────────┐\n           │  游戏代码 handmade.rs (cdylib)  │\n           │  (平台无关)                    │\n           │                               │\n           │  fn update_and_render(...)     │\n           │  • 不调 Win32                  │\n           │  • 不调 cpal                   │\n           │  • 不调 winit                  │\n           │  • 只用 memory + input + dt    │\n           └───────────────────────────────┘</pre>\n\n<strong>Win32 → Rust 映射</strong>\n\nRust 端用 trait 表达这个接口:\n\n<pre><code>pub trait GameCode: Send + Sync {\n    fn update_and_render(\n        &mut self,\n        memory: &mut GameMemory,\n        input: &GameInput,\n        buffer: &mut GameOffscreenBuffer,\n        sound_buffer: &mut GameSoundBuffer,\n        dt: f32,\n    );\n}\n\n// 平台层\nstruct Platform {\n    game: Box<dyn GameCode>,  // 或者 libloading 拿到的 cdylib\n    // ...\n}</code></pre>\n\nRust 端因为 trait 系统,接口更显式。Casey 在 C 里靠注释和约定,Rust 编译器帮你检查。\n\n<strong>关键决策的连锁影响</strong>\n\n这个架构决定了 HH 的所有未来:\n- Day 21-23 热重载:因为状态外置,cdylib 可替换\n- Day 235 切 OpenGL:因为渲染抽象,游戏代码不改\n- Day 176+ debug 系统:因为游戏代码是「无状态函数」,可以重复调用(慢动作、回放)\n- Day 350 多线程:状态结构显式,易于划分\n\n这一集的设计好,后面 656 集都受益。设计不好,每集都要打补丁。这就是「<strong>架构决策</strong>」的力量。",
+      "map_parents": [
+        "关注点分离(separation of concerns)",
+        "Hexagonal Architecture(端口与适配器)",
+        "接口抽象 vs 实现",
+        "状态外置(无状态服务)"
+      ],
+      "map_siblings": [
+        {
+          "name": "Hexagonal Architecture(ports & adapters)",
+          "note": "Clean Architecture 系列,业务核心 + 外围适配器"
+        },
+        {
+          "name": "Entity-Component-System(ECS)",
+          "note": "数据驱动,Casey 不用但游戏行业流行"
+        },
+        {
+          "name": "Model-View-Controller(MVC)",
+          "note": "UI 领域的分离模式"
+        },
+        {
+          "name": "Actor Model",
+          "note": "消息传递而非函数调用,Casey 不用"
+        },
+        {
+          "name": "Free monad",
+          "note": "函数式编程的极致抽象,理论优美但实战少"
+        }
+      ],
+      "map_children": [
+        "GameMemory(状态外置)",
+        "GameInput(轮询快照)",
+        "GameOffscreenBuffer(命令缓冲)",
+        "update_and_render 函数签名(平台无关)",
+        "cdylib + libloading(运行时加载)"
+      ],
+      "related_days": [
+        "day014",
+        "day021",
+        "day022",
+        "day026",
+        "day240",
+        "day350"
+      ],
+      "comparison": "<strong>共通点</strong>:所有「平台无关」架构都解决同一问题——业务核心不依赖具体平台。差别在抽象方式。\n\n<strong>Casey 的方式 vs 其他方式</strong>:\n- <strong>Casey(函数指针 + 内存块)</strong>:简单直接,C 风格。代价:类型不安全(C 里),状态结构靠 convention。\n- <strong>Hexagonal / Clean Architecture(接口 + DI)</strong>:更抽象,业务核心定义「端口」,平台实现「适配器」。代价:接口多,代码量大。\n- <strong>ECS(数据驱动)</strong>:把状态拆成 component,系统遍历 component。代价:重构成本高,但 cache-friendly。\n\nCasey 的方式最适合 HH 的教学目标——简单、透明、性能可控。但 Casey 是一个资深程序员,他选简单方案是<strong>有意识的选择</strong>,不是不会用复杂方案。新手直接抄 Casey 风格,可能错过 ECS / DI 的优势。这是「教学项目」和「生产项目」的区别。\n\n<strong>Rust 视角的特别建议</strong>:Casey 在 C 里用裸指针 + 内存块,Rust 不鼓励这样。你可以用 trait + 显式类型,既保留架构精神又有类型安全。Day 026 重新讨论架构时,Casey 自己也升级了 API。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 把 game_memory 设计成「平台层分配,游戏代码使用」——而不是游戏代码自己持有全局状态。这个设计的主要原因是什么?\n\n至少给 2 个理由,并且解释「如果状态在游戏代码的全局变量里,会发生什么问题」。",
+          "a": "<strong>核心理由:状态外置使热重载可能</strong>。\n\n如果游戏状态在 cdylib 的全局变量里(比如 <code>static mut PLAYER_POS: Vec2 = ...</code>),DLL 重载时这些变量会<strong>重置</strong>——新 DLL 的全局变量是初始值,玩家的进度没了。\n\n状态在 game_memory 里(平台层分配,跨 DLL 边界),DLL 重载时 game_memory 不动,新 DLL 拿到的是旧状态,游戏无缝继续。\n\n<strong>第二个理由:可测试性</strong>。\n\n游戏代码变成「<strong>无状态函数</strong>」(<code>update_and_render(memory, input, dt)</code>),所有依赖都参数化。意味着:\n- 单元测试可以喂 mock memory + mock input,检查 output\n- 录制每帧的 input + dt 序列,可重放(找 bug)\n- 慢动作调试:dt × 0.1,看清楚每一帧\n\n这些 Casey 后面 Day 176+ debug 系统会用到。\n\n<strong>如果状态在全局变量里</strong>:\n- 不可热重载(状态丢)\n- 不可测试(全局污染)\n- 不可重放(随机数、时间都依赖全局)\n- 多线程冲突(全局变量是天然共享)\n\n所以「状态外置」不只是「为了热重载」,而是「为了所有好事情」。这是软件工程的基础原则:<strong>状态显式优于隐式</strong>。"
+        },
+        {
+          "level": 2,
+          "type": "practice",
+          "q": "用 Rust 设计一个最小的 GameCode trait + 平台层。要求:\n\n1. 定义 <code>trait GameCode</code>,有 <code>update_and_render(&mut self, input: &Input, dt: f32) -> Frame</code>\n2. 定义 <code>struct Input</code> 和 <code>struct Frame</code>(简单:Input 有 buttons,Frame 有 pixels: Vec<u32>)\n3. 写一个 <code>PongGame</code> 实现 GameCode(球左右弹,简化版)\n4. 写一个 <code>Platform</code>,持有 GameCode,模拟 60 帧运行(不需要真窗口,只打印帧号 + 球位置)\n\n这个练习让你亲手实现「平台无关」架构。注意 PongGame 不能调任何 winit / cpal,只用 input + dt。",
+          "a": "<pre><code>// 接口定义\npub trait GameCode {\n    fn update_and_render(&mut self, input: &Input, dt: f32) -> Frame;\n}\n\n#[derive(Default)]\npub struct Input {\n    pub left: bool,\n    pub right: bool,\n}\n\npub struct Frame {\n    pub width: usize,\n    pub height: usize,\n    pub pixels: Vec<u32>,\n}\n\n// 游戏实现(平台无关)\npub struct PongGame {\n    ball_x: f32,\n    ball_dir: f32,  // 1.0 或 -1.0\n}\n\nimpl PongGame {\n    pub fn new() -> Self { Self { ball_x: 50.0, ball_dir: 1.0 } }\n}\n\nimpl GameCode for PongGame {\n    fn update_and_render(&mut self, input: &Input, dt: f32) -> Frame {\n        // 更新\n        let speed = 50.0;\n        self.ball_x += self.ball_dir * speed * dt;\n        if self.ball_x > 90.0 { self.ball_dir = -1.0; }\n        if self.ball_x < 10.0 { self.ball_dir = 1.0; }\n        \n        // 渲染\n        let (w, h) = (100, 20);\n        let mut pixels = vec![0xFF000000; w * h];\n        let bx = self.ball_x as usize;\n        for y in 8..12 {\n            pixels[y * w + bx] = 0xFFFFFFFF;\n        }\n        Frame { width: w, height: h, pixels }\n    }\n}\n\n// 平台层\npub struct Platform { game: Box<dyn GameCode> }\nimpl Platform {\n    pub fn new(game: Box<dyn GameCode>) -> Self { Self { game } }\n    pub fn run(&mut self) {\n        let mut input = Input::default();\n        let dt = 1.0 / 60.0;\n        for frame in 0..60 {\n            // 模拟输入(球向右时按右键)\n            input.right = frame % 30 < 15;\n            let f = self.game.update_and_render(&input, dt);\n            println!(\"Frame {}: ball at x={}\", frame, f.pixels[8 * f.width + 50]);\n        }\n    }\n}\n\nfn main() {\n    let mut p = Platform::new(Box::new(PongGame::new()));\n    p.run();\n}</code></pre>\n\n跑起来你应该看到 60 帧的球位置输出。注意 PongGame <strong>完全不知道</strong>有 winit / cpal / Win32——它只知道 input 和 dt。这就是「平台无关」。\n\nDay 21 你会把 PongGame 编译成 cdylib,用 libloading 加载——同样的代码,运行时替换。"
+        },
+        {
+          "level": 3,
+          "type": "transfer",
+          "q": "Casey 的「状态外置 + 函数指针」架构,在 Web 后端 / 函数式编程 / 系统编程都有对应。各举一个例子,验证你理解了核心思想:\n\n1. Web 后端:哪种架构把「状态」从「业务逻辑」剥离?\n2. 函数式编程:哪个概念对应「无状态函数」?\n3. 系统编程:哪个 Unix 设计是「状态外置」的经典?",
+          "a": "三个例子验证同一核心思想:<strong>状态 vs 计算的分离</strong>。\n\n<strong>1. Web 后端:RESTful + 数据库</strong>。HTTP 服务器本身无状态,状态在数据库。每次请求,服务器从 DB load 状态,处理,存回 DB。这就是为什么 RESTful 易扩展(加机器就行,无粘性 session)。如果服务器有内存状态(session),加机器要 sticky session,复杂。对应 Casey:服务器=游戏代码,DB=game_memory。\n\n<strong>2. 函数式编程:纯函数 + State monad</strong>。Haskell 的纯函数没有副作用,所有状态显式参数化。如果状态复杂,用 State monad 把状态传递隐藏起来(语法上像 imperative,语义上纯)。对应 Casey:纯函数=update_and_render,State monad 里的 state=game_memory。\n\n<strong>3. Unix 设计:文件系统 as state</strong>。Unix 哲学「everything is a file」,程序不持有状态,状态写在文件里(配置、日志、socket)。程序可以随时重启,从文件恢复。这是 Unix 系统编程的核心理念——程序是无状态的,数据有持久性。对应 Casey:程序=平台层(可重启),文件=game_memory(持久)。\n\n<strong>通用原则</strong>:<strong>状态是麻烦的来源</strong>。状态多 → 难测试、难并发、难恢复。状态外置 → 测试容易、并发简单、恢复就是 load 状态。\n\n这就是为什么 Casey 的 HH 架构在游戏开发、后端、函数式、系统编程都通用——它抓住了软件设计的本质。\n\n后续 Day 026 Casey 会重新审视游戏架构,你会发现架构思想是「不断递归应用」的——状态外置、接口分离、纯函数,这些原则在不同抽象层级反复出现。"
+        },
+        {
+          "level": 4,
+          "type": "design",
+          "q": "如果你理解了 Day 011 的架构,来挑战设计题。\n\n假设你要做一个<strong>跨平台游戏引擎</strong>,目标是同时支持:Windows、macOS、Linux、Web(WASM)、移动端(iOS/Android)、主机(PS5/Xbox)。引擎要能跑同一份游戏代码,平台层各自实现。\n\n问题:\n1. 你的接口怎么设计?比 Casey 多考虑哪些场景?\n2. 主机和移动端有哪些特殊约束(Casey 没遇到)?\n3. Web 平台有什么根本性不同?你的 API 要怎么调整?\n4. 你怎么处理「不同平台性能差异 10×」这种问题?",
+          "a": "<strong>1. 接口设计</strong>:Casey 的接口适合桌面平台。扩展到全平台要加:\n- 触摸输入(多个触摸点,不只是一个鼠标)\n- 加速度计 / 陀螺仪(手机)\n- 网络接口(多人游戏)\n- 内购 / 成就系统(主机)\n- 不同屏幕 DPR(2x、3x)\n\n接口示例:扩展 GameInput 加 <code>touches: Vec<Touch></code>、<code>motion: Option<Accelerometer></code> 等。每个平台填自己支持的部分。\n\n<strong>2. 主机特殊约束</strong>:\n- 严格的认证流程(索尼 / 微软都要审核)\n- 固定硬件(可以激进优化,如 SSD 直读)\n- 系统 UI 覆盖(玩家收到通知、邀请)\n- 多人匹配(PlayStation Network / Xbox Live)\n- 内存限制(PS5 16GB 但系统占一半)\n\n<strong>3. Web 根本性不同</strong>:\n- <strong>无文件系统</strong>:Web 没有 std::fs,要用 IndexedDB(异步)\n- <strong>异步 I/O 必需</strong>:fetch、IndexedDB 都是 async,Casey 的同步接口不适用\n- <strong>主线程不能 block</strong>:Web 主线程 block 会卡 UI,要 web worker\n- <strong>WASM 性能</strong>:SIMD 支持,但线程(Web Worker)开销大\n\n接口要异步化:<code>async fn update_and_render(...)</code>。或保留同步接口但用 web worker 跑游戏循环,主线程只渲染。\n\n<strong>4. 性能 10× 差异</strong>:\n- <strong>质量分级</strong>:桌面高画质,手机低画质(更小纹理、更少特效)\n- <strong>分辨率自适应</strong>:检测设备,动态调渲染分辨率\n- <strong>LOD(level of detail)</strong>:远处物体用低模,近处用高模\n- <strong>异步加载</strong>:桌面同步加载,手机分帧加载\n\n这种「跨平台游戏引擎」的真实案例:Unreal、Unity、Godot。它们都用某种 platform abstraction layer + 业务核心 + 适配器模式,本质就是 Casey Day 011 思想的工业化。\n\n Casey 不教跨平台引擎,但他教的<strong>原则</strong>是跨平台引擎的基础。理解了 Day 011,你看 Unreal 的 PlatformFile、PlatformInput、PlatformTime 就秒懂。"
+        }
+      ],
+      "supplements": [
+        {
+          "title": "📚 Rust 知识补充:Trait 和动态派发",
+          "body": "Day 011 用到 <code>Box<dyn GameCode></code>,这是 Rust trait object + 动态派发。我详细讲。\n\n<strong>Trait 是什么</strong>:Rust 的接口概念。<code>trait GameCode { fn update(&mut self, ...); }</code> 定义一组方法,任何实现这组方法的类型都「实现」了这个 trait。\n\n<strong>静态派发(泛型)</strong>:\n<pre><code>struct Platform&lt;G: GameCode&gt; { game: G }\nimpl&lt;G: GameCode&gt; Platform&lt;G&gt; { ... }</code></pre>\n编译器为每个具体 G 类型生成专门代码。运行时无开销。但 Platform 类型参数化,不能换 G。\n\n<strong>动态派发(trait object)</strong>:\n<pre><code>struct Platform { game: Box<dyn GameCode> }</code></pre>\n<code>dyn GameCode</code> 是 trait object,运行时通过 vtable 调用方法。可以换 G(运行时换实现),但每次方法调用有间接开销(几 ns)。\n\nHH 热重载场景必须用动态派发——cdylib 拿到的是函数指针,不是泛型类型。运行时换实现只能 trait object。\n\n<strong>Box 是什么</strong>:堆分配的智能指针。<code>Box::new(x)</code> 把 x 放到堆上,返回 Box。Box 离开作用域时自动释放堆内存(Rust 所有权)。\n\n<code>Box<dyn Trait></code> = 堆上的 trait object。常用于「持有不同类型,只要它们都实现某 trait」。\n\n<strong>Sized trait</strong>:<code>?Sized</code> 表示类型大小未知。trait 默认 <code>?Sized</code>,所以 dyn Trait 不能直接放栈上,要 Box 包。\n\n<strong>Send + Sync</strong>:跨线程 trait object 要满足这两个。\n<pre><code>Box<dyn GameCode + Send + Sync></code></pre>\n\nDay 122 多线程会详细讲 Send / Sync 的意义。\n\n<strong>性能</strong>:trait object 的方法调用比直接调用慢 1-3ns(vtable 查找 + 间接跳转)。游戏热路径可能影响,但 update_and_render 一帧 60 次,这点开销可以忽略。"
+        },
+        {
+          "title": "📚 软件工程:Clean Architecture / Hexagonal Architecture",
+          "body": "Casey 这集的设计思想和软件工程领域的 Clean Architecture / Hexagonal Architecture 高度一致。如果你想深入理解,推荐几本书:\n\n<strong>1. 《Clean Architecture》by Robert C. Martin(Bob 大叔)</strong>。\n\n核心思想:业务核心(use cases / entities)不依赖任何外部细节(DB、Web、UI)。依赖方向:外层依赖内层,内层不知道外层。\n\n对应 Casey:游戏代码 = 内层(业务核心),平台层 = 外层(适配器)。\n\n<strong>2. Hexagonal Architecture(Ports and Adapters)</strong> by Alistair Cockburn。\n\n核心:应用定义「端口」(接口),具体技术(DB / Web / CLI)是「适配器」。一个应用可以有多个适配器,换适配器不改业务核心。\n\n对应 Casey:GameCode trait = 端口,Win32 / cpal / winit = 适配器。\n\n<strong>3. 《Domain-Driven Design》by Eric Evans</strong>。\n\n更深一层:不仅是架构,还讲怎么建模业务领域。游戏开发不太用 DDD,但概念有借鉴。\n\n<strong>实战中的权衡</strong>:\n\nClean Architecture 在企业应用很流行,但在游戏开发不普及。原因:\n- 游戏性能敏感,间接层有开销\n- 游戏逻辑更「数据密集」,传统 OOP 抽象不合适\n- Casey 这种「内存块 + 函数指针」更贴近游戏需求\n\n但思想是相通的。理解 Casey 的设计 + Clean Architecture,你能在不同场景选合适的抽象层级。"
+        },
+        {
+          "title": "📚 Wayland 注意事项:平台抽象的「最后 10%」",
+          "body": "Casey 这集的平台抽象在 Windows 上完美工作。Linux + KDE Wayland 有几个「最后 10%」细节你要知道:\n\n<strong>1. Wayland 没有「全局键」</strong>。Win32 有 <code>RegisterHotKey</code>(全局按键,即使你的窗口不在前台也能收到)。Wayland 出于安全考虑不允许——只有聚焦窗口能收键盘。所以游戏「按 F12 截图」这种功能,Wayland 必须是窗口聚焦才行。\n\n<strong>2. DPI 缩放是合成器管的</strong>。Win32 让你 CreateWindowEx 时指定大小,Wayland 不一样——你给的大小是 logical pixel,合成器(KWin)按 DPR 缩放。所以在 4K 屏(DPR=2)上,你创建 800×600 窗口,实际渲染区域是 1600×1200。\n\n这对 back_buffer 有影响:你要按 DPR × logical size 分配 back_buffer,否则糊。或者用 winit 的 <code>inner_size()</code> + <code>scale_factor()</code> 算物理 size。\n\n<strong>3. 拖拽文件</strong>。Wayland 协议要求窗口「自愿接受 drop」,不像 X11 随便发 drop 事件。winit 在 Wayland 下可能要显式注册 drop target。\n\n<strong>4. IME 输入法</strong>。中文输入法(fcitx5 / ibus)在 Wayland 下通过 zwp_text_input 协议工作。winit 支持但有时有 bug。建议游戏要求英文输入或游戏内画自己的输入框。\n\n<strong>5. KWin bug</strong>:KDE 的合成器在某些版本有特定问题,比如全屏 + IME 不工作、Plasma 5.27 之前 some 窗口样式异常。这些问题不在你的代码,在 KDE 自己。所以测试时多在 KDE / GNOME / Sway 都试一下,知道哪些是你的问题、哪些是 Wayland 实现的问题。\n\nCasey 不需要管这些(他只针对 Windows),你 Rust 跨平台要管。这就是「跨平台游戏的代价」——但好处是覆盖更多用户。"
+        }
+      ]
+    },
+    "day012": {
+      "why": "Day 011 Casey 设计了平台无关 API 的<strong>接口</strong>。Day 012-15 是把这个接口<strong>具体应用到四个子系统</strong>:音频、输入、内存、文件。Day 012 是音频部分。\n\n具体做什么?把 Day 007 的 DirectSound / cpal 调用从游戏代码里挪到平台层。游戏代码以后只要「向 sound_buffer 写样本」,平台层负责送到 cpal。这样游戏代码不知道是 DirectSound / ALSA / cpal,换音频后端不动游戏代码。\n\n这集还有一个关键设计:<strong>音频 ring buffer 的同步</strong>。Casey 引入了「游戏代码写一块样本缓冲,平台层慢慢消化」的模式——这是后面 Day 019 调试音频同步的基础。",
+      "model": "我打个比方:音频输出就像<strong>排队取餐</strong>。厨师(游戏代码)准备好菜,放到取餐台(sound_buffer);服务员(平台层)按顾客(声卡)的需求,从取餐台拿菜送过去。\n\n游戏代码不需要知道服务员怎么送(走 Win32 DirectSound 还是 Linux ALSA),只要保证取餐台上有菜就行。\n\n<strong>Casey 的设计</strong>:\n\n<pre><code>// 游戏代码填充\nstruct GameSoundBuffer {\n    samples: *mut i16,        // 样本数组(stereo: L R L R...)\n    samples_per_second: i32,  // 44100\n    sample_count: i32,        // 这次填多少样本\n}</code></pre>\n\n游戏代码每帧调用时,填 sample_count 个样本到 samples 数组。具体填什么声音由游戏决定(方波、混音后的多声道等)。\n\n平台层拿到这批样本,放到 DirectSound 的 secondary buffer 里的「下一块可写位置」。声卡异步消费。\n\n<strong>关键问题:样本数对不上</strong>\n\n这有一个微妙问题:游戏代码每帧产出的样本数 ≠ 声卡消费的样本数。比如:\n- 60 FPS,每帧 16.67ms,44100Hz → 每帧应该产 44100 × 0.01667 ≈ 735 样本\n- 但实际帧时间不固定(可能 16ms 或 17ms),样本数要 round\n\n如果游戏每帧严格产 735 样本,而声卡按真实时间消费——可能消费 730 或 740,误差累积。\n\nCasey 的解法:平台层算「现在声卡播到哪」,告诉游戏代码「下一帧你产 N 样本」,N 根据声卡进度算。这样游戏代码每帧产 N 样本,刚好补上消耗,误差为 0。\n\n这种「平台层主动告诉游戏代码要多少」的模式,比「游戏代码拍脑袋产固定数」更稳。Day 019 调试音频同步就是这机制的完善。\n\n<strong>Win32 → Rust 映射</strong>\n\ncpal 用回调驱动,所以这个映射略不同——cpal 不需要平台层算「下一帧多少样本」,声卡自己回调要 N 个样本。Rust 端的模式:\n\n<pre><code>// 平台层(在 cpal 回调里)\nlet mut game_sound_buf = GameSoundBuffer::new(N);\ngame.update_and_render(&mut memory, &input, &mut render_buf, &mut game_sound_buf, dt);\n// 把 game_sound_buf.samples 拷到 cpal 的 data slice\ndata.copy_from_slice(&game_sound_buf.samples);</code></pre>\n\n这样 Rust 端不需要算 ring buffer 写指针,cpal 全权管理。代价:游戏代码的 update 频率由声卡决定(每 N 样本一次回调),不再 60Hz。\n\n两种方案各有优劣,Casey 风格更「显式控制」,cpal 风格更「自动化」。Rust 实战中 cpal 风格更省心。",
+      "map_parents": [
+        "生产者-消费者解耦",
+        "Ring buffer 同步",
+        "抽象层间的数据格式约定"
+      ],
+      "map_siblings": [
+        {
+          "name": "ALSA pcm",
+          "note": "Linux 底层音频,也用 ring buffer"
+        },
+        {
+          "name": "Web Audio ScriptProcessor",
+          "note": "Web 浏览器音频回调"
+        },
+        {
+          "name": "PortAudio",
+          "note": "C++ 跨平台音频抽象"
+        },
+        {
+          "name": "rodio Sink",
+          "note": "Rust 高层(藏了细节,违背 HH 精神)"
+        }
+      ],
+      "map_children": [
+        "样本格式(i16 / f32)",
+        "samples_per_second",
+        "sample_count",
+        "声卡 play cursor vs write cursor"
+      ],
+      "related_days": [
+        "day007",
+        "day019",
+        "day020",
+        "day138",
+        "day139"
+      ],
+      "comparison": "<strong>共通点</strong>:所有实时音频系统都是「游戏代码产 → 平台层送 → 声卡播」三段。\n\n<strong>差别</strong>:谁来决定样本数?\n- Casey:平台层算,游戏代码响应(显式控制)\n- cpal:声卡回调决定,游戏代码响应(声卡主导)\n- Web Audio:开发者主动 push 到 buffer(应用主导)\n\nCasey 的方式最灵活(可以慢动作、回放),cpal 最简单(不用算同步)。游戏选哪个看复杂度。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 把 sound_buffer 设计成 i16 样本(stereo 交错)。为什么不直接用 f32(更精确)?为什么用交错(L R L R)而不是分两段(L 数组 + R 数组)?",
+          "a": "<strong>i16 vs f32</strong>:历史 + 兼容。早期声卡只支持 16-bit integer,DirectSound API 也是。Casey 用 i16 兼容性最好。现代 cpal 默认 f32 更友好(混音不会 clip)。游戏开发推荐 f32。\n\n<strong>交错 vs 分离</strong>:历史 + 设备驱动。声卡硬件期望交错(L R L R),因为这是 PCM stream 的标准。DirectSound API 也是交错。一些专业音频软件(JACK)用分离(planar),便于独立处理每个声道。\n\nCasey 选交错因为 DirectSound 如此,且简单。代价:混音时 if stereo,要处理两个 channel 的样本对。Rust cpal 默认交错(看 device.default_output_config())。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Day 12 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "Day 12 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        }
+      ]
+    },
+    "day013": {
+      "why": "Day 011 设计接口,Day 012 应用到音频,Day 013 应用到<strong>输入</strong>。\n\n具体做什么?把 Day 006 的键盘 / 手柄事件收集逻辑挪到平台层。游戏代码以后只读 <code>GameInput</code> 结构,不直接调 Win32 或 gilrs。\n\n这集和 Day 011 是配套的——Day 011 设计抽象,Day 013 落地输入部分。后面 Day 017 还会做「统一键盘和手柄到同一接口」的进一步抽象。",
+      "model": "平台层的工作:每帧开始时,从 winit 收的事件 + gilrs 状态,合成一个 GameInput 结构,传给游戏代码。\n\n<strong>GameInput 结构</strong>:\n\n<pre><code>pub struct GameInput {\n    pub controllers: [Controller; 5],  // 4 手柄 + 1 键盘当 0 号手柄\n}\n\npub struct Controller {\n    pub is_connected: bool,\n    pub buttons: [ButtonState; 14],  // 14 个按钮\n    pub stick_average_x: f32,        // 摇杆 x(范围 -1..1)\n    pub stick_average_y: f32,\n}\n\npub struct ButtonState {\n    pub is_down: bool,\n}\n\n// 索引约定\nconst BUTTON_UP: usize = 0;\nconst BUTTON_DOWN: usize = 1;\n// ... 14 个\nconst CONTROLLER_KEYBOARD: usize = 0;  // 键盘当 0 号手柄\nconst CONTROLLER_GAMEPAD_START: usize = 1;</code></pre>\n\n这个设计妙处:<strong>键盘是 0 号「手柄」</strong>。游戏代码可以同样地处理键盘和手柄——按 0 号手柄的 BUTTON_UP,可能是键盘的 W 键,也可能是物理手柄的某键。\n\n这种「适配器模式」让游戏代码完全不知道输入来源。开发者按键测试、用户插手柄,代码无感。\n\n<strong>Win32 → Rust 映射</strong>\n\nRust 端用同样的结构。平台层收集 winit KeyboardInput + gilrs gamepad events,每帧开始时合成 GameInput。\n\n<pre><code>// 平台层(简化)\nfn build_game_input(&self) -> GameInput {\n    let mut input = GameInput::default();\n    \n    // 键盘(0 号手柄)\n    input.controllers[0].is_connected = true;\n    if self.keys.contains(&KeyCode::KeyW) {\n        input.controllers[0].buttons[BUTTON_UP].is_down = true;\n    }\n    // ...\n    \n    // gilrs 手柄(1+ 号)\n    for (idx, gamepad) in self.gilrs.gamepads().enumerate() {\n        if idx >= 4 { break; }\n        input.controllers[idx + 1].is_connected = true;\n        input.controllers[idx + 1].buttons[BUTTON_UP].is_down = \n            gamepad.is_pressed(gilrs::Button::DPadUp);\n        // ...\n    }\n    \n    input\n}</code></pre>\n\n游戏代码用 input 时<strong>完全不知道</strong>是键盘还是手柄按的——这就是抽象的力量。",
+      "map_parents": [
+        "适配器模式(Adapter Pattern)",
+        "抽象 vs 具体来源",
+        "Input polling snapshot"
+      ],
+      "map_siblings": [
+        {
+          "name": "SDL2 GameController",
+          "note": "SDL2 的统一输入抽象"
+        },
+        {
+          "name": "Xinput + DirectInput",
+          "note": "Windows 的两代手柄 API"
+        },
+        {
+          "name": "evdev + libinput",
+          "note": "Linux 内核级输入抽象"
+        }
+      ],
+      "map_children": [
+        "ButtonState(is_down)",
+        "Controller(包含多个 button + 摇杆)",
+        "GameInput(包含多个 Controller)",
+        "Edge detection(was_down / is_down 二元组)"
+      ],
+      "related_days": [
+        "day006",
+        "day011",
+        "day017"
+      ],
+      "comparison": "<strong>共通点</strong>:所有现代游戏引擎都有「统一输入抽象」——Unity、Unreal、Godot 都有。\n\n<strong>差别</strong>:抽象层级。\n- Casey:把键盘当 0 号手柄,最扁平\n- Unity:Input System 是事件驱动,有 PlayerInput 组件\n- Unreal:Enhanced Input System,有 trigger / modifier\n- Godot:InputEvent 树\n\nCasey 的最简单,适合教学。生产用 Unreal / Unity 更灵活。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 把键盘当成「0 号手柄」。这种设计的优点是什么?有没有缺点?",
+          "a": "<strong>优点</strong>:游戏代码统一处理,没有 if keyboard / if gamepad 分支。换设备无感。\n\n<strong>缺点</strong>:\n1. <strong>键盘的特有能力丢失</strong>:键盘有「文本输入」(打字聊天、命名角色),手柄没有。把键盘当手柄,文本输入要单独处理。\n2. <strong>键盘按键多</strong>:键盘有 100+ 键,手柄只有 14 个 button。映射时只能选常用的(WASD / 方向键 / 数字键),其他键用不上。\n3. <strong>摇杆的精度丢失</strong>:键盘是二值(按/不按),手柄摇杆是连续值(-1..1)。键盘模拟摇杆只能 0 或 1,不能半按。\n\nCasey 后面 Day 017 统一输入时讨论了 1 和 3 的折中。文本输入 HH 不需要(没聊天功能),所以 2 不重要。\n\n实战:游戏有文本输入需求(聊天、命名)时,要独立处理键盘 text input,不能完全当成手柄。"
+        },
+        {
+          "level": 2,
+          "type": "practice",
+          "q": "扩展 Day 006 的键盘控制方块程序,改成用 GameInput 结构。要求:\n\n1. 定义 GameInput / Controller / ButtonState 结构\n2. 平台层每帧开始时合成 GameInput(键盘填到 0 号手柄)\n3. 游戏代码 update 用 GameInput.controllers[0].buttons[BUTTON_LEFT].is_down 等\n\n这样游戏代码不再直接调 winit,只看 GameInput。",
+          "a": "<pre><code>// 接口(平台无关)\n#[derive(Default, Clone)]\npub struct GameInput {\n    pub controllers: [Controller; 1],  // 简化:只有键盘\n}\n#[derive(Default, Clone)]\npub struct Controller {\n    pub buttons: [ButtonState; 4],  // UP/DOWN/LEFT/RIGHT\n}\n#[derive(Default, Clone, Copy)]\npub struct ButtonState { pub is_down: bool }\npub const UP: usize = 0;\npub const DOWN: usize = 1;\npub const LEFT: usize = 2;\npub const RIGHT: usize = 3;\n\n// 平台层(在 window_event 里收集键盘)\nstruct App {\n    keys: HashSet<KeyCode>,\n    pos: (f32, f32),\n    // ...\n}\nimpl App {\n    fn build_input(&self) -> GameInput {\n        let mut input = GameInput::default();\n        input.controllers[0].buttons[UP].is_down = self.keys.contains(&KeyCode::ArrowUp);\n        input.controllers[0].buttons[DOWN].is_down = self.keys.contains(&KeyCode::ArrowDown);\n        input.controllers[0].buttons[LEFT].is_down = self.keys.contains(&KeyCode::ArrowLeft);\n        input.controllers[0].buttons[RIGHT].is_down = self.keys.contains(&KeyCode::ArrowRight);\n        input\n    }\n}\n\n// 游戏代码(平台无关!)\nfn update_and_render(pos: &mut (f32, f32), input: &GameInput, dt: f32) {\n    let speed = 200.0;\n    if input.controllers[0].buttons[LEFT].is_down { pos.0 -= speed * dt; }\n    if input.controllers[0].buttons[RIGHT].is_down { pos.0 += speed * dt; }\n    if input.controllers[0].buttons[UP].is_down { pos.1 -= speed * dt; }\n    if input.controllers[0].buttons[DOWN].is_down { pos.1 += speed * dt; }\n}</code></pre>\n\n注意 update_and_render 函数<strong>没有 winit import</strong>——它纯用 GameInput。这就是平台无关。下次要换 Wayland 后端,update_and_render 一字不改。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "Day 13 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        }
+      ]
+    },
+    "day014": {
+      "why": "Day 011 设计接口,Day 012-13 应用到音频和输入。Day 014 应用到<strong>内存</strong>——这是一个特别重要的设计,因为<strong>热重载</strong>(Day 21+)依赖它。\n\n回顾 Day 011:Casey 设计 GameMemory 由平台层分配,游戏代码使用。Day 014 落地这个设计,具体讨论「平台层怎么分配这块内存,游戏代码怎么用」。\n\n这集还引入了一个重要概念:<strong>内存分区</strong>。Casey 把 GameMemory 分成两部分——permanent(永久,整个游戏生命周期)和 transient(临时,每帧重置)。这种分区后面 Day 305 memory arena 会进一步发展。",
+      "model": "我打个比方:GameMemory 就像你给游戏一块<strong>大仓库</strong>,游戏代码自己决定仓库里怎么摆东西。\n\n<strong>Casey 的内存布局</strong>:\n\n<pre><code>struct GameMemory {\n    // 永久存储:整个游戏生命周期存在\n    // 玩家进度、解锁的关卡、设置等\n    permanent_storage: *mut u8,\n    permanent_storage_size: usize,  // 比如 64MB\n    \n    // 临时存储:每帧重置\n    // 渲染命令、debug 数据、临时计算\n    transient_storage: *mut u8,\n    transient_storage_size: usize,  // 比如 256MB(更大,因为可能要加载资产)\n}</code></pre>\n\n<strong>为什么分区?</strong>\n\n如果只有一块内存,游戏代码每次分配都要算「这块还能用多少」。容易出错(分配失败、内存碎片)。\n\n分两区:\n- permanent:小,稳定,放长期数据\n- transient:大,可重置,放短期数据\n\n游戏代码用 transient 时<strong>完全不担心释放</strong>——每帧开头 transient 整块 reset,所有临时分配都自动回收。这种「frame arena」模式非常 cache-friendly,且没有内存碎片。\n\n<strong>具体使用方式</strong>\n\n游戏代码用 transient 内存:\n\n<pre><code>fn update_and_render(memory: &mut GameMemory, ...) {\n    // 把 transient 当 arena 用\n    let transient = unsafe { \n        std::slice::from_raw_parts_mut(\n            memory.transient_storage, \n            memory.transient_storage_size\n        ) \n    };\n    \n    // 这块当 push buffer 用,分配 = 指针前移\n    let mut arena_offset = 0;\n    let render_commands = {\n        let ptr = transient.as_mut_ptr().cast::<RenderCommand>();\n        unsafe { std::slice::from_raw_parts_mut(ptr, 1024) }\n    };\n    arena_offset += 1024 * std::mem::size_of::<RenderCommand>();\n    \n    // ...\n}</code></pre>\n\n注意 Casey 在 C 里这是日常操作(裸指针 + cast)。Rust 端这是 <code>unsafe</code> 块,因为编译器不能保证 transient_storage 的对齐、生命周期。\n\n<strong>Win32 → Rust 改进</strong>\n\nRust 端有更好的选择——用 <code>Arena</code> 类型封装:\n\n<pre><code>pub struct Arena {\n    buffer: Box<[u8]>,\n    offset: std::cell::Cell<usize>,\n}\nimpl Arena {\n    pub fn alloc&lt;T&gt;(&self, n: usize) -> &mut [T] {\n        let size = n * std::mem::size_of::<T>();\n        let align = std::mem::align_of::<T>();\n        let start = (self.offset.get() + align - 1) & !(align - 1);\n        self.offset.set(start + size);\n        unsafe { std::slice::from_raw_parts_mut(\n            self.buffer.as_ptr().add(start) as *mut T, n\n        )}\n    }\n    pub fn reset(&self) { self.offset.set(0); }\n}</code></pre>\n\n这样游戏代码用 <code>arena.alloc::&lt;RenderCommand&gt;(1024)</code>,类型安全 + 自动对齐。Rust 哲学:把 unsafe 限制在最小范围,外面包装 safe API。\n\n<strong>关键洞察:状态外置的可测试性</strong>\n\npermanent 在平台层管理意味着你可以「保存状态」。把 permanent 内容 dump 到文件,下次启动 load 回来——存档机制!\n\nCasey 后面 Day 192 用这个特性做 self-recompilation(游戏自己重启自己),状态完美保留。这是状态外置的额外红利。",
+      "map_parents": [
+        "Arena 分配器(连续内存分配)",
+        "内存生命周期分区(permanent vs transient)",
+        "状态外置 → 可序列化(存档)"
+      ],
+      "map_siblings": [
+        {
+          "name": "malloc/free 通用分配器",
+          "note": "灵活但有碎片、慢"
+        },
+        {
+          "name": "Slab allocator",
+          "note": "Linux 内核用,按对象类型分池"
+        },
+        {
+          "name": "bumpalo(Rust crate)",
+          "note": "现成 arena 实现"
+        },
+        {
+          "name": "Stack allocation(C auto)",
+          "note": "函数返回自动释放,但不灵活"
+        }
+      ],
+      "map_children": [
+        "GameMemory(permanent + transient)",
+        "Push allocation(指针前移)",
+        "Memory alignment",
+        "状态外置 → 可序列化"
+      ],
+      "related_days": [
+        "day011",
+        "day157",
+        "day192",
+        "day305",
+        "day341"
+      ],
+      "comparison": "<strong>共通点</strong>:所有高性能游戏/模拟器都用 arena,因为通用 malloc 太慢 + 碎片。\n\n<strong>差别</strong>:粒度。\n- Casey:两块大 arena(permanent + transient)\n- 现代 engine:多个 arena,每个系统一个(渲染 arena、物理 arena、AI arena)\n- Linux 内核:slab allocator,每个对象类型一个池\n\n分越多越精细管理,但复杂度上升。Casey 的两块是教学最优——简单但够用。\n\nDay 305 memory arenas 升级到更细粒度,Day 341 dynamic arena 支持运行时增长。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 把内存分 permanent 和 transient。transient「每帧重置」是什么意思?为什么这样设计?\n\n进一步:为什么不能所有内存都「每帧重置」?那不是最方便吗?",
+          "a": "<strong>transient 每帧重置</strong>:每帧开始时,transient 的 offset 归零,所有之前在 transient 里的数据被认为「失效」。新分配从 0 开始覆盖。\n\n游戏代码不释放 transient 内存——它知道这帧结束后整块会重置,所以分配后用完即可,不用 free。\n\n<strong>为什么不能所有内存都每帧重置</strong>:有些状态需要<strong>跨帧保留</strong>——玩家位置、关卡进度、解锁状态。如果每帧 reset,玩家移动后下一帧位置归零,游戏没法玩。\n\n所以需要两区:\n- permanent:跨帧长期数据(玩家进度)\n- transient:单帧临时数据(渲染命令)\n\n这是<strong>生命周期分治</strong>:不同生命周期的数据分开管理,各自用最合适的策略。\n\nC++ Rust 等语言里这就是 RAII / ownership——不同 owner 负责不同生命周期。Casey 在 C 里手动分,本质一样。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Day 14 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "Day 14 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        }
+      ],
+      "supplements": [
+        {
+          "title": "📚 Rust 所有权深入:为什么裸指针要 unsafe",
+          "body": "Day 014 涉及 <code>*mut u8</code> 裸指针,这是 Rust 的 unsafe 领域。我讲清楚为什么。\n\n<strong>裸指针 vs 引用</strong>:\n- <code>&T</code>:Rust 借用检查器保证有效引用(不能悬空、不能别名)\n- <code>*const T / *mut T</code>:裸指针,没有保证。可能悬空、可能别名、可能未对齐\n\n裸指针<strong>创建</strong>不需要 unsafe——你可以 <code>let p = &x as *const _</code>。但<strong>解引用</strong>(读 / 写)需要 unsafe,因为编译器不能保证安全。\n\n为什么需要裸指针?几个场景:\n1. <strong>FFI(和 C 互操作)</strong>:C 不知道 Rust 引用,只懂裸指针\n2. <strong>自实现数据结构</strong>:双向链表、自引用结构,违反 Rust 借用规则\n3. <strong>性能</strong>:避开借用检查的运行时开销(虽然现代 Rust 引用开销很小)\n4. <strong>手动内存管理</strong>:实现 allocator(像 Day 014 这里)\n\nDay 014 Casey 在 C 里直接用裸指针,Rust 翻译要 unsafe 块包起来。但<strong>不要让 unsafe 蔓延</strong>——把 unsafe 限制在底层 alloc 函数,外面包 safe API。\n\n<strong>Arena 设计示例</strong>:\n<pre><code>pub struct Arena { buffer: Box<[u8]>, offset: Cell<usize> }\n\nimpl Arena {\n    // SAFE API(用户调这个)\n    pub fn alloc&lt;T&gt;(&self, n: usize) -> &mut [T] {\n        // 内部用 unsafe,但调用者不用知道\n        unsafe { self.alloc_unsafe::&lt;T&gt;(n) }\n    }\n    \n    // UNSAFE 内部实现\n    unsafe fn alloc_unsafe&lt;T&gt;(&self, n: usize) -> &mut [T] {\n        let size = n * std::mem::size_of::<T>();\n        let align = std::mem::align_of::<T>();\n        let start = align_up(self.offset.get(), align);\n        self.offset.set(start + size);\n        assert!(start + size <= self.buffer.len());\n        std::slice::from_raw_parts_mut(\n            self.buffer.as_ptr().add(start) as *mut T, n\n        )\n    }\n}</code></pre>\n\n用户只看到 <code>arena.alloc::&lt;RenderCommand&gt;(1024)</code>,safe 干净。所有 unsafe 在 Arena 内部,经过仔细设计保证不变量(对齐、不越界)。\n\n这是 Rust 设计哲学:<strong>把不安全压缩到最小内核,外面包 safe 抽象</strong>。Day 011 平台抽象 + Day 014 内存抽象都是这个模式。"
+        }
+      ]
+    },
+    "day015": {
+      "why": "Day 015 是 Day 012-14 这一系列的收尾——平台无关抽象应用到<strong>文件 I/O</strong>。\n\n为什么要做平台无关文件 I/O?Windows 用 <code>CreateFile / ReadFile</code>,Linux 用 <code>open / read</code>,Mac 也是 POSIX。看起来跨平台不是问题——但是 Casey 在 C 里用 Win32 API,所以需要一层抽象。\n\nRust 端 <code>std::fs</code> 已经跨平台,这层抽象对 Rust 学习者意义小。但 Casey 这集还讨论了几个重要概念:<strong>调试日志文件</strong>(把 debug 信息写到文件,而不是只输出到 stderr)。Day 015 的「Debug File」是 HH 后面 200 集 debug 系统的雏形。",
+      "model": "Casey 这集具体做的事:\n\n<strong>1. 定义平台无关的文件读 API</strong>\n\n<pre><code>// 平台层提供:\nextern fn platform_read_file(filename: &str) -> Option<Vec<u8>>;\nextern fn platform_write_file(filename: &str, data: &[u8]) -> Result;\nextern fn platform_get_file_size(filename: &str) -> Option<u64>;</code></pre>\n\nRust 端就是 std::fs 的封装。\n\n<strong>2. 引入 Debug File</strong>\n\nCasey 做了一个特别的文件:debug log。游戏运行时持续往这个文件 append 文本,记录事件、警告、错误。当游戏 crash 或行为异常,你可以看 debug file 知道发生了什么。\n\n<pre><code>fn debug_log(message: &str) {\n    platform_append_to_file(\"debug.log\", message);\n    platform_append_to_file(\"debug.log\", \"\\n\");\n}</code></pre>\n\n游戏代码用 <code>debug_log!(\"Player HP: {}\", hp)</code> 这种宏(类似 println!),输出到 debug.log。\n\n<strong>为什么用文件而不是 stderr?</strong>\n\nstderr 在游戏里不好用——游戏没控制台(全屏游戏),stderr 看不见。文件可以游戏运行时 tail -f 查看,游戏 crash 后保留。\n\nRust 端用 <code>env_logger</code> 或 <code>tracing</code> crate 做更结构化的日志。但 Casey 手写,透明度高。\n\n<strong>Win32 → Rust 映射</strong>\n\nRust std::fs 已经跨平台,所以这层抽象很薄:\n\n<pre><code>use std::fs;\nfn platform_read_file(path: &str) -> Option<Vec<u8>> {\n    fs::read(path).ok()\n}\nfn platform_write_file(path: &str, data: &[u8]) -> Result<(), std::io::Error> {\n    fs::write(path, data)\n}</code></pre>\n\n就是这么简单。Rust 把所有平台差异藏在 std::fs 里,你直接用。这是「现代语言跨平台」的红利——Casey 在 C 里要自己处理 Win32 / POSIX 差异,Rust 不用。\n\n<strong>关键概念:同步 vs 异步 I/O</strong>\n\nCasey 这集用同步 I/O(read 阻塞直到读完)。游戏循环里同步 I/O 是<strong>大忌</strong>——读 100MB 文件可能花几百毫秒,游戏掉帧。\n\n解法是<strong>异步 I/O</strong>:游戏代码发起读请求,平台层后台加载,完成时通知。Casey 后面 Day 132 asset streaming 用这个。\n\nRust 端异步 I/O 用 tokio / async-std / smol。游戏循环里可以用 spawn + channel 模式:主循环发起读,worker 线程读,完成通过 channel 通知。",
+      "map_parents": [
+        "POSIX 文件 API(open / read / write / close)",
+        "日志(logging)基础",
+        "同步 vs 异步 I/O"
+      ],
+      "map_siblings": [
+        {
+          "name": "stdio(fopen / fread / fwrite)",
+          "note": "C 标准库文件 API,跨平台但薄"
+        },
+        {
+          "name": "memory-mapped file(mmap)",
+          "note": "把文件映射到内存,零拷贝"
+        },
+        {
+          "name": "io_uring(Linux)",
+          "note": "现代异步 I/O,性能极高"
+        },
+        {
+          "name": "IOCP(Windows)",
+          "note": "Windows 异步 I/O 完成端口"
+        }
+      ],
+      "map_children": [
+        "File handle / descriptor(fd)",
+        "同步 read / write 阻塞",
+        "异步 I/O:发起 → 通知",
+        "Logging 级别(DEBUG / INFO / WARN / ERROR)"
+      ],
+      "related_days": [
+        "day011",
+        "day132",
+        "day151",
+        "day208"
+      ],
+      "comparison": "<strong>共通点</strong>:所有文件 I/O 本质都是「打开 → 读/写 → 关闭」三段。\n\n<strong>差别</strong>:同步 vs 异步。\n- 同步:简单,适合一次性读(配置文件)\n- 异步:复杂,适合大文件 + 不能阻塞(streaming assets)\n\n游戏开发两个都用:启动时同步读配置,运行时异步流式资产。Day 132 asset streaming 详细讲异步。\n\nRust std::fs 是同步,要异步得用 tokio / async-std。或者用裸线程 + channel。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 这集把 debug log 写到文件而不是 stderr。具体好处是什么?如果你给 KDE Wayland 用户做游戏,debug 输出方式有什么特别考虑?",
+          "a": "<strong>debug file vs stderr 的好处</strong>:\n1. <strong>持久</strong>:游戏 crash 后文件还在,可以查根因。stderr 退终端就没了\n2. <strong>全屏可用</strong>:游戏全屏时 stderr 看不见,文件可以 tail -f 实时看\n3. <strong>结构化</strong>:文件容易加时间戳、级别、category,日志系统化\n4. <strong>多机器</strong>:用户报 bug,你让他发 debug.log 给你,简单\n\n<strong>KDE Wayland 特别考虑</strong>:\n1. <strong>没有控制台</strong>:Wayland 应用不像 X11 能开 xterm。如果你从 GUI 启动游戏(Steam / Lutris),stderr 可能丢了\n2. <strong>systemd journal</strong>:KDE 系统很多服务日志走 journald。你可以用 <code>systemd-journal</code> crate 把日志送 journal,用 <code>journalctl</code> 查看。比文件更结构化\n3. <strong>XDG 路径</strong>:debug file 应该放 <code>$XDG_RUNTIME_DIR</code> 或 <code>$XDG_DATA_HOME</code>,不是当前目录。Casey 用当前目录,Windows 习惯;Linux 应该走 XDG\n\n实战建议:游戏 debug log 同时写文件 + stderr + 可选 journald。这样不同场景都能查问题。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Day 15 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "Day 15 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        }
+      ],
+      "supplements": [
+        {
+          "title": "📚 XDG 路径:Linux 上的文件位置约定",
+          "body": "Linux(包括 Arch + KDE)有一套文件位置规范叫 XDG(Base Directory Specification)。Casey 用当前目录存文件(Windows 习惯),Linux 上不应该。我帮你梳理。\n\n<strong>XDG 变量</strong>:\n- <code>$XDG_CONFIG_HOME</code>:配置文件。默认 <code>~/.config/</code>\n- <code>$XDG_DATA_HOME</code>:持久数据(存档、缓存)。默认 <code>~/.local/share/</code>\n- <code>$XDG_CACHE_HOME</code>:可重建的缓存。默认 <code>~/.cache/</code>\n- <code>$XDG_RUNTIME_DIR</code>:运行时数据(socket、tmp)。默认 <code>/run/user/$UID/</code>\n- <code>$XDG_STATE_HOME</code>:状态日志等。默认 <code>~/.local/state/</code>\n\n游戏应该用:\n- 配置 → <code>~/.config/handmade-hero/settings.toml</code>\n- 存档 → <code>~/.local/share/handmade-hero/save01.json</code>\n- debug log → <code>~/.local/state/handmade-hero/debug.log</code>(或 stderr + journald)\n\nRust 用 <code>dirs</code> crate:\n<pre><code>use dirs;\nlet config_dir = dirs::config_dir().unwrap();  // ~/.config\nlet data_dir = dirs::data_dir().unwrap();      // ~/.local/share</code></pre>\n\n<strong>不要硬编码 ~/.something</strong>——有些用户用非标准 home,或者 XDG 变量被改了。永远走 XDG API。\n\n这是 Linux 用户对你的程序的<strong>第一印象</strong>——你遵守 XDG,用户觉得你懂 Linux;你不遵守(到处扔文件到 ~),用户觉得你 Windows 思维。Casey 不在乎(只 Win32),你 Rust 跨平台要在乎。"
+        }
+      ]
+    },
+    "day016": {
+      "why": "Day 016 是个相对轻松的「讨论集」。Casey 暂停编码,讨论 Visual Studio 的<strong>编译器开关</strong>——优化级别、调试信息、警告等级、运行时库选择等。\n\n对你 Rust 学习者,这集主要价值是<strong>对照学习</strong>:Rust 的 cargo 也有一堆 profile 配置,理解 Casey 讨论 Win32 / MSVC 选项,帮你想清楚 Rust 对应的概念。",
+      "model": "Casey 讨论 MSVC 的几个关键开关:\n\n<strong>-Zi(生成调试信息)</strong>:让调试器能映射机器码到源码。Rust 默认 debug profile 有,release profile 也保留(只是优化激进,有些行号可能不准)。\n\n<strong>-Od(禁用优化)</strong>:debug 用,代码改动快。Rust profile.dev 的 opt-level = 0 等价。\n\n<strong>-O2(优化级别 2)</strong>:release 用。Rust profile.release 的 opt-level = 3。\n\n<strong>-MT vs -MD(静态/动态 CRT)</strong>:MSVC 的 C Runtime 链接方式。静态 = CRT 编译进 exe(大但独立),动态 = 链接 vcruntime140.dll(小但依赖)。Rust 没这个区分,标准库默认静态链接(除 msvcrt)。\n\n<strong>-WX(警告视为错误)</strong>:-WX 让 warning 变 error,强制代码干净。Rust 等价 <code>RUSTFLAGS=\"-D warnings\"</code> 或 <code>#![deny(warnings)]</code>。Casey 不用,他视警告为信息。Rust 推荐用 deny(警告往往是 bug 预兆)。\n\n<strong>-FC(错误输出 stdout)</strong>:让编译错误能 redirect。Rust 编译器默认 stderr,符合 Unix 习惯。\n\n<strong>关键讨论:编译器优化的「陷阱」</strong>\n\nCasey 这集强调一点:<strong>debug build 应该完全无优化</strong>。理由:\n1. 调试时变量被优化掉很烦(优化器可能合并变量、消除中间变量)\n2. 单步执行跳来跳去(优化器重排代码)\n3. 内联让栈帧混乱\n\n但是完全无优化的 debug build 性能差,某些游戏逻辑(每帧处理 10000 个粒子)在 debug 模式跑不动。Casey 的解法:大部分代码无优化,性能关键部分用 pragma 局部开启优化。\n\nRust 等价:profile.dev 默认 opt-level = 0。如果某段慢,可以临时 profile.dev opt-level = 1(轻微优化,还能调试)。或用 <code>#[opt_level = 1]</code> 局部 attribute。\n\n<strong>Casey 关于 build 速度的吐槽</strong>\n\nCasey 强调「编译速度 > 一切」。他选 MSVC 而不是 GCC / Clang,主要理由是 MSVC 在 Windows 上 incremental build 快。这反映了 Casey 对迭代速度的执着。\n\nRust 编译慢是出了名的,但有缓解办法:cargo nextest(并行测试)、cargo chef(Docker 缓存)、sccache(分布式缓存)。Casey 的精神在 Rust 端的对应:追求增量编译快、热重载流畅。",
+      "map_parents": [
+        "编译器优化级别(O0 / O1 / O2 / O3 / Os)",
+        "调试信息(DWARF / PDB)",
+        "静态 vs 动态链接"
+      ],
+      "map_siblings": [
+        {
+          "name": "GCC/Clang 开关",
+          "note": "-O0 / -O2 / -g / -Wall"
+        },
+        {
+          "name": "Rust profile.dev / release",
+          "note": "Cargo.toml 配置"
+        },
+        {
+          "name": "Cargo features(条件编译)",
+          "note": "Rust 特有的 feature flag"
+        }
+      ],
+      "map_children": [
+        "PDB 文件(MSVC 调试信息)",
+        "DWARF(Linux 调试信息)",
+        "LTO(链接时优化)",
+        "code coverage 插桩"
+      ],
+      "related_days": [
+        "day001",
+        "day113",
+        "day356"
+      ],
+      "comparison": "<strong>共通点</strong>:所有编译器都有「debug profile 不优化 / release profile 优化」二分。\n\n<strong>差别</strong>:控制粒度。MSVC 用命令行开关(cpp 文件级),Rust 用 Cargo.toml(包级)+ attributes(函数级)。Rust 更现代,但灵活性略低(MSVC 可以 #pragma 改单个函数,Rust 必须用 attributes)。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "为什么 Casey 坚持 debug build 完全无优化(-Od)?即使性能差很多。如果 debug build 用 -O2,会发生什么问题?",
+          "a": "<strong>调试困难</strong>。优化器会:\n1. <strong>消除变量</strong>:中间变量被合并、内联,调试器看不到原变量值\n2. <strong>重排指令</strong>:单步执行时跳来跳去,不按代码顺序\n3. <strong>尾调用优化</strong>:函数返回时栈帧复用,backtrace 看不到调用链\n4. <strong>循环展开</strong>:for 循环被改成多个相同代码块,断点位置混乱\n\n例:你写 <code>let sum = a + b; let product = a * b;</code>,优化器可能合并成 SIMD 指令,你设断点在 sum 那行,断点不停——因为没单独的指令。\n\n所以 debug build 必须可读、可调试,代价是慢 10-100×。但游戏循环慢就跑不动,所以 Casey 才用局部优化 pragma。\n\nRust 同理:profile.dev opt-level = 0 是默认,方便调试;性能敏感代码可以用 attributes 局部开优化。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Day 16 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "Day 16 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        }
+      ]
+    },
+    "day017": {
+      "why": "Day 013 把键盘当「0 号手柄」做了统一抽象。Day 017 进一步:把<strong>所有输入(键盘 + 多个手柄)</strong>统一到一个 GameInput 结构,游戏代码用同样方式处理任意输入源。\n\n这集还引入一个重要概念:<strong>button 的「just pressed」vs「is down」区分</strong>。前面 Day 006 我提过 edge vs level,这集 Casey 把它正式编码进 GameInput 结构。\n\n统一输入的好处不仅是「写一次代码支持多种设备」,更是<strong>多人本地游戏</strong>的基础——两个玩家,一个用键盘一个用手柄,游戏代码用相同逻辑处理。Day 046 HH 加 multiplayer 就是基于这个抽象。",
+      "model": "Day 013 的 GameInput 已经支持多手柄,Day 017 完善它。\n\n<strong>新增:button 的 edge / level 区分</strong>\n\n前面 Day 006 我们讨论过:level 是「现在按着吗」,edge 是「刚刚按下吗」。Day 017 Casey 把这编码进结构:\n\n<pre><code>struct ButtonState {\n    is_down: bool,      // level\n    // 隐含 edge 信息:对比上一帧的 is_down\n}\n\nstruct GameController {\n    buttons: [ButtonState; 14],\n    previous_buttons: [ButtonState; 14],  // 上一帧\n}\n\n// 计算边沿\nfn is_pressed(button: &ButtonState, prev: &ButtonState) -> bool {\n    button.is_down && !prev.is_down  // 这帧按 + 上一帧没按 = 刚按\n}\nfn is_released(button: &ButtonState, prev: &ButtonState) -> bool {\n    !button.is_down && prev.is_down\n}</code></pre>\n\n平台层每帧开始时:把当前 buttons 拷到 previous_buttons,然后填新的 buttons。这样游戏代码可以查 is_pressed(just) 和 is_down(held),分别对应 edge 和 level。\n\n<strong>Casey 的另一个聪明设计:用 bitfield</strong>\n\n14 个 button,每个用 1 bit 就够(is_down)。一个 u16 可以装 14 个 button。同时存两份(u16 current + u16 previous),只占 4 字节。\n\n<pre><code>struct GameController {\n    button_states: u16,       // 当前帧每个 button 的 is_down\n    previous_button_states: u16,  // 上一帧\n    stick_x: f32,\n    stick_y: f32,\n}\n\nconst BUTTON_UP: u16 = 1 << 0;\nconst BUTTON_DOWN: u16 = 1 << 1;\n// ...\n\nfn is_down(c: &GameController, mask: u16) -> bool {\n    c.button_states & mask != 0\n}\nfn is_pressed(c: &GameController, mask: u16) -> bool {\n    (c.button_states & mask != 0) && (c.previous_button_states & mask == 0)\n}</code></pre>\n\n这种 bitfield 设计的好处:<strong>cache 友好</strong>(整个 controller 才几十字节,几个 controller 在一个 cache line)、<strong>序列化简单</strong>(直接写 u16 到文件)。\n\nRust 端可以用 <code>bitflags</code> crate,语法糖更清晰:\n\n<pre><code>bitflags::bitflags! {\n    struct ButtonMask: u16 {\n        const UP = 1 << 0;\n        const DOWN = 1 << 1;\n        const LEFT = 1 << 2;\n        const RIGHT = 1 << 3;\n        // ...\n    }\n}</code></pre>\n\n<strong>键盘和手柄的统一</strong>\n\n平台层每帧开始时,把 winit 键盘状态填到 controllers[0],把 gilrs 各手柄填到 controllers[1..5]。游戏代码不知道也不在乎某 controller 是真手柄还是键盘伪装。\n\n这种「适配器模式」是软件工程的经典——用一个统一接口适配多个不同来源。Win32、Mac、Linux 的输入最终都被翻译成统一的 GameController。",
+      "map_parents": [
+        "适配器模式(Adapter Pattern)",
+        "edge vs level 信号处理",
+        "Bitfield(数据压缩)"
+      ],
+      "map_siblings": [
+        {
+          "name": "Unity Input System",
+          "note": "C# 的统一输入抽象"
+        },
+        {
+          "name": "Unreal Enhanced Input",
+          "note": "Unreal 5 的现代输入系统"
+        },
+        {
+          "name": "SDL2 events",
+          "note": "C++ 跨平台输入抽象"
+        }
+      ],
+      "map_children": [
+        "GameController(buttons + previous_buttons)",
+        "Button mask(u16 bitfield)",
+        "Edge detection(对比当前 vs 上一帧)",
+        "Multi-controller 支持(数组)"
+      ],
+      "related_days": [
+        "day006",
+        "day011",
+        "day013",
+        "day046"
+      ],
+      "comparison": "<strong>共通点</strong>:所有游戏引擎都有「统一输入抽象 + edge/level 区分」。\n\n<strong>差别</strong>:抽象层级。Casey 用 bitfield + array,扁平快。Unity / Unreal 用对象树 + 事件,灵活但开销大。\n\nCasey 风格适合高性能游戏(<strong>data-oriented design</strong>);Unity 风格适合快速开发(<strong>OOP</strong>)。两种哲学都有道理。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 把 14 个 button 压缩到一个 u16 bitfield,而不是用 [bool; 14]。这种压缩的好处是什么?有什么代价?",
+          "a": "<strong>好处</strong>:\n1. <strong>内存小</strong>:2 字节 vs 14 字节(7×)。多个 controller 时累积明显\n2. <strong>cache 友好</strong>:整个 controller 在一个 cache line,访问 buttons 不 miss\n3. <strong>序列化简单</strong>:存档直接写 u16,不用序列化数组\n4. <strong>批量操作</strong>:某些操作可以位运算,如「所有 button 重置」= u16 = 0\n5. <strong>网络传输</strong>:多人游戏同步 button 状态,2 字节 vs 14 字节差 7× 带宽\n\n<strong>代价</strong>:\n1. <strong>可读性差</strong>:看代码 <code>c.button_states & BUTTON_UP</code> 比 <code>c.buttons[UP]</code> 难懂\n2. <strong>类型安全弱</strong>:u16 可以是任意值,不限于「button mask」。容易传错值\n3. <strong>调试难</strong>:调试器看 u16 数字,要心算二进制\n4. <strong>扩展难</strong>:超过 16 个 button 要换 u32,改动大\n\nRust 的 <code>bitflags</code> crate 兼顾两者:位运算性能 + 类型安全。生产代码推荐用 bitflags。"
+        },
+        {
+          "level": 2,
+          "type": "practice",
+          "q": "扩展 Day 013 的 GameInput,加 edge detection。要求:\n\n1. 给 ButtonState 加 previous_is_down 字段\n2. 平台层每帧开始时把当前 is_down 拷到 previous_is_down,然后填新的 is_down\n3. 游戏代码用 just_pressed() / just_released() 函数,而不是直接看 is_down\n4. 测试:按空格触发「跳跃」(edge),按住方向键持续移动(level)",
+          "a": "<pre><code>// 接口\n#[derive(Default, Clone, Copy)]\npub struct ButtonState {\n    pub is_down: bool,\n    pub previous_is_down: bool,\n}\nimpl ButtonState {\n    pub fn just_pressed(&self) -> bool {\n        self.is_down && !self.previous_is_down\n    }\n    pub fn just_released(&self) -> bool {\n        !self.is_down && self.previous_is_down\n    }\n}\n\n// 平台层每帧\nfn tick_input(app: &mut App) {\n    // 把当前拷到 previous\n    for c in &mut app.input.controllers {\n        for b in &mut c.buttons {\n            b.previous_is_down = b.is_down;\n        }\n    }\n    // 填新的 is_down\n    app.input.controllers[0].buttons[UP].is_down = app.keys.contains(&KeyCode::ArrowUp);\n    // ...\n}\n\n// 游戏代码\nstruct Player { y: f32, vy: f32, on_ground: bool }\nfn update_player(p: &mut Player, input: &GameInput, dt: f32) {\n    // 跳跃:edge triggered\n    if input.controllers[0].buttons[BUTTON_A].just_pressed() && p.on_ground {\n        p.vy = -300.0;\n        p.on_ground = false;\n    }\n    // 重力 + 落地\n    p.vy += 800.0 * dt;\n    p.y += p.vy * dt;\n    if p.y > 400.0 { p.y = 400.0; p.vy = 0.0; p.on_ground = true; }\n}</code></pre>\n\n跑起来,按一下空格跳一次,按住只跳一次(edge)。这种 edge / level 分离是游戏控制的基础,后面所有「按键触发动作」都基于此。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "Day 17 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        }
+      ]
+    },
+    "day018": {
+      "why": "Day 018 解决一个看似简单实则复杂的问题:<strong>把游戏帧率锁定到目标值(60 / 30 / 144 FPS)</strong>。\n\n你可能会想:这不是 <code>std::thread::sleep</code> 就能搞定吗?Casey 这集告诉你没那么简单。问题包括:\n- sleep 精度差(Windows 默认 15ms 粒度,Linux 略好)\n- VSync vs 软件锁帧的协调\n- 帧时间抖动(jitter)\n- 不同显示器刷新率(60 / 120 / 144)\n\n这集 Casey 用了几个 trick 把帧率锁定做稳。理解这些 trick 帮你写出更平滑的游戏。",
+      "model": "我打个比方:帧率锁定像<strong>定速巡航</strong>。你想要车保持 60 km/h(60 FPS),不能光踩油门(那会超速),也不能松油门(会慢下来),而是根据当前速度微调油门。\n\n游戏帧率锁定的几个挑战:\n\n<strong>挑战 1:每帧时间不固定</strong>\n\n如果这帧渲染花 12ms,下一帧花 15ms,下下帧 14ms——你要锁 60 FPS(16.67ms/帧),怎么决策「现在睡多久」?\n\nnaive 解法:<code>let elapsed = ...; sleep(16.67ms - elapsed)</code>。\n\n问题:这帧 elapsed = 12ms,sleep(4.67ms),实际 sleep 可能耗 8ms(精度差),总耗时 20ms。帧率掉到 50 FPS。\n\n<strong>挑战 2:sleep 精度</strong>\n\nWindows 默认 timer 精度 15.6ms。你调 <code>Sleep(4)</code> 实际睡 15ms。Linux 略好,但也几毫秒。\n\n<strong>Casey 的解法</strong>:用 <code>timeBeginPeriod(1)</code> 把 Windows timer 精度提到 1ms。代价:全局功耗增加(其他程序也被影响)。Rust 端这个 trick 在 Linux 不需要——Linux 默认精度高。\n\n<strong>挑战 3:VSync 是另一回事</strong>\n\nVSync(垂直同步)由 GPU / 显示器控制——SwapBuffers 等下一个 VSync 周期,刚好 1/60s。\n\nVSync 开了,你不用软件锁帧,GPU 自己锁。但 VSync 有几个问题:\n1. <strong>不支持 G-Sync / FreeSync 的显示器</strong>:VSync 锁 60 FPS,144Hz 屏幕浪费\n2. <strong>输入延迟</strong>:VSync 让输入到画面延迟最多一帧(16.67ms),FPS 玩家嫌慢\n3. <strong>半帧 vs 全帧</strong>:V-Sync 半帧(V-Sync adaptive)掉到 30FPS 时不会重复,但仍卡\n\n<strong>Casey 的混合策略</strong>\n\n1. 测当前帧耗时 elapsed\n2. 算理论 sleep 时间 = target_dt - elapsed\n3. 如果 sleep > 2ms,sleep(sleep - 1ms)。提前 1ms 醒来,spin-wait 剩余时间(spin 是忙等,精度高)\n4. 如果 sleep ≤ 2ms,直接 spin-wait(不睡)\n\nspin-wait 是 <code>while Instant::now() < target_time {}</code>——CPU 空转,但精度极高。\n\n这种 sleep + spin 组合既省 CPU(大部分时间睡),又精度高(最后 1ms 精确等)。\n\n<strong>Rust 实现</strong>\n\n<pre><code>fn precise_sleep(target_dt: Duration, frame_start: Instant) {\n    let elapsed = frame_start.elapsed();\n    let remaining = target_dt.checked_sub(elapsed).unwrap_or(Duration::ZERO);\n    \n    if remaining > Duration::from_millis(2) {\n        // 大部分时间真睡,留 1ms 余量\n        std::thread::sleep(remaining - Duration::from_millis(1));\n    }\n    \n    // 剩余时间忙等(精度高)\n    while frame_start.elapsed() < target_dt {\n        std::hint::spin_loop();  // 提示 CPU 这是 spin-wait,省电\n    }\n}</code></pre>\n\n<strong>关键洞察:VSync > 软件锁帧</strong>\n\n如果有 VSync,你不用软件锁帧——SwapBuffers 自动等。软件锁帧主要用于 VSync 关闭(FPS 玩家)或无 VSync 的环境。\n\nCasey 这集主要解决「VSync 不可用」的场景。Rust 端 winit / glutin 默认开 VSync,你不用管。但了解软件锁帧让你在 VSync 失效时也能稳定。",
+      "map_parents": [
+        "定时器精度(timer resolution)",
+        "Polling vs sleeping",
+        "VSync 显示器同步"
+      ],
+      "map_siblings": [
+        {
+          "name": "POSIX nanosleep",
+          "note": "Linux 高精度 sleep,理论纳秒级,实际毫秒级"
+        },
+        {
+          "name": "futex(Linux)",
+          "note": "fast userspace mutex,极快但复杂"
+        },
+        {
+          "name": "G-Sync / FreeSync",
+          "note": "可变刷新率显示器,VSync 进化版"
+        },
+        {
+          "name": "mailbox present mode(Vulkan)",
+          "note": "低延迟 vsync 替代"
+        }
+      ],
+      "map_children": [
+        "timeBeginPeriod(Win32 timer 精度)",
+        "spin_loop hint(Rust CPU 提示)",
+        "frame pacing(帧节奏平滑)",
+        "jitter(帧间时长抖动)"
+      ],
+      "related_days": [
+        "day004",
+        "day010",
+        "day019"
+      ],
+      "comparison": "<strong>共通点</strong>:所有实时程序(游戏、视频播放器、机器人控制)都要锁帧率/周期。\n\n<strong>差别</strong>:VSync vs 软件锁。\n- VSync:GPU 自动锁,简单但延迟\n- 软件锁:CPU 控制,灵活但要处理精度\n- 实时 OS(RTOS):硬件中断保证精度\n\n游戏选 VSync(简单)或 VSync off + 软件锁(FPS 玩家)。机器人选 RTOS。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "为什么 Casey 在 sleep 后还要 spin-wait 剩余时间?直接 sleep 到 target 不行吗?",
+          "a": "<strong>因为 sleep 精度差</strong>。\n\n你调 <code>sleep(4.5ms)</code>,实际可能睡 4ms(早醒)或 8ms(过睡)。早醒好办——再 sleep 一次;过睡糟糕——帧率掉了。\n\nCasey 的解法:<strong>故意早醒 1ms</strong>,然后 spin-wait(忙等)剩余时间。spin-wait 是 <code>while not_yet() {}</code>,CPU 全速循环检查时间,精度极高(纳秒级)。\n\n代价:spin-wait 那 1ms CPU 100% 占用(但只是一帧的 1ms,影响小)。\n\n收益:帧率精确到目标值,不抖动。\n\n这是「精度 vs 功耗」的权衡。sleep 省电但精度差,spin 精度高但费电。混合策略两全其美。\n\nRust <code>std::hint::spin_loop()</code> 是个提示——告诉 CPU「我在 spin,可以降频但别真的睡」。这比纯 <code>{}</code> 循环更省电。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Day 18 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "Day 18 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        }
+      ],
+      "supplements": [
+        {
+          "title": "📚 KDE Wayland 下帧率锁定注意事项",
+          "body": "KDE on Wayland 下,帧率锁定有几个特别考虑:\n\n<strong>1. KWin 帧 pacing</strong>。Wayland 协议下,合成器(KWin)决定何时让应用画新一帧——你的 <code>swap_buffers</code> 实际上在等 KWin 的 frame event。所以你的 sleep 时间可能和 KWin 期望不一致。\n\n正确做法:winit / softbuffer 帮你处理。你只需要响应 RedrawRequested 事件,在事件循环里画。不要主动 sleep。\n\n<strong>2. 多显示器不同刷新率</strong>。如果你有两个显示器(一个 60Hz、一个 144Hz),游戏在它们之间拖动,KWin 可能切换刷新率。你的 dt 突然从 16.67ms 变成 6.94ms,游戏速度感觉变了。\n\n解法:dt-based 动画自适应——你已经在做(Day 004)。帧率变化不影响游戏速度,只影响流畅度。\n\n<strong>3. VSync 在 Wayland</strong>。Wayland 协议层就有 vsync(swap chain 由合成器管理),不需要应用主动 vsync。但你仍然要 spin-lock 处理输入到画面的延迟。\n\n<strong>4. KDE 特定 bug</strong>。某些 Plasma 版本下,全屏应用 + 多显示器 + VSync 组合有 stuttering 问题。这是 KDE 已知 bug,你代码层面解决不了,等 KDE 升级。检查 KDE 论坛 / bugzilla 看是否有新版修复。\n\n<strong>性能调试建议</strong>:用 <code>vkmark</code> 或 <code>glmark2</code> 测基础性能,用 <code>MANGOHUD</code> 看实时帧率/帧时间。MANGOHUD 在 Arch 上 <code>pacman -S mangohud</code>,跑游戏时 <code>mangohud ./your-game</code> 就有 HUD 显示帧率、帧时间、CPU/GPU 占用。"
+        }
+      ]
+    },
+    "day019": {
+      "why": "Day 019 是 Day 012(平台无关音频)的进阶。Casey 发现 Day 012 的实现有问题:游戏代码产出的样本和声卡消费的速度有微小误差,长时间累积导致声音卡顿或爆音。Day 019 讨论怎么<strong>精确同步</strong>音频。\n\n这集涉及一个深刻话题:<strong>多个时钟的同步</strong>。游戏 CPU 时钟(由 Instant 测)、声卡时钟(独立硬件时钟)、显示器时钟(VSync)——三者不完全一致,你要协调。\n\n对你 Rust 学习者,这集的价值是<strong>理解 cpal 等高级抽象背后的复杂性</strong>。cpal 帮你处理这些,但你设计自定义音频系统时(比如 Day 139 mixer)会遇到同样问题。",
+      "model": "<strong>问题:速度不匹配</strong>\n\n游戏代码每帧产 N 个样本(基于 CPU 时钟),声卡每秒消费 44100 个(基于自己的时钟)。如果两个时钟略有偏差(比如 CPU 时钟快 0.1%),长时间累积后游戏代码产出的样本<em>少于</em>声卡消费,buffer 被读光,出现 underrun(声音卡顿)。\n\n反过来,如果 CPU 时钟慢,样本堆积,buffer 满,新样本被丢——也卡顿。\n\n<strong>Casey 的解法:动态调整样本数</strong>\n\n每帧开始时,平台层读 DirectSound 的 play cursor(声卡播到哪)和 write cursor(可以写哪)。算出「声卡还需要多少样本」。把数字传给游戏代码:「这一帧你产 N 样本」。N 是动态的,刚好补上声卡消耗。\n\n<pre><code>fn get_samples_to_write(&self) -> i32 {\n    let play_cursor = direct_sound.get_play_cursor();\n    let write_cursor = direct_sound.get_write_cursor();\n    let bytes_per_sample = 4;  // stereo i16 = 4 bytes\n    let target_latency = self.sample_rate / 60 * 2;  // 2 帧延迟\n    \n    // 算声卡到目标延迟差多少样本\n    let samples_in_flight = (write_cursor - play_cursor) / bytes_per_sample;\n    let samples_needed = target_latency - samples_in_flight;\n    samples_needed.max(0)\n}</code></pre>\n\n这样游戏代码每帧产 N 样本,N 由声卡实际进度决定,误差自动归零。\n\n<strong>关键问题:play cursor 不准</strong>\n\nDirectSound 的 play cursor 是<strong>样本级延迟</strong>——它告诉你「声卡现在播的是哪个样本」,但实际硬件可能播得更前/后。Casey 这集主要时间在调试这个。\n\n现代 API(WASAPI / ALSA / cpal)的 play cursor 更准,但仍有几样本延迟。专业音频(JACK)用「时间戳 + 缓冲位置」组合,精度更高。\n\n<strong>Rust cpal 不用你管这些</strong>\n\ncpal 用回调驱动,声卡自己要 N 样本就调你 N 次循环。你产 N 个就行,不用算「应该产多少」。cpal 内部已经处理了 play/write cursor 同步。\n\n但理解 Casey 的算法对设计自定义音频系统(比如 networked audio、低延迟乐器)重要。\n\n<strong>另一概念:audio latency(音频延迟)</strong>\n\n延迟 = 你做事到声音出来的时间。游戏音频延迟典型:\n- 按键 → 屏幕变化:16ms(1 帧)\n- 按键 → 声音出来:40-100ms(buffer 延迟)\n\n延迟大,玩家觉得「声音滞后」。专业音乐软件(JACK)做到 5ms。游戏 30-50ms 可接受。\n\nbuffer 越小延迟越小,但越容易 underrun。Casey 在 Day 019 调试就是找这个平衡。",
+      "map_parents": [
+        "时钟同步(CPU clock vs sound card clock)",
+        "Buffer underflow / overflow 处理",
+        "实时系统的延迟 vs 稳定性"
+      ],
+      "map_siblings": [
+        {
+          "name": "ASIO",
+          "note": "专业音频低延迟 API,Windows"
+        },
+        {
+          "name": "JACK",
+          "note": "Linux 专业音频,极低延迟"
+        },
+        {
+          "name": "WASAPI exclusive mode",
+          "note": "Windows 现代低延迟模式"
+        }
+      ],
+      "map_children": [
+        "play cursor / write cursor",
+        "target latency(目标缓冲延迟)",
+        "samples in flight(buffer 中未播样本)",
+        "underrun / overrun"
+      ],
+      "related_days": [
+        "day007",
+        "day012",
+        "day020",
+        "day139"
+      ],
+      "comparison": "<strong>共通点</strong>:所有实时音频系统都要处理「CPU 时钟 vs 声卡时钟」同步。差别在 API 暴露多少给应用。\n\n<strong>差别</strong>:\n- DirectSound / ALSA:暴露 play cursor,应用自己算\n- WASAPI / CoreAudio:暴露更精确的 timestamp\n- cpal / PulseAudio:完全抽象,应用不管\n\nCasey 选 DirectSound 是教学目的——让你看到同步细节。Rust cpal 隐藏细节,生产用 cpal 省心。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "为什么音频延迟(buffer 大小)和稳定性(underrun 频率)是 trade-off?大 buffer 稳定但延迟大,小 buffer 延迟小但不稳定。\n\n进一步:为什么 Casey 不直接用最小 buffer?最小化延迟有什么风险?",
+          "a": "<strong>核心矛盾:缓冲 vs 实时</strong>。\n\nbuffer 是「中间存储」。它吸收生产者和消费者的速度差。\n- 大 buffer:能吸收大波动,稳。但生产者写入到消费者读出有延迟(整个 buffer 长度)\n- 小 buffer:延迟小。但稍有波动就 underrun\n\n<strong>为什么不用最小 buffer</strong>:\n1. <strong>CPU 调度抖动</strong>:OS 调度其他线程,你的音频回调晚 5ms 触发。buffer 太小直接 underrun\n2. <strong>GC / page fault</strong>:Rust 没 GC,但 page fault 仍可能(虚拟内存)。10ms buffer 撑不住\n3. <strong>跨进程通信</strong>:PipeWire / PulseAudio 是独立进程,IPC 有延迟\n\n专业音频(JACK)能做 5ms,因为:\n- SCHED_FIFO 实时调度(OS 不抢)\n- 锁页内存(不被 swap)\n- 独立 CPU 核(affinity)\n\n普通游戏做不到这些,所以 buffer 30-50ms 是平衡点。\n\nCasey 这集调试就是找这个平衡:buffer 大小刚好能容忍调度抖动,但不太大造成延迟。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Day 19 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "Day 19 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        }
+      ]
+    },
+    "day020": {
+      "why": "Day 019 Casey 实现了音频同步,Day 020 是<strong>调试</strong>——发现 Day 019 的实现有 bug,音频还是卡顿。\n\n这集教学价值不在「知识点」,而在「<strong>Casey 怎么调试一个棘手问题</strong>」。你会看到一个资深程序员面对「现象=声音卡顿,原因未知」时,怎么系统化定位。\n\n对你 Rust 学习者,这集的重点是<strong>调试方法论</strong>:如何用 logging、波形可视化、二分实验等手段,从「现象」追到「根因」。",
+      "model": "Casey 这集遇到的 bug:<strong>音频卡顿,但找不到原因</strong>。可能原因很多:\n- play cursor 读得不准\n- 同步算法有 off-by-one\n- 渲染线程占用 CPU 太多,音频线程饿死\n- buffer 大小算错\n- ...\n\n<strong>Casey 的调试流程</strong>:\n\n<strong>步骤 1:可视化</strong>\n\nCasey 在屏幕上画一个图:横轴时间,纵轴是 play cursor 和 write cursor 位置。理想情况是两条直线(play 匀速前进,write 跟着 play)。卡顿时,write 不动(没写新数据)或 play 跳变(声卡追赶)。\n\n这种「<strong>把不可见的变成可见的</strong>」是 debug 的核心技巧。后面 Day 180+ debug 系统就是这件事的工程化。\n\n<strong>步骤 2:假设 - 验证循环</strong>\n\nCasey 列举多个可能原因,对每个设计实验验证:\n- 假设 1:play cursor 不准。验证:在 read 后立刻 print,看是否稳定。\n- 假设 2:同步算法 bug。验证:简化算法(产固定样本数),看是否还卡。\n- 假设 3:CPU 饿死音频线程。验证:提高音频线程优先级,看是否改善。\n\n每个实验 <strong>改一个变量,测一个结果</strong>。这是科学方法在工程的体现。\n\n<strong>步骤 3:二分定位</strong>\n\n如果排查不出,Casey 会用二分——回退到「之前 work 的版本」,逐步加新代码,看哪步引入 bug。Git 让这变得简单:<code>git bisect</code>。\n\nRust 端建议:每次代码改动后跑简单 smoke test(开窗 + 播音 5 秒不崩),保证回退到 known good 版本容易。\n\n<strong>Casey 最终找到的 bug</strong>\n\nCasey 发现是 play cursor 在某些时刻返回<strong>过时</strong>的值(DirectSound 的已知问题)。DirectSound 内部 cache play cursor,你连续 get_cursor 几次拿到相同值,即使声卡已经播放了一段。\n\n解法:每次 get_cursor 后 sleep 一点(让 cache 失效),或者用别的 API 拿时间戳。\n\nRust cpal 不暴露 play cursor,这种 bug 在 cpal 里不存在——cpal 内部处理了。\n\n<strong>调试教学的核心</strong>\n\nCasey 这集展示的不是「解决一个具体 bug」,而是「<strong>遇到未知 bug 怎么系统调试</strong>」。这个方法论在后面 Day 308 (debugging cycle check)、Day 419 (debugging missing lighting)、Day 568 (debugging raycaster) 反复出现。\n\n你应该内化的是:\n1. <strong>可视化</strong>:把看不见的内部状态画出来\n2. <strong>假设 - 验证</strong>:列举可能原因,设计实验\n3. <strong>二分</strong>:回退到 known good,逐步加新代码\n4. <strong>不放弃</strong>:有些 bug 要几小时甚至几天,耐心是工程师的核心品质",
+      "map_parents": [
+        "调试方法论(科学方法应用)",
+        "可视化 logging",
+        "二分定位"
+      ],
+      "map_siblings": [
+        {
+          "name": "gdb / lldb 断点调试",
+          "note": "传统 debugger"
+        },
+        {
+          "name": "printf debugging",
+          "note": "最简单也最有效"
+        },
+        {
+          "name": "rr(record & replay)",
+          "note": "Linux 神器,可反向执行"
+        },
+        {
+          "name": "Tracy / Optick profiler",
+          "note": "实时性能 trace,可视化"
+        },
+        {
+          "name": "Valgrind / AddressSanitizer",
+          "note": "内存错误检测"
+        }
+      ],
+      "map_children": [
+        "可视化 cursor 位置",
+        "假设-验证循环",
+        "git bisect",
+        "rr / 反向执行"
+      ],
+      "related_days": [
+        "day019",
+        "day176",
+        "day180",
+        "day308",
+        "day419"
+      ],
+      "comparison": "<strong>共通点</strong>:所有调试本质都是「从现象到根因」的搜索。\n\n<strong>差别</strong>:工具和方法。\n- printf:简单但慢(每次改要重编译)\n- gdb:强大但学习曲线陡\n- rr:神器但 Linux 限定(且慢)\n- Tracy:游戏专用,实时可视化\n- Casey 的可视化:屏幕画图,直接朴素但有效\n\nRust 推荐组合:<code>dbg!()</code> 宏(快速打印)+ <code>lldb</code>(断点)+ <code>cargo-tangle</code>(flamegraph)+ <code>Tracy</code>(实时)。Day 113+ 性能调优会详细用 Tracy。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 这集遇到音频 bug 时,第一步是「画 cursor 位置图」。为什么这一步比直接「猜原因」更有效?\n\n进一步:如果你遇到一个性能问题(游戏卡顿),但不知道是渲染慢还是物理慢,你的「可视化」会做什么?",
+          "a": "<strong>可视化优先</strong>因为「现象 - 假设 - 验证」循环里,可视化帮你<strong>生成精准假设</strong>。\n\n如果凭空猜:「可能是 buffer 算错」「可能是 cursor 不准」「可能是线程问题」——漫无目的,要试很多。\n\n可视化后,你看到 play cursor 平滑前进,write cursor 偶尔停顿——立刻知道「问题在写入侧,不在声卡」。假设范围缩小 10×。\n\n<strong>性能卡顿的可视化</strong>:\n\n我会做几件事:\n1. <strong>帧时间图</strong>:每帧画一条,长度=耗时。一眼看出哪帧慢\n2. <strong>阶段耗时</strong>:每帧分阶段(物理 / 渲染 / AI / 音频),堆叠图。看哪个阶段长\n3. <strong>事件计数</strong>:每帧画多少 sprite、多少 particle。看是否某帧突然多\n4. <strong>memory footprint</strong>:看是否 GC(虽然 Rust 没有,但 page fault 类似)\n\nCasey 后面 Day 180+ debug system 就是这种可视化的工程化——画帧时间图、调用图、memory 图。\n\n实战工具:<code>mangohud</code>(看 FPS / 帧时间)、<code>Tracy</code>(CPU profiler,帧级可视化)、<code>renderdoc</code>(GPU frame capture,逐 draw call 看)。Linux 工具生态比 Windows 更丰富。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Day 20 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "Day 20 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        }
+      ]
+    },
+    "day021": {
+      "why": "Day 021 是 HH Phase 1 的<strong>高潮</strong>——Casey 引入<strong>热重载</strong>(hot reload)的第一步。从此以后,你改一行游戏代码,游戏立刻反映,不用重启 .exe。这是 Handmade Hero 整个项目的「杀手锏」之一——两年开发,没有热重载根本扛不住。改一行 → 重启 → 进关卡 → 触发场景,30 秒一次。100 次迭代 = 50 分钟。热重载:改一行 → 0.5 秒看到效果。100 次 = 1 分钟。<strong>50× 加速</strong>。理解热重载的关键在 Day 011——状态外置。Day 021 把理论变成现实:游戏代码编成 cdylib,平台层用 libloading 加载,改代码后重载,状态(game_memory)保留,游戏无缝继续。",
+      "model": "我打个比方:热重载就像<strong>边开飞机边换发动机</strong>。普通重启 = 着陆 → 关引擎 → 换 → 重启 → 起飞。热重载 = 飞行中,旧发动机扔掉,新发动机接上,乘客(状态)完全无感。\n\n怎么做到?关键设计在 Day 011:状态(game_memory)由平台层持有,游戏代码只是「<strong>无状态函数</strong>」。换发动机时,只要新发动机能接受同样的输入(函数签名一致),就能立刻接管。\n\n<strong>Casey 的实现步骤</strong>:\n\n第一步:把游戏代码编成 DLL。原本游戏代码静态链接进 exe,改成 DLL——Win32 是 .dll,Linux 是 .so,Rust 是 cdylib。Cargo.toml 加 <code>[lib] crate-type = [\"cdylib\"]</code>。\n\n第二步:平台层启动时加载 DLL。Win32: <code>LoadLibrary</code>。Rust: <code>libloading::Library::new(\"libhandmade.so\")</code>。加载后拿到 DLL 句柄,这是 OS 内部的一个映射——把 .so 文件映射到进程的虚拟内存。\n\n第三步:拿到游戏主函数的地址。Win32: <code>GetProcAddress(lib, \"update_and_render\")</code>。Rust: <code>lib.get::&lt;fn_type&gt;(b\"update_and_render\")</code>。返回函数指针。\n\n第四步:主循环里调用这个函数指针。原本 <code>update_and_render(...)</code> 直接调用,现在通过函数指针间接调用。控制流不变。\n\n第五步:检测 DLL 文件变化。每帧检查 libhandmade.so 的 mtime,变了说明开发者重新编译了。\n\n第六步:重载流程。drop 旧函数指针 → drop 旧 Library(OS 卸载)→ Library::new 加载新 → get 新函数指针 → <strong>game_memory 不动</strong>。下一帧调用新代码,游戏状态完全保留。\n\n<strong>关键问题:函数签名必须一致</strong>。新 DLL 的 update_and_render 必须和旧的签名完全相同,否则栈帧错乱崩溃。Rust 端这要 unsafe 表达(libloading 拿到的是裸函数指针)。\n\n<strong>Rust 特定坑:Symbol 借用 Library</strong>。libloading 的 Symbol 借用 Library,替换 Library 时旧 Symbol 失效——但 Rust 借用检查器不让你「替换被借用的对象」。解法:用 Box::leak 让 Library 永生,或用 Arc。Casey 在 C 里没这问题(裸指针随便指),Rust 要绕。\n\n<strong>第二个坑:全局变量重置</strong>。如果游戏代码有 <code>static mut PLAYER_HP</code>,DLL 重载时重新初始化。所以游戏状态必须放 game_memory,不能放 static。这就是为什么 Day 011 强调状态外置——它是热重载的前提。\n\n<strong>体验</strong>:跑起来后,你打开两个窗口——一个跑游戏,一个编辑器。改一行 Rust 代码 → cargo build → 游戏立刻反映新代码,玩家位置/进度不变。这种 5 秒反馈让学习效率翻倍。",
+      "map_parents": [
+        "动态链接 / 加载(ELF DLL COFF)",
+        "函数指针 / 间接调用",
+        "状态外置(让重载可能)"
+      ],
+      "map_siblings": [
+        {
+          "name": "dlopen / dlsym",
+          "note": "POSIX 动态加载 API"
+        },
+        {
+          "name": "LoadLibrary / GetProcAddress",
+          "note": "Win32 动态加载 API"
+        },
+        {
+          "name": "libloading crate",
+          "note": "Rust 跨平台封装"
+        },
+        {
+          "name": "JIT 编译",
+          "note": "运行时生成代码,V8 / LuaJIT"
+        }
+      ],
+      "map_children": [
+        "cdylib crate-type",
+        "Library handle(OS 资源)",
+        "Symbol(函数指针封装)",
+        "mtime 检测文件变化"
+      ],
+      "related_days": [
+        "day011",
+        "day022",
+        "day023",
+        "day192",
+        "day575"
+      ],
+      "comparison": "<strong>共通点</strong>:所有动态加载机制本质都是「运行时把代码映射到内存」。<strong>差别</strong>:控制粒度。静态链接最简单但不能换;dlopen 运行时加载可换(我们用);JIT 运行时生成新代码(最灵活)。热重载是 dlopen 的应用——核心是「换代码不重启进程」。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "为什么热重载要求「状态外置」(game_memory 由平台层管,不在游戏代码的全局变量)?如果状态在游戏代码的全局变量里,会发生什么?",
+          "a": "<strong>因为 DLL 重载时全局变量重置</strong>。DLL 里如果有 <code>static mut PLAYER_HP: i32 = 100;</code>,这个变量在 DLL 的数据段。DLL 卸载时这段内存释放,新 DLL 加载时数据段重新初始化为 100。所以玩家打到一半(HP=30),DLL 重载 → HP 重置为 100 → bug。\n\n状态在 game_memory 里(由平台层分配,跨 DLL 重载):DLL 重载时 game_memory 不动,新 DLL 拿到的是 HP=30,继续。\n\n这就是为什么 Day 011 Casey 强调状态外置——它不只是为了可测试,更是热重载的<strong>前提</strong>。Rust 的 static 变量在编译产物里,DLL 重载时重新初始化,所以游戏状态不要放 static,用 game_memory。"
+        },
+        {
+          "level": 2,
+          "type": "practice",
+          "q": "做一个最小热重载 demo。两个 crate:game_lib(cdylib,导出 update_and_render 函数,该函数把传入的计数器 +1 并打印)+ platform(可执行,加载 game_lib,每秒调用一次,检测 mtime 变化时重载)。跑 platform,你应该看到计数器递增。改 game_lib 里打印的消息,cargo build,看 platform 立刻打印新消息。<strong>计数器不重置</strong>!",
+          "a": "<pre><code>// game_lib/Cargo.toml: crate-type = [\"cdylib\"]\n// game_lib/src/lib.rs\nuse std::sync::atomic::{AtomicU64, Ordering};\n#[no_mangle]\npub unsafe extern \"C\" fn update_and_render(counter: *const AtomicU64) {\n    let n = (*counter).fetch_add(1, Ordering::SeqCst);\n    println!(\"🔥 Day 021 hot reload! counter = {}\", n);\n}\n\n// platform/src/main.rs\nuse libloading::Library;\nuse std::sync::atomic::{AtomicU64, Ordering};\nuse std::sync::Arc;\n\nfn main() {\n    let counter = Arc::new(AtomicU64::new(0));\n    let counter_ptr = Arc::as_ptr(&counter);\n    let path = \"./libgame_lib.so\";\n    let mut lib = unsafe { Library::new(path) }.unwrap();\n    let mut last_mtime = std::fs::metadata(path).unwrap().modified().unwrap();\n    loop {\n        let mtime = std::fs::metadata(path).unwrap().modified().unwrap();\n        if mtime > last_mtime {\n            println!(\"🔄 Reloading...\");\n            lib = unsafe { Library::new(path) }.unwrap();\n            last_mtime = mtime;\n        }\n        let func: libloading::Symbol&lt;unsafe extern \"C\" fn(*const AtomicU64)&gt; = unsafe { lib.get(b\"update_and_render\") }.unwrap();\n        unsafe { func(counter_ptr) };\n        std::thread::sleep(std::time::Duration::from_secs(1));\n    }\n}</code></pre>\n\n跑 platform。另开终端 cd game_lib,cargo build。看 platform 立刻打印新消息。计数器不重置——这就是状态外置的威力。"
+        },
+        {
+          "level": 3,
+          "type": "transfer",
+          "q": "热重载概念在很多领域出现。各举一个例子:1) Web 前端(哪个工具?) 2) 数据库(PostgreSQL 怎么换 schema?) 3) Web 后端(Spring 怎么换代码?) 4) Linux 内核(kpatch / livepatch?)",
+          "a": "<strong>1. Web 前端</strong>:webpack HMR(Hot Module Replacement)。改 React 组件,webpack 推新模块,浏览器替换该模块,<strong>组件状态保留</strong>。和 Casey 完全一样的思想——状态外置 + 模块替换。\n\n<strong>2. 数据库 schema 迁移</strong>:pg-rewrite、pt-online-schema-change。新建临时表(新 schema),双写,后台拷贝数据,完成后切流量。整个过程中数据库不停服务。\n\n<strong>3. Java Spring / Python Django</strong>:JVM 类加载器支持运行时换类。Spring DevTools 监听 .class 文件,变化时重启 ApplicationContext——但用 lazy init 让重启 < 1 秒。Django 用 autoreload 检测文件变化重启进程。这是「进程级热重载」,粒度比 Casey 粗。\n\n<strong>4. Linux 内核 kpatch / livepatch</strong>:换内核函数而不重启系统。ftrace 把原函数入口改成跳转到新函数。运行中的内核调用流自动走新函数。这是<strong>最激进</strong>的热重载——内核不能停。\n\n<strong>共通原则</strong>:状态外置 + 代码替换 + 接口一致。Casey 教你原则,这些工业级工具是原则的不同实现。"
+        }
+      ],
+      "supplements": [
+        {
+          "title": "📚 Rust 热重载生态",
+          "body": "Casey 在 C 里手写热重载。Rust 生态有现成 crate 帮你做:libloading(底层,我们用)、hot-lib-reloader(基于 libloading,自动化 mtime 检测和重载)、cargo-watch(不是热重载本身,而是「文件变化自动 cargo build」)。配合热重载,工作流变成:改代码保存 → cargo-watch 自动 build → 平台层检测 mtime 变化 reload → 下一帧新代码生效。整个过程 1-3 秒,完全不用切终端。\n\n实战建议:跟 HH 跟做阶段,用 libloading + cargo-watch。理解原理。生产游戏可以用 hot-lib-reloader。\n\nRust 热重载的特有挑战:1) 编译慢(rustc 比 cl 慢,增量 1-5 秒);2) Borrow checker 限制(Symbol 借用 Library,要 Box::leak 或 Arc 绕过);3) 类型签名匹配严格(#[no_mangle] extern \"C\")。这些是学习曲线,但理解后你能在 Rust 实现同样高效的热重载体验。"
+        },
+        {
+          "title": "📚 ELF vs DLL vs Mach-O:可执行文件格式",
+          "body": "Day 021 涉及「.dll / .so 文件」,我讲下三种主流可执行文件格式。\n\nPE / DLL:Windows 格式。.exe、.dll、.sys 都是 PE。微软 1990 年代设计。\n\nELF / .so:Linux / BSD 格式。.so(shared object)、可执行文件、.o 目标文件都是 ELF。Unix 标准。\n\nMach-O:macOS / iOS 格式。.dylib、可执行文件、.o 都是 Mach-O。Apple 设计。\n\n三种格式都解决同一问题:怎么把代码 + 数据 + 元信息打包。差别在元信息格式。ELF 最简洁,Mach-O 最复杂(支持 fat binary 多架构)。\n\n你在 Arch 上,产物是 ELF。.so 文件可以用 <code>readelf -a libhandmade.so</code> 看结构,用 <code>objdump -d</code> 反汇编,用 <code>nm</code> 看符号表。这些是底层 debug 工具,Day 113+ 性能调优会用到。\n\nDay 21 用到的 <code>b\"update_and_render\"</code> 这个字节串,是查找符号表里的「update_and_render」条目。libloading 内部调 dlsym,dlsym 查 ELF 符号表找到函数地址,返回给你。Rust 函数默认会被 name-mangle(改名,因为泛型/重载),要保持原名要 <code>#[no_mangle]</code>。"
+        }
+      ]
+    },
+    "day022": {
+      "why": "Day 021 实现了热重载,但有限制:reload 必须在主循环<strong>帧间</strong>发生(游戏代码必须真的从函数返回)。Day 022 解决「<strong>循环内热重载</strong>」——游戏代码正在执行 for 循环画 1000 个 sprite 时,你 reload,这个循环的下一步就用新代码。这听起来不可能(函数正在执行怎么换?),Casey 用了巧妙技巧。\n\n这集核心是<strong>重构主循环结构</strong>,理解它帮你掌握「函数粒度 vs 循环粒度」的热重载差别。",
+      "model": "<strong>问题:Day 021 的限制</strong>。每帧开始时检测 mtime,reload,然后调用 update_and_render。如果游戏代码正在画 1000 个 sprite,reload 触发不了,要等这一帧完全结束。中间玩家可能等 16-30ms——感觉不出来,但 Casey 嫌不够。\n\n理想:画第 500 个 sprite 时,reload,第 501 个用新代码。这才是「即时」。\n\n<strong>Casey 的尝试:倒置控制</strong>。Day 021 整帧函数,Day 022 想拆成「单步函数」——platform 主循环里反复调用 game.process_message(msg)、game.update、game.render。每步都可能被 reload 打断。\n\n但这带来复杂度上升:游戏代码要能「中途被打断、继续」,状态机变复杂。\n\n<strong>实际实现:更朴素</strong>。Casey 真正做的更简单:在主循环里加更多 check_reload() 调用。比如每渲染 100 个 sprite 检查一次 mtime。这种模式叫 <strong>cooperative reload</strong>(协作式重载)——游戏代码主动让出检查点。\n\n<pre><code>fn update_and_render(...) {\n    for sprite in sprites.iter().take(100) {\n        render_sprite(sprite);\n    }\n    platform_check_reload();\n    for sprite in sprites.iter().skip(100) {\n        render_sprite(sprite);\n    }\n    platform_check_reload();\n}</code></pre>\n\n这样每 100 个 sprite 就检查一次 reload。粒度精细。\n\n<strong>Casey 的反思</strong>:Day 023 Casey 会反思 Day 022 的设计——「过度工程化」。最后回归到「每帧检查一次」,因为 16ms 延迟对游戏开发足够。Day 022 的复杂度不值得。这是重要的教学时刻:<strong>简单方案往往够用</strong>。Casey 一时设计过度,自己反思回退——这是好的工程师品质。",
+      "map_parents": [
+        "控制反转(Inversion of Control)",
+        "Cooperative vs preemptive multitasking",
+        "粒度 vs 复杂度 trade-off"
+      ],
+      "map_siblings": [
+        {
+          "name": "OS preemptive multitasking",
+          "note": "OS 抢占,线程任意时刻被打断"
+        },
+        {
+          "name": "Coroutine / async",
+          "note": "用户态协作,显式 yield"
+        },
+        {
+          "name": "Fiber",
+          "note": "Windows 的协作式多任务"
+        }
+      ],
+      "map_children": [
+        "check_reload() 检查点",
+        "yield point",
+        "粒度选择"
+      ],
+      "related_days": [
+        "day021",
+        "day023",
+        "day192"
+      ],
+      "comparison": "<strong>共通点</strong>:所有热重载机制都有「检查点」——某时刻检查是否需要重载。<strong>差别</strong>:粒度。每帧简单(延迟 16ms,Casey 最终用)/ 每消息中粒度(延迟 < 1ms,Day 022 临时用)/ 每指令超细粒度(需要 OS 支持或 JIT,Casey 不用)。粒度越细越快但代码复杂。Casey 的反思是「够用就好」。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Day 022 Casey 设计了「消息级热重载」,Day 023 又退回「帧级」。这个「设计 → 反思 → 退回」的过程体现了什么软件工程原则?",
+          "a": "<strong>体现 YAGNI 原则(You Aren't Gonna Need It)</strong>。Casey 一开始觉得「帧级热重载可能不够快」,设计了消息级。但实际用几天后发现「帧级 16ms 完全够用」,反而消息级让代码复杂。这是典型的「过早优化」反面教材。\n\n反思的力量:1) 自己审视自己的设计而不是「写完就完了」;2) 敢于推翻自己的代码(很多开发者舍不得删);3) 用实际数据验证需求而不是凭空想。\n\n实战教训:遇到「要不要加复杂度」的决策,先选简单方案,真的不够再优化。不要预先想象需求。Casey 的「退回」不是「失败」而是「学习」——Day 022 让他理解了「消息级」的代价,于是知道什么时候真的需要它(答案:HH 全剧都不需要)。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Day 22 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "Day 22 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        }
+      ]
+    },
+    "day023": {
+      "why": "Day 023 是热重载系列收尾。Casey 综合 Day 021-22,做一个稳定可用的「looped live code editing」——你改代码 → 自动重编译 → 自动 reload → 游戏继续。整个流程完全自动化,你只管改代码。这集还引入「<strong>build loop</strong>」概念——一个监控脚本(类似 cargo watch),监听 .cpp 文件变化,自动跑 build。开发者只管写代码,编译和 reload 都自动。Rust 端你直接用 cargo-watch。",
+      "model": "Day 021-22 的热重载机制已经 work,但需要开发者手动 cargo build。Day 023 把这步自动化。\n\n<strong>完整 pipeline</strong>:开发者改代码 → 编辑器保存 → cargo-watch 检测文件变化 → cargo build(几秒)→ 生成新 libhandmade.so → 平台层检测 mtime 变化 → reload libloading::Library → 下一帧调用新代码 → 画面/行为立刻反映。整个循环 1-3 秒。开发者完全不切终端,只在编辑器里干活。\n\n<strong>Casey 的 build loop 实现</strong>:写一个独立的 build_loop.bat,逻辑:监听 .cpp 文件 mtime;任意变化 → sleep 100ms(防抖,避免连续触发);跑 build.bat;build 失败时打印错误但不退出 loop;build 成功继续监听。\n\nRust 端用 cargo-watch 一行命令搞定:<code>cargo watch -x build</code>。内部用 notify crate(Linux inotify / Windows ReadDirectoryChangesW),文件变化立刻触发。\n\n<strong>完整 Rust 工作流</strong>:打开 3 个终端:cargo watch -x build(监听 + 编译)、cargo run --bin platform(运行游戏)、编辑器(VS Code / Neovim)。或用 tmux 分屏。\n\n<strong>关键问题:重编译失败怎么办?</strong> 编译错误时 cargo build 失败,libhandmade.so 不更新,平台层检测 mtime 没变不 reload。游戏继续跑旧代码——这是正确行为,失败时不要让游戏崩溃。你修编译错误,build 成功,自动 reload。Casey 还做了 UX 细节:build 失败时在游戏窗口画红字「BUILD FAILED」。\n\n<strong>reload 时机</strong>:Day 022 讨论过粒度,Day 023 回归「每帧检查」。但加优化:只在主循环开始时检查,而不是每帧两次。16ms 内最多 reload 一次,不会在渲染到一半时 reload(状态一致)。这种「足够好的简化」是工程成熟度的体现。",
+      "map_parents": [
+        "Build automation",
+        "Dev loop(开发循环)",
+        "Developer Experience(DX)"
+      ],
+      "map_siblings": [
+        {
+          "name": "cargo-watch",
+          "note": "Rust 标准文件监听 + build 工具"
+        },
+        {
+          "name": "entr",
+          "note": "Unix 哲学的极简文件监听"
+        },
+        {
+          "name": "watchman(Facebook)",
+          "note": "大型 monorepo 用"
+        },
+        {
+          "name": "Vite",
+          "note": "Web 前端 HMR + dev server"
+        }
+      ],
+      "map_children": [
+        "inotify(Linux 内核文件变化通知)",
+        "debounce(防抖)",
+        "build loop script"
+      ],
+      "related_days": [
+        "day021",
+        "day022",
+        "day192",
+        "day575"
+      ],
+      "comparison": "<strong>共通点</strong>:所有现代开发框架都有「文件变化 → 自动 build」工具。<strong>差别</strong>:速度。cargo-watch 几秒(rustc 慢);Vite 毫秒级(esbuild 极快);Casey 手写几秒(cl 慢)。游戏开发 dev loop 比 Web 慢是<strong>开发者体验的大问题</strong>。Rust 生态在改进(cranelift、并行 rustc),但短期无法赶上 Web。Casey 的热重载是缓解——15ms 的 reload 比几秒的 cargo build 快多了。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 的 build loop 在编译失败时不让游戏崩溃,继续跑旧代码。这种「失败容错」设计为什么重要?如果失败时直接 crash 游戏会怎样?",
+          "a": "<strong>重要性:开发流畅度</strong>。如果失败 crash:你改一行代码,有 typo,build 失败,游戏 crash。重启游戏 → load 关卡 → 触发场景 → 修复 typo → build → 又一个 typo → 又 crash → 重启。每次迭代成本 30 秒+ 心理挫败感。\n\n容错设计:你改代码 typo,build 失败,游戏继续跑旧代码(你看不到 typo 的效果,但游戏世界不变)。你修 typo,build 成功,reload,新代码生效。每次迭代成本 < 5 秒,无挫败。\n\n这种「失败不打断」是<strong>好的开发工具</strong>的核心品质。Web 开发(Vite / webpack-dev-server)都这样做——编译错误显示在浏览器 overlay,但页面不白屏。Casey 在 HH Day 023 自己发现了这个原则。生产代码的容错是另一回事(失败应该 fail-fast 暴露问题),开发工具的容错是「让你迭代快」,两者目标不同。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Day 23 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "Day 23 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        }
+      ]
+    },
+    "day024": {
+      "why": "Day 024 是<strong>代码清理</strong>集。Casey 暂停加新功能,花一整集整理 Day 1-23 累积的代码——重命名变量、拆函数、移除冗余、整理结构。为什么专门花一集做这事?因为前面 23 集是「快速试验」,代码混乱。后面 Day 25 完成平台层之后,要进入 Phase 2(2D 游戏),代码会大幅扩展。如果现在不清理,Phase 2 会越来越乱。Casey 展示的是「<strong>重构</strong>」(refactoring)——不改行为,改结构。这是软件工程师的核心技能但常被忽视。看 Casey 怎么重构,你学到的不只是具体技巧,而是「什么时候该重构、怎么重构」的判断。",
+      "model": "Casey 这集做的事,可以归类几个重构模式:\n\n<strong>1. 重命名(Rename)</strong>:变量名 / 函数名从「测试时的临时名」改成「正式名」。比如 XOffset → GreenOffset 更清楚。Rust 用 rust-analyzer 的 rename 重构(F2),自动改所有引用。\n\n<strong>2. 提取函数(Extract Function)</strong>:把大函数里的一段逻辑提取成独立函数。比如原本 WinMain 200 行,提取出 init_window、init_sound、init_input。好处:每个函数职责单一,易理解易测试。\n\n<strong>3. 移除死代码</strong>:实验时写的代码后来不用了,删掉。Rust 编译器警告帮你找:<code>warning: function is never used</code>。\n\n<strong>4. 整理结构</strong>:把相关代码放一起,无关代码拆开。比如所有 audio 相关代码移到 audio.rs。Rust 端用 mod 系统。<code>mod audio; mod input;</code>\n\n<strong>Casey 的重构原则</strong>:\n\n原则 1:小步前进。每次只改一点,跑一下,确认没坏,再改下一点。不要一次性大重构(改 500 行后跑崩,不知道哪改错)。\n\n原则 2:不改行为。重构不加新功能、不修 bug。只改结构。如果有 bug 等重构完再修。\n\n原则 3:有测试再重构。重构前应该有自动化测试。HH 没有,Casey 靠「跑游戏看行为」验证。\n\n原则 4:命名是文档。变量名 / 函数名是给未来读者看的。<code>process_data</code> 差,<code>parse_png_header</code> 好。\n\n<strong>Rust 端的工具</strong>:rustfmt(自动格式化)、clippy(lint,提示「可以更地道」)、rust-analyzer(IDE,支持 rename / extract 重构)。Casey 在 C 里没这些工具,手动重构。Rust 工具链让你重构快 10×。",
+      "map_parents": [
+        "Refactoring(重构,不改行为只改结构)",
+        "代码质量",
+        "Technical debt(技术债)"
+      ],
+      "map_siblings": [
+        {
+          "name": "TDD",
+          "note": "先写测试再重构"
+        },
+        {
+          "name": "Boy Scout Rule",
+          "note": "「离开时比来时更干净」"
+        },
+        {
+          "name": "Strangler Pattern",
+          "note": "逐步替换老系统"
+        }
+      ],
+      "map_children": [
+        "Rename / Extract / Inline / Move refactor",
+        "rustfmt / clippy / rust-analyzer"
+      ],
+      "related_days": [
+        "day016",
+        "day025",
+        "day159",
+        "day498"
+      ],
+      "comparison": "<strong>共通点</strong>:所有软件项目都要重构。<strong>差别</strong>:节奏。Casey 推荐频繁小重构(每次写完一段就整理),代码始终干净。vs 定期大重构(代码暂时很乱)。vs 不重构(代码腐烂,最后重写)。Casey 在 HH 全剧有多个清理 day(Day 24、159、498),都是「现在花 1 小时,避免未来 100× 成本」。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 这集花一整集做重构。为什么不「等功能写完再统一重构」?提示:想想技术债的复利效应。",
+          "a": "<strong>因为技术债是复利</strong>。代码混乱时,加新功能成本 = 「写新功能」+「理解旧代码」+「绕过混乱」。代码越乱,这三块成本都涨。Day 25:小乱,成本 1.0×;Day 100:中乱,成本 2×;Day 500:大乱,重构不可能,只能重写整个项目。Day 24 重构成本 = 1 天。Day 500 重写成本 = 100 天。<strong>每天小投资避免未来 100× 成本</strong>。\n\nCasey 在 HH 全剧有多个清理 day,都是「现在花 1 小时,避免未来花 1 周」。这是成熟工程师的纪律。延伸:这种「维护性投资」在所有领域都有。健身每天 30 分钟,避免 60 岁躺医院。代码每天整理,避免项目死。人际关系日常维护,避免朋友失联。<strong>持续维护是成熟系统的核心</strong>。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Day 24 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "Day 24 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        }
+      ]
+    },
+    "day025": {
+      "why": "Day 025 是 Phase 1 的<strong>收官</strong>——「Finishing the Win32 Prototyping Layer」(完成 Win32 原型层)。Day 24 重构完,Day 25 加最后细节、文档、收尾。之后 Casey 进入 Day 26(2D 游戏架构),不再花时间在平台层。这集教学价值不在「新知识」,而在<strong>项目里程碑的意义</strong>。完成 Phase 1 = 你有了一个完整可工作的平台层。所有 HH 后面的工作(600+ 集)都基于这个平台层。我建议你在这集停下来庆祝——这是一个里程碑(M1)。然后回头审视 Phase 1 学到的东西,准备进入 Phase 2。",
+      "model": "Day 025 Casey 做的具体收尾:\n\n<strong>1. 文档</strong>:给平台层加注释,说明每个函数职责。Casey 在 C 里用 /* */ 块注释,Rust 用 /// doc comment。\n\n<strong>2. 错误处理完善</strong>:Day 1-24 有很多 unwrap()(panic on error)。Day 25 把关键路径的 unwrap 换成 proper error handling。\n\n<strong>3. 平台 API 整理</strong>:把所有「平台层暴露给游戏代码」的 API 列出来,确认它们干净、一致。\n\n<strong>4. 资源释放</strong>:Day 1-24 创建了很多 OS 资源(window、sound buffer、thread),但没显式释放(进程退出时 OS 自动清理)。Day 25 加 cleanup 代码,养成习惯。\n\n<strong>Phase 1 总结</strong>。经过 Day 1-25,你有了一个完整平台层,功能包括:\n- ✅ 窗口(winit)\n- ✅ 后缓冲(softbuffer)\n- ✅ 输入(键盘 winit + 手柄 gilrs)\n- ✅ 音频(cpal)\n- ✅ 文件 I/O(std::fs)\n- ✅ 时间(std::time + rdtsc)\n- ✅ 主循环(60Hz / VSync)\n- ✅ 平台无关 API(GameMemory + GameInput + update_and_render)\n- ✅ 热重载(libloading)\n\n这是 Handmade Hero 全剧最重要的 25 集——后面 642 集都基于这个平台层。\n\n<strong>Phase 1 出口检查</strong>:1) 你的 exe 跑起来,显示一个窗口;2) 窗口里有彩色画面在动;3) 键盘 / 手柄能控制一个方块;4) 能听到方波 / 正弦波;5) 改一行游戏代码,保存,1-2 秒内看到效果(热重载);6) 关掉游戏不会 crash。全部 yes = 你 Phase 1 毕业,可以进 Day 26。\n\n<strong>下一阶段:Phase 2(2D 游戏)</strong>。Day 26 起,Casey 开始写<strong>游戏代码</strong>(不是平台层)。前面 25 集搭的舞台,现在开始演剧:Day 26-27 游戏架构(三明治分层)、Day 28-35 tile map、Day 36-40 BMP 加载与渲染、Day 41-50 2D 数学与碰撞,以此类推。平台层后面基本不动,除非 Day 21-25 的设计需要调整(比如 Day 235 切 OpenGL 要改平台层)。",
+      "map_parents": [
+        "项目里程碑(M1:平台层完工)",
+        "收尾 / 交付 / 启动新阶段"
+      ],
+      "map_siblings": [
+        {
+          "name": "Alpha 版本",
+          "note": "游戏开发中「可玩」的第一个版本"
+        },
+        {
+          "name": "MVP(Minimum Viable Product)",
+          "note": "Lean Startup 概念"
+        }
+      ],
+      "map_children": [
+        "文档(doc comment)",
+        "Error handling 完善",
+        "资源释放 RAII",
+        "Phase 出口标准"
+      ],
+      "related_days": [
+        "day024",
+        "day026",
+        "day070",
+        "day121"
+      ],
+      "comparison": "<strong>共通点</strong>:所有项目都有「Phase 1 完成」的里程碑——基础设施搭好,可以加业务。<strong>差别</strong>:Phase 1 的定义。HH:平台层;Web 后端:CI/CD + DB + Auth;移动 App:导航 + 网络层;嵌入式:RTOS + driver。无论领域,「先打地基再建楼」是普遍原则。Casey 用 25 集打地基,后面 642 集建楼。比例 1:25——地基虽然耗时但值得,因为后面楼才稳。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "完成 Phase 1 后,Casey 进 Phase 2 不再大改平台层(除非 Day 235 切 OpenGL)。这种「先做对基础再扩展」的策略有什么好处?有什么代价?",
+          "a": "<strong>好处</strong>:1) 心理稳定:知道平台层可靠,可以专注业务;2) 学习累积:Phase 1 的设计教训(状态外置、API 一致)成为 Phase 2+ 的基础;3) 避免返工:Day 11 设计对了,Day 26+ 不用回头改平台层;4) 团队协作:多人项目时,平台层稳定,大家并行加业务。\n\n<strong>代价</strong>:1) 前期慢:25 集几周不写游戏,看起来「没进度」;2) 过度设计风险:Phase 1 设计过度,Phase 2 用不上;3) 无法预知需求:Phase 1 时不知道 Phase 2 要什么 API。\n\nCasey 的策略:Phase 1 设计「最小必要」API(Day 011 的 update_and_render),不过度抽象。Phase 2 真有新需求再回头加。这是 YAGNI 原则的应用——别预先想象需求。实战教训:大项目开始前,花时间搭核心架构是对的。但要克制过度设计,只做必要的。Casey 25 集的比例对游戏开发合理。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Day 25 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "Day 25 的核心知识点是什么?用一句话总结。",
+          "a": "看 🧠 心智模型部分。核心是理解 Casey 为什么这样设计。"
+        }
+      ],
+      "supplements": [
+        {
+          "title": "📚 Phase 1 复盘:你应该掌握了什么",
+          "body": "Phase 1 是 HH 最密集的学习阶段——25 集里你接触了大量新概念。我列一个 checklist,你对照检查:\n\n<strong>Rust 知识</strong>:所有权 / 借用 / 生命周期;Vec / HashSet / HashMap;trait / Box<dyn Trait>;闭包(Fn / FnMut / FnOnce);AtomicU64 / Ordering;Arc / Send / Sync;unsafe / 裸指针;Cargo workspace / features / build.rs;profile.dev / release。\n\n<strong>跨平台库</strong>:winit(窗口 / 事件);softbuffer(显示 back buffer);cpal(音频);gilrs(手柄);libloading(DLL 热重载);cargo-watch(自动编译)。\n\n<strong>游戏架构</strong>:平台层 / 游戏代码分离;GameMemory(状态外置);GameInput(轮询快照);update_and_render 函数指针;热重载机制。\n\n<strong>Win32 概念(理解即可)</strong>:窗口类 + WindowProc;Message loop;DirectSound ring buffer;QPC / RDTSC。\n\n<strong>音频基础</strong>:PCM 样本序列;采样率 / 位深 / 声道;方波 / 正弦波;Ring buffer + play/write cursor。\n\n<strong>调试 / 工具</strong>:cargo build / run / watch;rust-analyzer + VS Code / Neovim;clippy / rustfmt;调试方法论(可视化 + 假设验证)。\n\n<strong>软技能</strong>:何时重构 / 何时推迟;YAGNI 原则;状态外置 vs 隐式状态。\n\n如果 80%+ 你能勾上,你 Phase 1 算扎实。如果 < 50%,建议重看相关 day 的视频 + 自己写 demo 巩固。Phase 2 (Day 26-70) 会大量用这些基础,继续向前。"
+        }
+      ]
+    }
+  }
+}

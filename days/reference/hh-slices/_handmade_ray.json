@@ -1,0 +1,52 @@
+[
+  {
+    "slug": "ray/ray00",
+    "title_en": "Day 00: Making a Simple Raycaster",
+    "title_zh": "制作简单光线投射器",
+    "url": "https://guide.handmadehero.org/ray/ray00/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "coding",
+    "learn": ""
+  },
+  {
+    "slug": "ray/ray01",
+    "title_en": "Day 01: Multithreading",
+    "title_zh": "多线程",
+    "url": "https://guide.handmadehero.org/ray/ray01/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "coding",
+    "learn": ""
+  },
+  {
+    "slug": "ray/ray02",
+    "title_en": "Day 02: Replacing rand() and Preparing for SIMD",
+    "title_zh": "替换 rand() 并为 SIMD 准备",
+    "url": "https://guide.handmadehero.org/ray/ray02/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "coding",
+    "learn": ""
+  },
+  {
+    "slug": "ray/ray03",
+    "title_en": "Day 03: Optimizing with SSE2 and AVX2",
+    "title_zh": "用 SSE2 与 AVX2 优化",
+    "url": "https://guide.handmadehero.org/ray/ray03/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "coding",
+    "learn": ""
+  },
+  {
+    "slug": "ray/ray04",
+    "title_en": "Day 04: Loading sampled BRDF data",
+    "title_zh": "加载采样的 BRDF 数据",
+    "url": "https://guide.handmadehero.org/ray/ray04/",
+    "difficulty": 2,
+    "duration": "1h",
+    "type": "coding",
+    "learn": ""
+  }
+]

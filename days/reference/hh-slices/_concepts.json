@@ -1,0 +1,670 @@
+[
+  {
+    "id": "platform-layer",
+    "name": "Platform Layer (平台层)",
+    "category": "架构",
+    "summary": "把所有平台相关代码(窗口、输入、音频、文件)封装在一个模块里,对游戏代码只暴露平台无关的接口。",
+    "detail": "Casey 把游戏写成两块:一块是平台层(原 win32_handmade.cpp),负责所有 Windows API 调用;另一块是游戏代码(handmade.cpp),通过几个函数指针被平台层调用。游戏代码不知道自己在 Windows 上,也不知道用了 DirectSound 还是 ALSA。这意味着同一份游戏代码可以在任何平台上跑——你只要重写平台层。这一架构在 Day 11 开始成型,Day 26 完整阐述。",
+    "episodes": [
+      "day011",
+      "day026",
+      "day240"
+    ],
+    "resources": [
+      {
+        "name": "Handmade Hero Day 026: Game Architecture",
+        "url": "https://guide.handmadehero.org/code/day026/"
+      }
+    ]
+  },
+  {
+    "id": "hot-reload",
+    "name": "Hot Reload / Live Code Editing (热重载)",
+    "category": "架构",
+    "summary": "重新编译游戏代码的 DLL,平台层在不重启的情况下加载新版,所见即所得地改游戏。",
+    "detail": "Day 21-23 的核心。Win32 用 LoadLibrary/GetProcAddress;Rust 端用 libloading::Library::new + Library::get。关键点:平台层持有一个函数指针,游戏主循环每次调用这个函数指针;改完代码后重新编译 .so/.dll,平台层检测文件改动,卸载旧 lib,加载新 lib,重新拿函数指针。游戏状态保存在平台层管理的内存里,游戏代码只是「无状态的处理函数」。",
+    "episodes": [
+      "day021",
+      "day022",
+      "day023"
+    ],
+    "resources": []
+  },
+  {
+    "id": "sim-region",
+    "name": "Simulation Region (模拟区域)",
+    "category": "游戏逻辑",
+    "summary": "只对相机周围一定范围内的实体做模拟,远处的实体不参与更新。",
+    "detail": "Day 63 引入。游戏中可能有成千上万个实体,但每帧只需要模拟相机周围的那一小撮。Casey 把世界划分成 sim region,每帧只把当前 region 里的实体「unpack」到一块连续内存,模拟完后再「pack」回世界存储。这样不管世界多大,每帧模拟代价恒定。",
+    "episodes": [
+      "day063",
+      "day064",
+      "day065",
+      "day349"
+    ],
+    "resources": []
+  },
+  {
+    "id": "entity-system",
+    "name": "Entity System + Index (实体系统与索引)",
+    "category": "游戏逻辑",
+    "summary": "所有游戏对象(玩家、怪物、道具)统一抽象为 entity,用唯一索引引用,避免悬挂指针。",
+    "detail": "Casey 在 C 里用全局 entity 数组 + uint32 index 来引用 entity。为什么不用指针?因为实体可能被销毁、数组可能被重排,指针会悬挂。索引永远有效(虽然对应的 entity 可能已经死了,但可以查询)。Rust 端可以用 SlotMap 或 generational arena 来获得同样的安全性,还能避免 unsafe。",
+    "episodes": [
+      "day053",
+      "day056",
+      "day064"
+    ],
+    "resources": [
+      {
+        "name": "SlotMap crate 文档",
+        "url": "https://docs.rs/slotmap"
+      },
+      {
+        "name": "Generational Indices 详解",
+        "url": "https://docs.rs/slotmap/latest/slotmap/index.html"
+      }
+    ]
+  },
+  {
+    "id": "memory-arena",
+    "name": "Memory Arena (内存竞技场)",
+    "category": "内存",
+    "summary": "一块大内存,程序按需从中切出小区域,统一释放——避免大量 malloc/free 调用。",
+    "detail": "Casey 几乎不用 malloc。游戏启动时分配一大块内存(几百 MB),之后所有临时分配都从这块「arena」上 push 一块下来,用完后整块 pop 掉。优势:1) 没有内存碎片;2) 没有内存泄漏(整块释放);3) 缓存友好(连续内存);4) 分配就是指针累加,O(1)。Rust 端用 bumpalo 或自己实现。",
+    "episodes": [
+      "day014",
+      "day157",
+      "day341"
+    ],
+    "resources": [
+      {
+        "name": "bumpalo crate",
+        "url": "https://docs.rs/bumpalo"
+      }
+    ]
+  },
+  {
+    "id": "push-buffer",
+    "name": "Push Buffer (推送缓冲)",
+    "category": "渲染",
+    "summary": "游戏代码把渲染命令序列化写到一块内存里,渲染器读出来执行——解耦游戏与渲染后端。",
+    "detail": "Day 88 引入。游戏不直接调用 OpenGL,而是把「画一个 bitmap 在 (x,y)」这样的高层命令 append 到 push buffer。渲染器(可能是软渲染,可能是 OpenGL,可能是 DirectX)读 push buffer,翻译成具体调用。这样游戏代码与渲染后端解耦——Casey 后面 Day 235 切换 OpenGL 时游戏代码几乎没改。",
+    "episodes": [
+      "day088",
+      "day089"
+    ],
+    "resources": []
+  },
+  {
+    "id": "vector",
+    "name": "向量 (Vector)",
+    "category": "数学",
+    "summary": "有方向和大小的量。游戏里用 2D/3D/4D 向量表示位置、速度、法线等。",
+    "detail": "Day 41 开始。Casey 自己手写一个 v2/v3/v4 结构,不依赖任何数学库。运算:加、减、点积(dot)、叉积(cross)、长度(length)、normalize。Rust 端可以用 nalgebra 或自己写——建议自己写,因为 Casey 经常为了 SIMD 把 v3 当 v4 用(w 字段做 padding)。",
+    "episodes": [
+      "day041",
+      "day042",
+      "day047"
+    ],
+    "resources": [
+      {
+        "name": "3D Math Primer(免费在线)",
+        "url": "https://gamemath.com/book/intro.html"
+      },
+      {
+        "name": "Linear Algebra 3Blue1Brown",
+        "url": "https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"
+      }
+    ]
+  },
+  {
+    "id": "matrix",
+    "name": "矩阵 (Matrix)",
+    "category": "数学",
+    "summary": "线性变换的代数表示。游戏里用 4x4 矩阵做平移、旋转、缩放、投影。",
+    "detail": "Day 89 起 Casey 手写 4x4 矩阵库。关键概念:矩阵乘法对应变换的复合;矩阵的逆对应变换的反向;矩阵的转置在正交矩阵下等于逆。Day 101-102 详细讲法线变换为什么要用 transpose(inverse(M))。",
+    "episodes": [
+      "day089",
+      "day101",
+      "day102",
+      "day319",
+      "day320",
+      "day361",
+      "day362"
+    ],
+    "resources": [
+      {
+        "name": "Matrix Algebra 3Blue1Brown",
+        "url": "https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"
+      }
+    ]
+  },
+  {
+    "id": "minkowski",
+    "name": "Minkowski Sum/Difference (闵可夫斯基和/差)",
+    "category": "数学/碰撞",
+    "summary": "把「两个形状的碰撞检测」转化为「一个点是否在一个形状内」。",
+    "detail": "Day 50 的核心算法。两个形状 A 和 B 的碰撞,等价于「点 -B 是否在 A+(-B) 内」,后者是 Minkowski 和。Casey 把所有碰撞体都当成 AABB(轴对齐方块),所以 A+(-B) 还是 AABB——这让碰撞检测退化成「点是否在 AABB 内」,极简。",
+    "episodes": [
+      "day050"
+    ],
+    "resources": [
+      {
+        "name": "Minkowski Sum - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Minkowski_addition"
+      },
+      {
+        "name": "Game Physics Engine Development (Ian Millington)",
+        "url": "https://www.r-5.org/files/books/computers/algo-list/realtime-3d/Ian_Millington-Game_Physics_Engine_Development-EN.pdf"
+      }
+    ]
+  },
+  {
+    "id": "perspective-projection",
+    "name": "Perspective Projection (透视投影)",
+    "category": "数学/渲染",
+    "summary": "把 3D 场景投影到 2D 屏幕的变换,近大远小。",
+    "detail": "Day 108。透视投影矩阵的核心是除以 z(深度)——这模拟了现实中「远的物体看起来小」。在 OpenGL 里这是 projection matrix,会被 vertex shader 自动应用。Casey 软渲染时手动做这个除法,Day 360 后让 OpenGL 做。",
+    "episodes": [
+      "day108",
+      "day359",
+      "day360"
+    ],
+    "resources": [
+      {
+        "name": "LearnOpenGL - Coordinate Systems",
+        "url": "https://learnopengl.com/Getting-started/Coordinate-Systems"
+      }
+    ]
+  },
+  {
+    "id": "quaternion",
+    "name": "Quaternion (四元数)",
+    "category": "数学",
+    "summary": "用 4 个数表示 3D 旋转,避免欧拉角的万向节锁。Casey 主要用矩阵,但了解四元数对后续 Game Engine 开发有用。",
+    "detail": "Handmade Hero 本身没怎么用四元数(Casey 倾向用 axis-angle + 矩阵)。但现代游戏引擎普遍用四元数做骨骼动画、相机插值。如果继续做游戏开发,这是必备知识。",
+    "episodes": [],
+    "resources": [
+      {
+        "name": "Veritasium: How Quaternions Work",
+        "url": "https://www.youtube.com/watch?v=3BR8tK-Lu5I"
+      },
+      {
+        "name": "3D Math Primer ch.10",
+        "url": "https://gamemath.com/book/orientation.html"
+      }
+    ]
+  },
+  {
+    "id": "premultiplied-alpha",
+    "name": "Premultiplied Alpha (预乘 alpha)",
+    "category": "渲染",
+    "summary": "把 RGB 先乘以 alpha 再存储。混合时更高效,且避免边缘黑边。",
+    "detail": "Day 83。普通 alpha 混合: out = src.rgb * src.a + dst.rgb * (1-src.a)。预乘 alpha 把 src.rgb 先存成 src.rgb * src.a,混合变成: out = src.rgb + dst.rgb * (1-src.a)。少了 src.rgb * src.a 这次乘法,且边缘像素没有黑边问题。所有现代引擎都用预乘 alpha。",
+    "episodes": [
+      "day083",
+      "day095"
+    ],
+    "resources": []
+  },
+  {
+    "id": "srgb",
+    "name": "sRGB & Linear Space (色彩空间)",
+    "category": "渲染",
+    "summary": "图像文件存的是 sRGB(经过 gamma 编码);光照计算必须在 linear 空间做,否则结果不对。",
+    "detail": "Day 94。sRGB 是一个非线性空间,本质是给暗色更多精度(人眼对暗色更敏感)。但物理光照计算是线性的——两个光源叠加应该亮度翻倍。所以在 fragment shader 里要先把纹理采样从 sRGB 转 linear,做完光照再转回 sRGB 输出。否则颜色看起来「洗白」或「过曝」。",
+    "episodes": [
+      "day094",
+      "day095",
+      "day241"
+    ],
+    "resources": [
+      {
+        "name": "What Every Coder Should Know About Gamma",
+        "url": "https://blog.johnnovak.net/2016/09/21/what-every-coder-should-know-about-gamma/"
+      }
+    ]
+  },
+  {
+    "id": "normal-map",
+    "name": "Normal Map (法线贴图)",
+    "category": "渲染",
+    "summary": "用纹理存储表面法线,让低模伪装成高模的细节。",
+    "detail": "Day 97。法线贴图的 RGB 三个通道存的是局部切线空间下的法线方向。fragment shader 采样后,用它做 Phong 光照,而不是用三角形面法线——这让平面也有凹凸感。",
+    "episodes": [
+      "day097",
+      "day098",
+      "day099"
+    ],
+    "resources": [
+      {
+        "name": "LearnOpenGL - Normal Mapping",
+        "url": "https://learnopengl.com/Advanced-Lighting/Normal-Mapping"
+      }
+    ]
+  },
+  {
+    "id": "phong",
+    "name": "Phong / Blinn-Phong Lighting (Phong 光照)",
+    "category": "渲染",
+    "summary": "经典局部光照模型:ambient + diffuse + specular。",
+    "detail": "Day 96 起。Phong 模型把光照拆成三部分:ambient(环境光常数)、diffuse(漫反射,Lambert 模型,N·L)、specular(高光,(R·V)^shininess)。Blinn-Phong 是改进版,用半向量 H=(L+V)/2 替代 R,数值上更稳定且物理更接近真实。",
+    "episodes": [
+      "day096",
+      "day390"
+    ],
+    "resources": [
+      {
+        "name": "LearnOpenGL - Basic Lighting",
+        "url": "https://learnopengl.com/Lighting/Basic-Lighting"
+      }
+    ]
+  },
+  {
+    "id": "depth-buffer",
+    "name": "Depth Buffer (深度缓冲/Z-Buffer)",
+    "category": "渲染",
+    "summary": "每个像素存自己被绘制时的深度,后续像素只在更近时才覆盖——解决 3D 遮挡。",
+    "detail": "Day 358。深度缓冲是 3D 渲染的基础:每个像素除了颜色,还存一个深度值(z)。新像素要写入时,先比较 z,远的丢弃近的保留。这样不需要排序,直接画家算法失效也没关系。",
+    "episodes": [
+      "day358",
+      "day364",
+      "day374"
+    ],
+    "resources": [
+      {
+        "name": "LearnOpenGL - Depth testing",
+        "url": "https://learnopengl.com/Advanced-OpenGL/Depth-testing"
+      }
+    ]
+  },
+  {
+    "id": "depth-peeling",
+    "name": "Depth Peeling (深度剥离)",
+    "category": "渲染",
+    "summary": "用多次 pass 解决半透明物体的 order-independent transparency(OIT)。",
+    "detail": "Day 381 起。半透明物体不能用普通深度缓冲,因为半透明不能简单「近的覆盖远的」。Depth peeling 做 N 次 pass:每次 pass 找到当前最近未被剥离的层,绘制后「剥离」它,下一次 pass 找到下一层。N 越大越准但越慢。Casey 后来又做了多重采样版本(Day 388)。",
+    "episodes": [
+      "day381",
+      "day382",
+      "day383",
+      "day388"
+    ],
+    "resources": [
+      {
+        "name": "NVIDIA: Interactive Order-Independent Transparency",
+        "url": "https://developer.nvidia.com/content/interactive-order-independent-transparency"
+      }
+    ]
+  },
+  {
+    "id": "light-probe",
+    "name": "Light Probe (光探针)",
+    "category": "渲染",
+    "summary": "在世界中放置一些「探针点」,预计算每点的入射光,运行时用最近探针插值——做全局光照的廉价方案。",
+    "detail": "Day 547 起。预计算光照非常慢(可能几分钟),不能每帧做。Casey 把世界划分成 voxel grid,每个 voxel 存它接收到的光(从所有方向)。运行时物体查询自己所在 voxel 的光,就拿到了间接光。后续 Day 576+ 把这个升级为 octahedral 编码,把半球压成 2D 纹理节省内存。",
+    "episodes": [
+      "day547",
+      "day548",
+      "day576",
+      "day577"
+    ],
+    "resources": [
+      {
+        "name": "Real-Time Rendering (4th ed.) ch.11",
+        "url": "https://www.realtimerendering.com/"
+      }
+    ]
+  },
+  {
+    "id": "cache",
+    "name": "CPU Cache & Cache Line (CPU 缓存与缓存行)",
+    "category": "性能",
+    "summary": "CPU 有 L1/L2/L3 缓存,以 64 字节 cache line 为单位。访问相邻内存比随机访问快 10-100 倍。",
+    "detail": "Day 112。所有 HH 后期的优化都围绕 cache。典型案例:Casey 把实体从 array-of-structs 改成 struct-of-arrays(SoA),因为更新循环只读某些字段,SoA 让这些字段连续在 cache 里。SIMD 也依赖 cache——一次加载 16 字节到 __m128,如果数据不在一个 cache line 里就慢。",
+    "episodes": [
+      "day112",
+      "day351",
+      "day555"
+    ],
+    "resources": [
+      {
+        "name": "Gallery of Processor Cache Effects",
+        "url": "https://igoro.com/archive/gallery-of-processor-cache-effects/"
+      },
+      {
+        "name": "Mike Acton: Data-Oriented Design",
+        "url": "https://www.youtube.com/watch?v=rX0ItVEVjA4"
+      }
+    ]
+  },
+  {
+    "id": "simd",
+    "name": "SIMD (Single Instruction Multiple Data)",
+    "category": "性能",
+    "summary": "一条 CPU 指令同时处理多个数据。SSE 一次 4 个 float,AVX 一次 8 个,AVX-512 一次 16 个。",
+    "detail": "Day 115 起。__m128 是 128 位向量,装 4 个 float。一条指令 _mm_add_ps 同时算 4 个加法。SIMD 软渲染提速 4 倍。注意:数据必须 16 字节对齐(Rust 里 #[repr(align(16))]);如果按列优先布局矩阵,SIMD 可以一次乘一整行。",
+    "episodes": [
+      "day115",
+      "day116",
+      "day117",
+      "day121",
+      "day144",
+      "day145",
+      "day431"
+    ],
+    "resources": [
+      {
+        "name": "Intel Intrinsics Guide",
+        "url": "https://www.intel.com/content/www/us/en/docs/intrinsics-guide/"
+      },
+      {
+        "name": "SIMD at Godbolt",
+        "url": "https://simd.godbolt.org/"
+      }
+    ]
+  },
+  {
+    "id": "port-pressure",
+    "name": "Port Pressure & μops (CPU 端口与微操作)",
+    "category": "性能",
+    "summary": "CPU 后端有多个执行端口(alu/mul/mem),指令分配到端口;一个函数的吞吐受最忙的端口限制。",
+    "detail": "Day 119-120。现代 CPU 每周期发射多条指令,但每条指令要去特定端口(比如乘法只能去 port 0/1)。如果一段代码有 10 条乘法,每条去 port 0/1,理论最快 5 周期。Casey 用 Intel IACA 工具分析;Rust 端可以用 cargo asm + perf stat 替代。",
+    "episodes": [
+      "day119",
+      "day120"
+    ],
+    "resources": [
+      {
+        "name": "Agner Fog 的 CPU 架构手册",
+        "url": "https://www.agner.org/optimize/"
+      }
+    ]
+  },
+  {
+    "id": "atomics",
+    "name": "Atomic Operations & Memory Ordering (原子操作与内存序)",
+    "category": "并发",
+    "summary": "atomic 保证多线程下读改写的原子性;memory ordering 决定其他变量可见性的保证强度。",
+    "detail": "Day 122-124。Rust std::sync::atomic 提供 AtomicUsize/AtomicBool 等。Ordering::Relaxed 只保证本操作原子,不保证其他变量的顺序;Acquire/Release 配对,Release 写入 + Acquire 读取建立 happens-before 关系;SeqCst 是最强,全局顺序。Casey 自己实现 work queue 就靠这几个概念。",
+    "episodes": [
+      "day122",
+      "day123",
+      "day124",
+      "day125"
+    ],
+    "resources": [
+      {
+        "name": "Rust Atomics and Locks (Mara Bos)",
+        "url": "https://marabos.nl/atomics/"
+      },
+      {
+        "name": "rust-memory-model 文章",
+        "url": "https://matklad.github.io/2020/03/22/atomic-vs-mutex-vs-spinlock.html"
+      }
+    ]
+  },
+  {
+    "id": "work-queue",
+    "name": "Work Queue (工作队列)",
+    "category": "并发",
+    "summary": "主线程往队列里塞任务,工作线程从队列抢任务——游戏并行化的基础模式。",
+    "detail": "Day 125-126。Casey 手写一个 lock-free FIFO work queue:主线程 AtomicPush,工作线程 AtomicPop。当队列为空时工作线程睡眠(SemaphoreWait),主线程塞任务后 SemaphoreRelease 唤醒。Rust 端可以参考 std::sync::mpsc 或 rayon::spawn,但 Casey 的版本更轻量、更针对游戏循环。",
+    "episodes": [
+      "day125",
+      "day126",
+      "day350",
+      "day351"
+    ],
+    "resources": [
+      {
+        "name": "Crossbeam channel 文档",
+        "url": "https://docs.rs/crossbeam-channel"
+      },
+      {
+        "name": "Rayon crate",
+        "url": "https://docs.rs/rayon"
+      }
+    ]
+  },
+  {
+    "id": "ticket-lock",
+    "name": "Ticket Lock / Mutex (票据锁)",
+    "category": "并发",
+    "summary": "自旋锁的公平变种——每个等待者拿到一个号,按号顺序获得锁,避免饥饿。",
+    "detail": "Day 325。普通自旋锁可能某些线程饿死。Ticket lock 让每个线程 atomically 取一个 ticket(递增计数器),然后轮询「现在服务的号」是否到自己的号。Casey 在某些不能用 lock-free 的地方用 ticket lock。Rust 端 parking_lot::Mutex 比标准库快得多,且不会中毒。",
+    "episodes": [
+      "day325"
+    ],
+    "resources": []
+  },
+  {
+    "id": "png",
+    "name": "PNG Format (PNG 格式)",
+    "category": "数据格式",
+    "summary": "无损位图格式。核心:PNG chunk + ZLIB 压缩 + Huffman 编码 + Reconstruction Filters。",
+    "detail": "Day 453-459。PNG 文件由 chunks 组成(IHDR/IDAT/IEND 等)。IDAT 里是 zlib 压缩的数据,解压后是 filter 后的扫描行。每行先经过 reconstruction filter(None/Sub/Up/Average/Paeth)——这是 PNG 比无损 BMP 小很多的关键。Casey 全部手写,Rust 端也手写。",
+    "episodes": [
+      "day453",
+      "day454",
+      "day455",
+      "day456",
+      "day457"
+    ],
+    "resources": [
+      {
+        "name": "PNG Specification (w3.org)",
+        "url": "https://www.w3.org/TR/png/"
+      },
+      {
+        "name": "zlib Home",
+        "url": "https://www.zlib.net/"
+      }
+    ]
+  },
+  {
+    "id": "huffman",
+    "name": "Huffman Coding (哈夫曼编码)",
+    "category": "数据格式/压缩",
+    "summary": "用变长编码让常见符号短、罕见符号长——把数据压缩到接近信息熵。",
+    "detail": "Day 455。Huffman 给每个符号(字节/像素值)分配一个 bit 串,常见符号短(比如 'e' 用 3 bit),罕见符号长(比如 'z' 用 10 bit)。PNG/Deflate 用动态 Huffman 树。Casey 实现的是 canonical Huffman,树结构可以用数组存储(避免指针)。Rust 端可以参考 inflate crate 实现——但学习目的要自己写。",
+    "episodes": [
+      "day455"
+    ],
+    "resources": [
+      {
+        "name": "Computerphile: Huffman Coding",
+        "url": "https://www.youtube.com/watch?v=JsTptuHGMGQ"
+      }
+    ]
+  },
+  {
+    "id": "lz77",
+    "name": "LZ77 / LZSS Compression (LZ 压缩)",
+    "category": "压缩",
+    "summary": "用「回头看」——出现过的字节串用 (距离, 长度) 引用代替。Deflate/PNG 的核心。",
+    "detail": "Day 354。LZ77 维护一个滑动窗口(典型 32KB),扫描时如果当前字节串在窗口里出现过,就输出一个 (距离, 长度) 对,而不是字节本身。Deflate = LZ77 + Huffman。Casey 自己写了一个,几百行 C;Rust 端建议跟做。这是理解所有现代压缩(zstd, gzip, brotli)的入门。",
+    "episodes": [
+      "day353",
+      "day354"
+    ],
+    "resources": [
+      {
+        "name": "Computerphile: LZ Compression",
+        "url": "https://www.youtube.com/watch?v=0FX-SXa-1UY"
+      }
+    ]
+  },
+  {
+    "id": "wav",
+    "name": "WAV Format (WAV 格式)",
+    "category": "数据格式",
+    "summary": "无损音频格式。RIFF 容器 + fmt/data chunks + PCM 样本。比 PNG 简单得多。",
+    "detail": "Day 138。WAV 是最简单的音频格式之一:RIFF 头 + fmt chunk(采样率/位深/声道)+ data chunk(原始 PCM 样本)。Casey 自己写 parser,Rust 端也手写。注意:WAV 可以是 int16 / int32 / float32,且有多种 channel layout。",
+    "episodes": [
+      "day138"
+    ],
+    "resources": [
+      {
+        "name": "WAV Specification",
+        "url": "http://soundfile.sapp.org/doc/WaveFormat/"
+      }
+    ]
+  },
+  {
+    "id": "radix-sort",
+    "name": "Radix Sort (基数排序)",
+    "category": "算法",
+    "summary": "O(n) 排序——按位分别计数排序。游戏渲染排序的标配。",
+    "detail": "Day 234。比较排序下界是 O(n log n),但基数排序按字节/位分组,是 O(n * k)(k 是 key 位数)。Casey 用 radix sort 排序渲染元素(每帧上万个 sprite)。Rust 端可以用 voracious_sort 或手写。",
+    "episodes": [
+      "day234"
+    ],
+    "resources": [
+      {
+        "name": "Radix Sort Visualization",
+        "url": "https://www.cs.usfca.edu/~galles/visualization/RadixSort.html"
+      }
+    ]
+  },
+  {
+    "id": "hash-table",
+    "name": "Hash Table (哈希表)",
+    "category": "算法",
+    "summary": "O(1) 平均查找——key 哈希后定位到桶。Casey 自己写一个特定用途的版本。",
+    "detail": "Day 55。Casey 实现 sparse hash table 存世界 tile:hash(tile_x, tile_y, tile_z) → bucket,linear probing 解决冲突。Rust 标准库 HashMap 是通用实现;Casey 的版本更简单、更针对 sparse 3D 网格。",
+    "episodes": [
+      "day055"
+    ],
+    "resources": []
+  },
+  {
+    "id": "k-d-tree",
+    "name": "K-d Tree (K 维树)",
+    "category": "算法",
+    "summary": "空间二分树。光线追踪、最近邻搜索的加速结构。",
+    "detail": "Day 595-597。Casey 用 k-d tree 加速 raycast:把世界递归地按平面切成两半,raycast 时只测试 ray 路径上的几个 partition,避免遍历整个世界。Rust 端用 unsafe + lifetime 封装起来,既有性能又安全。",
+    "episodes": [
+      "day595",
+      "day596",
+      "day597"
+    ],
+    "resources": [
+      {
+        "name": "K-d Tree - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/K-d_tree"
+      }
+    ]
+  },
+  {
+    "id": "grid-raycast",
+    "name": "Grid Raycast / DDA (网格光线投射)",
+    "category": "算法",
+    "summary": "用 DDA(Digital Differential Analyzer)算法在体素网格里高效走 ray。",
+    "detail": "Day 598-617。给定 ray 起点 + 方向,DDA 算法每次只走一格,跳过空格,直到了第一个非空格才做相交测试。Casey 后期把 walk table(预计算的步进顺序)换成 tableless(实时计算)。Rust 端用 __m128 SIMD 可以一次走 4 条 ray。",
+    "episodes": [
+      "day598",
+      "day616",
+      "day617"
+    ],
+    "resources": [
+      {
+        "name": "A Fast Voxel Traversal Algorithm (Amanatides & Woo)",
+        "url": "https://www.cse.yorku.ca/~amana/research/grid.pdf"
+      }
+    ]
+  },
+  {
+    "id": "octahedral",
+    "name": "Octahedral Encoding (八面体编码)",
+    "category": "渲染/算法",
+    "summary": "把 3D 单位向量(球面)编码成 2D 纹理坐标,节省显存。",
+    "detail": "Day 576。3D 方向(球面上的点)可以折叠成八面体再展开成方形——这样方向可以存成 2D 纹理,而不是 3D 体积纹理。光照贴图、Reflection Probe 都用这个技巧。",
+    "episodes": [
+      "day576",
+      "day577",
+      "day578",
+      "day579",
+      "day580"
+    ],
+    "resources": [
+      {
+        "name": "Octahedral Encoding paper",
+        "url": "https://jcgt.org/published/0003/02/01/"
+      }
+    ]
+  },
+  {
+    "id": "ownership",
+    "name": "Ownership & Borrowing (所有权与借用)",
+    "category": "Rust",
+    "summary": "Rust 编译期保证:每个值只有一个所有者,引用不能 outlive 被引用者。",
+    "detail": "Casey 在 C 里用 raw pointer 想怎么用就怎么用;Rust 强制你思考谁是所有者。游戏实体系统的典型解法:把所有 entity 存在一个 Vec 里,代码用 usize index 引用 entity,避免借用检查。如果用 reference,每次更新整个 Vec 都 borrow,会撞 borrow checker。",
+    "episodes": [
+      "day053",
+      "day064"
+    ],
+    "resources": [
+      {
+        "name": "Rust Book ch.4: Understanding Ownership",
+        "url": "https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html"
+      }
+    ]
+  },
+  {
+    "id": "unsafe-ffi",
+    "name": "unsafe & FFI (unsafe 与外部函数接口)",
+    "category": "Rust",
+    "summary": "unsafe 块绕过 Rust 安全检查;FFI 让 Rust 调用 C 库或被 C 调用。",
+    "detail": "HH 项目里大量场景需要 unsafe:1) libloading 拿到的函数指针调用;2) SIMD 内联函数;3) 手写 lock-free 数据结构;4) 内存映射。Rust 端的指导原则:把 unsafe 限制在最小范围,外面包一层 safe API。Casey 的 C 代码全是不安全的,Rust 翻译时要想清楚哪些是真不安全、哪些只是 Rust 表达能力问题。",
+    "episodes": [
+      "day021",
+      "day115",
+      "day123"
+    ],
+    "resources": [
+      {
+        "name": "Rust Book ch.19: Advanced Features",
+        "url": "https://doc.rust-lang.org/book/ch19-01-unsafe-rust.html"
+      },
+      {
+        "name": "Rust FFI Omnibus",
+        "url": "http://jakegoulding.com/rust-ffi-omnibus/"
+      }
+    ]
+  },
+  {
+    "id": "repr-c",
+    "name": "#[repr(C)] 与内存布局",
+    "category": "Rust",
+    "summary": "FFI 结构必须用 #[repr(C)] 保证内存布局与 C 一致;SIMD 数据要 #[repr(align(16))]。",
+    "detail": "Rust 默认布局是编译器随机重排的(优化 cache),但跨 FFI 边界必须固定。Casey 的 game_memory、game_input、game_offscreen_buffer 等结构必须 #[repr(C)]。SIMD 数据(__m128 数组)必须 16 字节对齐,否则 movaps 会段错。",
+    "episodes": [
+      "day014",
+      "day115"
+    ],
+    "resources": [
+      {
+        "name": "Rust Reference: Type Layout",
+        "url": "https://doc.rust-lang.org/reference/type-layout.html"
+      }
+    ]
+  },
+  {
+    "id": "maybeuninit",
+    "name": "MaybeUninit<T>",
+    "category": "Rust",
+    "summary": "声明未初始化的内存——Rust 安全替代 C 的 malloc + 不初始化。",
+    "detail": "Casey 经常分配一块大内存,后面才填值。Rust 的 Vec 不能这么干(必须先填默认值)。MaybeUninit<T> 告诉编译器「这块内存可能未初始化」,你只能 assume_init() 后才能读。这是性能关键路径的必备工具。",
+    "episodes": [
+      "day157"
+    ],
+    "resources": [
+      {
+        "name": "Rust docs: MaybeUninit",
+        "url": "https://doc.rust-lang.org/std/mem/union.MaybeUninit.html"
+      }
+    ]
+  }
+]

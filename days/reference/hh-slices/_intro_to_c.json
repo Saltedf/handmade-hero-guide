@@ -1,0 +1,102 @@
+[
+  {
+    "slug": "intro-to-c/day1",
+    "title_en": "Day 1: Intro to C on Windows - Day 1",
+    "title_zh": "Windows 上的 C 入门 - 第 1 天",
+    "url": "https://guide.handmadehero.org/intro-to-c/day1/",
+    "difficulty": 1,
+    "duration": "1h",
+    "type": "concept",
+    "learn": ""
+  },
+  {
+    "slug": "intro-to-c/day1qa",
+    "title_en": "Day 1qa: Intro to C on Windows - Day 1 Q&A",
+    "title_zh": "Windows 上的 C 入门 - 第 1 天 Q&A",
+    "url": "https://guide.handmadehero.org/intro-to-c/day1qa/",
+    "difficulty": 1,
+    "duration": "1h",
+    "type": "concept",
+    "learn": ""
+  },
+  {
+    "slug": "intro-to-c/day2",
+    "title_en": "Day 2: Intro to C on Windows - Day 2",
+    "title_zh": "Windows 上的 C 入门 - 第 2 天",
+    "url": "https://guide.handmadehero.org/intro-to-c/day2/",
+    "difficulty": 1,
+    "duration": "1h",
+    "type": "concept",
+    "learn": ""
+  },
+  {
+    "slug": "intro-to-c/day2qa",
+    "title_en": "Day 2qa: Intro to C on Windows - Day 2 Q&A",
+    "title_zh": "Windows 上的 C 入门 - 第 2 天 Q&A",
+    "url": "https://guide.handmadehero.org/intro-to-c/day2qa/",
+    "difficulty": 1,
+    "duration": "1h",
+    "type": "concept",
+    "learn": ""
+  },
+  {
+    "slug": "intro-to-c/day3",
+    "title_en": "Day 3: Intro to C on Windows - Day 3",
+    "title_zh": "Windows 上的 C 入门 - 第 3 天",
+    "url": "https://guide.handmadehero.org/intro-to-c/day3/",
+    "difficulty": 1,
+    "duration": "1h",
+    "type": "concept",
+    "learn": ""
+  },
+  {
+    "slug": "intro-to-c/day3qa",
+    "title_en": "Day 3qa: Intro to C on Windows - Day 3 Q&A",
+    "title_zh": "Windows 上的 C 入门 - 第 3 天 Q&A",
+    "url": "https://guide.handmadehero.org/intro-to-c/day3qa/",
+    "difficulty": 1,
+    "duration": "1h",
+    "type": "concept",
+    "learn": ""
+  },
+  {
+    "slug": "intro-to-c/day4",
+    "title_en": "Day 4: Intro to C on Windows - Day 4",
+    "title_zh": "Windows 上的 C 入门 - 第 4 天",
+    "url": "https://guide.handmadehero.org/intro-to-c/day4/",
+    "difficulty": 1,
+    "duration": "1h",
+    "type": "concept",
+    "learn": ""
+  },
+  {
+    "slug": "intro-to-c/day4qa",
+    "title_en": "Day 4qa: Intro to C on Windows - Day 4 Q&A",
+    "title_zh": "Windows 上的 C 入门 - 第 4 天 Q&A",
+    "url": "https://guide.handmadehero.org/intro-to-c/day4qa/",
+    "difficulty": 1,
+    "duration": "1h",
+    "type": "concept",
+    "learn": ""
+  },
+  {
+    "slug": "intro-to-c/day5",
+    "title_en": "Day 5: Intro to C on Windows - Day 5",
+    "title_zh": "Windows 上的 C 入门 - 第 5 天",
+    "url": "https://guide.handmadehero.org/intro-to-c/day5/",
+    "difficulty": 1,
+    "duration": "1h",
+    "type": "concept",
+    "learn": ""
+  },
+  {
+    "slug": "intro-to-c/day5qa",
+    "title_en": "Day 5qa: Intro to C on Windows - Day 5 Q&A",
+    "title_zh": "Windows 上的 C 入门 - 第 5 天 Q&A",
+    "url": "https://guide.handmadehero.org/intro-to-c/day5qa/",
+    "difficulty": 1,
+    "duration": "1h",
+    "type": "concept",
+    "learn": ""
+  }
+]

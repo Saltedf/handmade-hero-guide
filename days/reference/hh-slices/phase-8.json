@@ -1,0 +1,3807 @@
+{
+  "phase_num": 8,
+  "phase_meta": {
+    "id": "phase-8",
+    "title": "Phase 8 — 光照优化 + 碰撞重构 + 收官(Day 576–667)",
+    "range": "Day 576–667 · 92 集 · 预计 4–5 个月",
+    "intro": "Day 576–667 是 Handmade Hero 的<strong>打磨收官阶段</strong>。Casey 把 Phase 7 末尾累积的光照系统做了重大优化(<strong>Octahedral 编码</strong>、k-d tree raycaster、grid raycaster、tableless walk),并<strong>把碰撞系统从 Minkowski 重写为体素化方案</strong>——这是一个长达 8 集的大重构。\n\n最后几集(Day 663+)Casey 做实体存储的简化重构,把整个代码库清理到最终形态。Day 667 是 Handmade Hero 的最后一集,完成后代码库就是 Casey 留下的「完成态」。",
+    "goal": "完成 Handmade Hero 全部 667 集,代码库与 Casey 的最终形态对等。",
+    "exit": "Day 667 完成。整个 Handmade Hero 工程到此结束。建议接下来关掉视频,用同样的架构写一个新的小游戏验证你真的吃透了。",
+    "rust_topics": [
+      "Octahedral 编码(把 3D 单位向量压到 2D 纹理)",
+      "k-d tree 构造与遍历(`unsafe` + lifetime 封装)",
+      "flood fill 用显式 stack 而非递归",
+      "Voxel collision(体素化碰撞查询)",
+      "move queue 与所有权的关系"
+    ],
+    "cs_supplement": [],
+    "resources": []
+  },
+  "episodes": [
+    {
+      "slug": "code/day576",
+      "title_en": "Day 576: Octahedral Encoding",
+      "title_zh": "八面体编码",
+      "url": "https://guide.handmadehero.org/code/day576/",
+      "difficulty": 5,
+      "duration": "2h",
+      "type": "concept",
+      "learn": "🔥🔥 Octahedral 编码:3D 方向压成 2D 纹理"
+    },
+    {
+      "slug": "code/day577",
+      "title_en": "Day 577: Adding Octahedral Light Atlases",
+      "title_zh": "加八面体光照图集",
+      "url": "https://guide.handmadehero.org/code/day577/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day578",
+      "title_en": "Day 578: Sampling Octahedral Atlases",
+      "title_zh": "采样八面体图集",
+      "url": "https://guide.handmadehero.org/code/day578/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day579",
+      "title_en": "Day 579: Debugging Octahedral Shading",
+      "title_zh": "调试八面体着色",
+      "url": "https://guide.handmadehero.org/code/day579/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day580",
+      "title_en": "Day 580: Investigating Octahedral Interpolation",
+      "title_zh": "调查八面体插值",
+      "url": "https://guide.handmadehero.org/code/day580/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day581",
+      "title_en": "Day 581: Preparing for Octahedral Indirect Lighting",
+      "title_zh": "准备八面体间接光照",
+      "url": "https://guide.handmadehero.org/code/day581/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day582",
+      "title_en": "Day 582: Converting Specular Maps to Diffuse",
+      "title_zh": "镜面贴图转漫反射",
+      "url": "https://guide.handmadehero.org/code/day582/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day583",
+      "title_en": "Day 583: Streamlining the New Lighting Pipeline",
+      "title_zh": "精简新光照管线",
+      "url": "https://guide.handmadehero.org/code/day583/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day584",
+      "title_en": "Day 584: Enabling Infinite-Bounce Lighting",
+      "title_zh": "启用无限弹射光照",
+      "url": "https://guide.handmadehero.org/code/day584/",
+      "difficulty": 5,
+      "duration": "2h",
+      "type": "milestone",
+      "learn": "无限弹射间接光:GI 真正成立"
+    },
+    {
+      "slug": "code/day585",
+      "title_en": "Day 585: Centralized Light Atlas Handling",
+      "title_zh": "集中化光图集处理",
+      "url": "https://guide.handmadehero.org/code/day585/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day586",
+      "title_en": "Day 586: Finishing Indirect Diffuse Sampling",
+      "title_zh": "完成间接漫反射采样",
+      "url": "https://guide.handmadehero.org/code/day586/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "refactor",
+      "learn": ""
+    },
+    {
+      "slug": "code/day587",
+      "title_en": "Day 587: Optimizing the Specular to Diffuse Transform",
+      "title_zh": "优化镜面到漫反射变换",
+      "url": "https://guide.handmadehero.org/code/day587/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day588",
+      "title_en": "Day 588: Aligning Light Voxels with the Camera",
+      "title_zh": "光照体素对齐相机",
+      "url": "https://guide.handmadehero.org/code/day588/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day589",
+      "title_en": "Day 589: Aligning Sampling Spheres with the Octahedral Map",
+      "title_zh": "采样球对齐八面体贴图",
+      "url": "https://guide.handmadehero.org/code/day589/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day590",
+      "title_en": "Day 590: Starting Raycast Optimizations",
+      "title_zh": "开始光线投射优化",
+      "url": "https://guide.handmadehero.org/code/day590/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day591",
+      "title_en": "Day 591: Making a Stand-alone Lighting Performance Test",
+      "title_zh": "制作独立光照性能测试",
+      "url": "https://guide.handmadehero.org/code/day591/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day592",
+      "title_en": "Day 592: Capturing the Entire Lighting Data",
+      "title_zh": "捕获全部光照数据",
+      "url": "https://guide.handmadehero.org/code/day592/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day593",
+      "title_en": "Day 593: Debugging Lighting Validation",
+      "title_zh": "调试光照验证",
+      "url": "https://guide.handmadehero.org/code/day593/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day594",
+      "title_en": "Day 594: Switching from Center-Radius to Min-Max",
+      "title_zh": "从中心-半径切换到最小-最大",
+      "url": "https://guide.handmadehero.org/code/day594/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day595",
+      "title_en": "Day 595: Sketching Out A K-d Tree Loop",
+      "title_zh": "草拟 K-d 树循环",
+      "url": "https://guide.handmadehero.org/code/day595/",
+      "difficulty": 5,
+      "duration": "2h",
+      "type": "concept",
+      "learn": "🔥 K-d tree 加速结构"
+    },
+    {
+      "slug": "code/day596",
+      "title_en": "Day 596: Fleshing Out Kd-Tree Traversal",
+      "title_zh": "充实 K-d 树遍历",
+      "url": "https://guide.handmadehero.org/code/day596/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day597",
+      "title_en": "Day 597: Basic Kd-tree Construction",
+      "title_zh": "基础 K-d 树构造",
+      "url": "https://guide.handmadehero.org/code/day597/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day598",
+      "title_en": "Day 598: Exploring Voxel Partitions for Raycasting",
+      "title_zh": "为光线投射探索体素划分",
+      "url": "https://guide.handmadehero.org/code/day598/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day599",
+      "title_en": "Day 599: Implementing the Grid Raycast Postamble",
+      "title_zh": "实现网格光线投射后处理",
+      "url": "https://guide.handmadehero.org/code/day599/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day600",
+      "title_en": "Day 600: Better AABB Normal Derivation",
+      "title_zh": "更好的 AABB 法线推导",
+      "url": "https://guide.handmadehero.org/code/day600/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day601",
+      "title_en": "Day 601: Sketching Out the Walk Table Generator",
+      "title_zh": "草拟步进表生成器",
+      "url": "https://guide.handmadehero.org/code/day601/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day602",
+      "title_en": "Day 602: Early Termination for the Grid Raytracer",
+      "title_zh": "网格光线追踪器的提前终止",
+      "url": "https://guide.handmadehero.org/code/day602/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day603",
+      "title_en": "Day 603: Grid Raycaster Table Generation",
+      "title_zh": "网格光线投射器表生成",
+      "url": "https://guide.handmadehero.org/code/day603/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day604",
+      "title_en": "Day 604: Adding a Voxel Utility Struct",
+      "title_zh": "加体素工具结构",
+      "url": "https://guide.handmadehero.org/code/day604/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day605",
+      "title_en": "Day 605: Cleaning Up the Lighting Code",
+      "title_zh": "清理光照代码",
+      "url": "https://guide.handmadehero.org/code/day605/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "refactor",
+      "learn": ""
+    },
+    {
+      "slug": "code/day606",
+      "title_en": "Day 606: Debugging Grid Raycasting with Visualizations",
+      "title_zh": "用可视化调试网格光线投射",
+      "url": "https://guide.handmadehero.org/code/day606/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day607",
+      "title_en": "Day 607: Finishing Debugging the Grid Raycaster",
+      "title_zh": "完成调试网格光线投射器",
+      "url": "https://guide.handmadehero.org/code/day607/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day608",
+      "title_en": "Day 608: Visualizing Lighting Values",
+      "title_zh": "可视化光照值",
+      "url": "https://guide.handmadehero.org/code/day608/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day609",
+      "title_en": "Day 609: Reducing Light Contributions from Inaccessible Voxels",
+      "title_zh": "减少不可访问体素的光贡献",
+      "url": "https://guide.handmadehero.org/code/day609/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day610",
+      "title_en": "Day 610: Removing Incorrect Voxel-Voxel Reflections",
+      "title_zh": "移除错误体素-体素反射",
+      "url": "https://guide.handmadehero.org/code/day610/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day611",
+      "title_en": "Day 611: Examining the CPU Voxel Sampling",
+      "title_zh": "检查 CPU 体素采样",
+      "url": "https://guide.handmadehero.org/code/day611/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day612",
+      "title_en": "Day 612: First Pass Optimization of Voxel Sampling",
+      "title_zh": "体素采样第一遍优化",
+      "url": "https://guide.handmadehero.org/code/day612/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day613",
+      "title_en": "Day 613: Merging the Raycaster with the Sampler",
+      "title_zh": "合并光线投射器与采样器",
+      "url": "https://guide.handmadehero.org/code/day613/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day614",
+      "title_en": "Day 614: Continuing Streamlining the Raycaster",
+      "title_zh": "继续精简光线投射器",
+      "url": "https://guide.handmadehero.org/code/day614/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day615",
+      "title_en": "Day 615: Optimized Grid Step Selection",
+      "title_zh": "优化的网格步进选择",
+      "url": "https://guide.handmadehero.org/code/day615/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day616",
+      "title_en": "Day 616: Tableless Grid Walk",
+      "title_zh": "无表网格步进",
+      "url": "https://guide.handmadehero.org/code/day616/",
+      "difficulty": 4,
+      "duration": "2h",
+      "type": "concept",
+      "learn": "Tableless grid walk:经典 DDA"
+    },
+    {
+      "slug": "code/day617",
+      "title_en": "Day 617: Half-resolution Spatial Grid",
+      "title_zh": "半分辨率空间网格",
+      "url": "https://guide.handmadehero.org/code/day617/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day618",
+      "title_en": "Day 618: Analyzing the Diffuse Blur",
+      "title_zh": "分析漫反射模糊",
+      "url": "https://guide.handmadehero.org/code/day618/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day619",
+      "title_en": "Day 619: Adding Asset Tag Hashes",
+      "title_zh": "加资产标签哈希",
+      "url": "https://guide.handmadehero.org/code/day619/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day620",
+      "title_en": "Day 620: Asset Tag Usage Code",
+      "title_zh": "资产标签使用代码",
+      "url": "https://guide.handmadehero.org/code/day620/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day621",
+      "title_en": "Day 621: Asset Tags in the World Generator",
+      "title_zh": "世界生成器中的资产标签",
+      "url": "https://guide.handmadehero.org/code/day621/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day622",
+      "title_en": "Day 622: Debugging Asset Tag Hashes",
+      "title_zh": "调试资产标签哈希",
+      "url": "https://guide.handmadehero.org/code/day622/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day623",
+      "title_en": "Day 623: Investigating a Lighting Bug",
+      "title_zh": "调查光照 bug",
+      "url": "https://guide.handmadehero.org/code/day623/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day624",
+      "title_en": "Day 624: Turns Out It Really WAS a Feature",
+      "title_zh": "原来这真的是 feature",
+      "url": "https://guide.handmadehero.org/code/day624/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day625",
+      "title_en": "Day 625: Fixing the \"Lighting\" Bug",
+      "title_zh": "修复「光照」bug",
+      "url": "https://guide.handmadehero.org/code/day625/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day626",
+      "title_en": "Day 626: Cleaning Up Traversables",
+      "title_zh": "清理可遍历物",
+      "url": "https://guide.handmadehero.org/code/day626/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "refactor",
+      "learn": ""
+    },
+    {
+      "slug": "code/day627",
+      "title_en": "Day 627: Opening Doors with Tiles",
+      "title_zh": "用瓦片开门",
+      "url": "https://guide.handmadehero.org/code/day627/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day628",
+      "title_en": "Day 628: Brains and Aprons",
+      "title_zh": "大脑与围裙",
+      "url": "https://guide.handmadehero.org/code/day628/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day629",
+      "title_en": "Day 629: Removing Entity Generators",
+      "title_zh": "移除实体生成器",
+      "url": "https://guide.handmadehero.org/code/day629/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day630",
+      "title_en": "Day 630: Adding Interesting Tile Patterns",
+      "title_zh": "加有趣瓦片图案",
+      "url": "https://guide.handmadehero.org/code/day630/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day631",
+      "title_en": "Day 631: Revisiting Collision",
+      "title_zh": "重新审视碰撞",
+      "url": "https://guide.handmadehero.org/code/day631/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day632",
+      "title_en": "Day 632: Experimenting with Voxelized Collision",
+      "title_zh": "实验体素化碰撞",
+      "url": "https://guide.handmadehero.org/code/day632/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day633",
+      "title_en": "Day 633: Narrowing in on a Collision Scheme",
+      "title_zh": "收敛到碰撞方案",
+      "url": "https://guide.handmadehero.org/code/day633/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day634",
+      "title_en": "Day 634: Final Collision Resolution Design",
+      "title_zh": "最终碰撞解析设计",
+      "url": "https://guide.handmadehero.org/code/day634/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day635",
+      "title_en": "Day 635: Debugging Voxel Motion Stepping",
+      "title_zh": "调试体素运动步进",
+      "url": "https://guide.handmadehero.org/code/day635/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day636",
+      "title_en": "Day 636: Unembedding Colliding Objects",
+      "title_zh": "解嵌碰撞物体",
+      "url": "https://guide.handmadehero.org/code/day636/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day637",
+      "title_en": "Day 637: Adding Collision Spheres",
+      "title_zh": "加碰撞球",
+      "url": "https://guide.handmadehero.org/code/day637/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day638",
+      "title_en": "Day 638: Recording Diagram Commands",
+      "title_zh": "录制图表命令",
+      "url": "https://guide.handmadehero.org/code/day638/",
+      "difficulty": 5,
+      "duration": "Marathon",
+      "type": "milestone",
+      "learn": "🔥🔥🔥 体素化碰撞重构开始(占 8 集)"
+    },
+    {
+      "slug": "code/day639",
+      "title_en": "Day 639: Drawing Debug Diagrams",
+      "title_zh": "绘制调试图表",
+      "url": "https://guide.handmadehero.org/code/day639/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day640",
+      "title_en": "Day 640: Investigating Corner Collisions",
+      "title_zh": "调查角落碰撞",
+      "url": "https://guide.handmadehero.org/code/day640/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day641",
+      "title_en": "Day 641: Voxel Flood Fill for Collision Search",
+      "title_zh": "体素 flood fill 碰撞搜索",
+      "url": "https://guide.handmadehero.org/code/day641/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day642",
+      "title_en": "Day 642: Debugging Voxel Collision Bounds",
+      "title_zh": "调试体素碰撞边界",
+      "url": "https://guide.handmadehero.org/code/day642/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day643",
+      "title_en": "Day 643: Hunting for Collision Bugs",
+      "title_zh": "猎捕碰撞 bug",
+      "url": "https://guide.handmadehero.org/code/day643/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day644",
+      "title_en": "Day 644: Stepping Through Diagrams",
+      "title_zh": "单步图表",
+      "url": "https://guide.handmadehero.org/code/day644/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day645",
+      "title_en": "Day 645: Switching to Voxel Centers for Collision",
+      "title_zh": "碰撞切换到体素中心",
+      "url": "https://guide.handmadehero.org/code/day645/",
+      "difficulty": 4,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day646",
+      "title_en": "Day 646: Removing Z from Lighting",
+      "title_zh": "从光照移除 Z",
+      "url": "https://guide.handmadehero.org/code/day646/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day647",
+      "title_en": "Day 647: Debugging Simplified Lighting",
+      "title_zh": "调试简化光照",
+      "url": "https://guide.handmadehero.org/code/day647/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day648",
+      "title_en": "Day 648: Rebuilding Light Tables",
+      "title_zh": "重建光表",
+      "url": "https://guide.handmadehero.org/code/day648/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day649",
+      "title_en": "Day 649: Removing Lighting Walk Tables",
+      "title_zh": "移除光照步进表",
+      "url": "https://guide.handmadehero.org/code/day649/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day650",
+      "title_en": "Day 650: Debugging Light Sampling Locations",
+      "title_zh": "调试光采样位置",
+      "url": "https://guide.handmadehero.org/code/day650/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day651",
+      "title_en": "Day 651: Fixing Light Feedback",
+      "title_zh": "修复光反馈",
+      "url": "https://guide.handmadehero.org/code/day651/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day652",
+      "title_en": "Day 652: Stochastic Ray Origins",
+      "title_zh": "随机光线起点",
+      "url": "https://guide.handmadehero.org/code/day652/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day653",
+      "title_en": "Day 653: Adding a Filmic Response Curve",
+      "title_zh": "加电影级响应曲线",
+      "url": "https://guide.handmadehero.org/code/day653/",
+      "difficulty": 3,
+      "duration": "1h",
+      "type": "concept",
+      "learn": "电影级色调映射"
+    },
+    {
+      "slug": "code/day654",
+      "title_en": "Day 654: Self-illuminating Floor Tiles",
+      "title_zh": "自发光地砖",
+      "url": "https://guide.handmadehero.org/code/day654/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day655",
+      "title_en": "Day 655: Revisiting Entity Movement",
+      "title_zh": "重新审视实体移动",
+      "url": "https://guide.handmadehero.org/code/day655/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day656",
+      "title_en": "Day 656: Sketching Out Move Queues",
+      "title_zh": "草拟移动队列",
+      "url": "https://guide.handmadehero.org/code/day656/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day657",
+      "title_en": "Day 657: Implementing Move Queues",
+      "title_zh": "实现移动队列",
+      "url": "https://guide.handmadehero.org/code/day657/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day658",
+      "title_en": "Day 658: Handling Glove Collisions",
+      "title_zh": "处理手套碰撞",
+      "url": "https://guide.handmadehero.org/code/day658/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day659",
+      "title_en": "Day 659: Immediate-mode Level Generation",
+      "title_zh": "即时模式关卡生成",
+      "url": "https://guide.handmadehero.org/code/day659/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day660",
+      "title_en": "Day 660: Randomized Overworld Layout",
+      "title_zh": "随机主世界布局",
+      "url": "https://guide.handmadehero.org/code/day660/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day661",
+      "title_en": "Day 661: Connecting the Overworld Map",
+      "title_zh": "连接主世界地图",
+      "url": "https://guide.handmadehero.org/code/day661/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day662",
+      "title_en": "Day 662: Generating Entities from Layouts",
+      "title_zh": "从布局生成实体",
+      "url": "https://guide.handmadehero.org/code/day662/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day663",
+      "title_en": "Day 663: Simplifying Entity Storage, Part I",
+      "title_zh": "简化实体存储 第一部分",
+      "url": "https://guide.handmadehero.org/code/day663/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "refactor",
+      "learn": ""
+    },
+    {
+      "slug": "code/day664",
+      "title_en": "Day 664: Simplifying Entity Storage Part II",
+      "title_zh": "简化实体存储 第二部分",
+      "url": "https://guide.handmadehero.org/code/day664/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "refactor",
+      "learn": ""
+    },
+    {
+      "slug": "code/day665",
+      "title_en": "Day 665: Changing How Entities are Packed and Unpacked",
+      "title_zh": "改变实体打包解包方式",
+      "url": "https://guide.handmadehero.org/code/day665/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day666",
+      "title_en": "Day 666: Entity Packing and Unpacking",
+      "title_zh": "实体打包与解包",
+      "url": "https://guide.handmadehero.org/code/day666/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day667",
+      "title_en": "Day 667: Simplified Tile Occupancy Checking",
+      "title_zh": "简化瓦片占用检查",
+      "url": "https://guide.handmadehero.org/code/day667/",
+      "difficulty": 3,
+      "duration": "1h",
+      "type": "milestone",
+      "learn": "🎉🎉🎉 全剧终!Handmade Hero 完成"
+    }
+  ],
+  "lessons": {
+    "day576": {
+      "why": "🔥🔥 Octahedral Encoding",
+      "model": "把 3D 单位向量(球面方向)映射到 2D 正方形纹理。方法:L1 归一化(|x|+|y|+|z|=1),上半球直接投影 (x,y),下半球折叠。优势:比 cube map 少 6×→1× 纹理,支持 GPU 双线性插值,无接缝。这是光探针存储的压缩技术。\n\n<strong>这集的技术要点</strong>:八面体编码。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 576 的核心概念是八面体编码。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Lighting optimization",
+        "Collision rewrite"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Octahedral encoding",
+        "K-d tree",
+        "DDA grid walk",
+        "Voxel collision",
+        "Filmic tone mapping"
+      ],
+      "related_days": [
+        "day547",
+        "day576",
+        "day667"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day577": {
+      "why": "Day 577:Octahedral 光照管线",
+      "model": "Day 577-587:octahedral atlas 加载/采样/调试/插值/准备间接光照/specular→diffuse 转换/管线精简/无限弹射/集中 atlas 处理/间接 diffuse 采样/specular 优化/voxel 对齐相机/采样球对齐。\n\n<strong>这集的技术要点</strong>:加八面体光照图集。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 577 的核心概念是加八面体光照图集。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day578": {
+      "why": "Day 578:Octahedral 光照管线",
+      "model": "Day 577-587:octahedral atlas 加载/采样/调试/插值/准备间接光照/specular→diffuse 转换/管线精简/无限弹射/集中 atlas 处理/间接 diffuse 采样/specular 优化/voxel 对齐相机/采样球对齐。\n\n<strong>这集的技术要点</strong>:采样八面体图集。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 578 的核心概念是采样八面体图集。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day579": {
+      "why": "Day 579:Octahedral 光照管线",
+      "model": "Day 577-587:octahedral atlas 加载/采样/调试/插值/准备间接光照/specular→diffuse 转换/管线精简/无限弹射/集中 atlas 处理/间接 diffuse 采样/specular 优化/voxel 对齐相机/采样球对齐。\n\n<strong>这集的技术要点</strong>:调试八面体着色。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 579 的核心概念是调试八面体着色。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day580": {
+      "why": "Day 580:Octahedral 光照管线",
+      "model": "Day 577-587:octahedral atlas 加载/采样/调试/插值/准备间接光照/specular→diffuse 转换/管线精简/无限弹射/集中 atlas 处理/间接 diffuse 采样/specular 优化/voxel 对齐相机/采样球对齐。\n\n<strong>这集的技术要点</strong>:调查八面体插值。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 580 的核心概念是调查八面体插值。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day581": {
+      "why": "Day 581:Octahedral 光照管线",
+      "model": "Day 577-587:octahedral atlas 加载/采样/调试/插值/准备间接光照/specular→diffuse 转换/管线精简/无限弹射/集中 atlas 处理/间接 diffuse 采样/specular 优化/voxel 对齐相机/采样球对齐。\n\n<strong>这集的技术要点</strong>:准备八面体间接光照。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 581 的核心概念是准备八面体间接光照。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day582": {
+      "why": "Day 582:Octahedral 光照管线",
+      "model": "Day 577-587:octahedral atlas 加载/采样/调试/插值/准备间接光照/specular→diffuse 转换/管线精简/无限弹射/集中 atlas 处理/间接 diffuse 采样/specular 优化/voxel 对齐相机/采样球对齐。\n\n<strong>这集的技术要点</strong>:镜面贴图转漫反射。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 582 的核心概念是镜面贴图转漫反射。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day583": {
+      "why": "Day 583:Octahedral 光照管线",
+      "model": "Day 577-587:octahedral atlas 加载/采样/调试/插值/准备间接光照/specular→diffuse 转换/管线精简/无限弹射/集中 atlas 处理/间接 diffuse 采样/specular 优化/voxel 对齐相机/采样球对齐。\n\n<strong>这集的技术要点</strong>:精简新光照管线。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 583 的核心概念是精简新光照管线。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day584": {
+      "why": "🔥 无限弹射间接光",
+      "model": "光在 voxel 间反复弹射直到收敛。真正的全局光照(GI)。每帧迭代传播光,多次弹射后达到稳态。\n\n<strong>这集的技术要点</strong>:启用无限弹射光照。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 584 的核心概念是启用无限弹射光照。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Lighting optimization",
+        "Collision rewrite"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Octahedral encoding",
+        "K-d tree",
+        "DDA grid walk",
+        "Voxel collision",
+        "Filmic tone mapping"
+      ],
+      "related_days": [
+        "day547",
+        "day576",
+        "day667"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day585": {
+      "why": "Day 585:Octahedral 光照管线",
+      "model": "Day 577-587:octahedral atlas 加载/采样/调试/插值/准备间接光照/specular→diffuse 转换/管线精简/无限弹射/集中 atlas 处理/间接 diffuse 采样/specular 优化/voxel 对齐相机/采样球对齐。\n\n<strong>这集的技术要点</strong>:集中化光图集处理。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 585 的核心概念是集中化光图集处理。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day586": {
+      "why": "Day 586:Octahedral 光照管线",
+      "model": "Day 577-587:octahedral atlas 加载/采样/调试/插值/准备间接光照/specular→diffuse 转换/管线精简/无限弹射/集中 atlas 处理/间接 diffuse 采样/specular 优化/voxel 对齐相机/采样球对齐。\n\n<strong>这集的技术要点</strong>:完成间接漫反射采样。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 586 的核心概念是完成间接漫反射采样。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day587": {
+      "why": "Day 587:Octahedral 光照管线",
+      "model": "Day 577-587:octahedral atlas 加载/采样/调试/插值/准备间接光照/specular→diffuse 转换/管线精简/无限弹射/集中 atlas 处理/间接 diffuse 采样/specular 优化/voxel 对齐相机/采样球对齐。\n\n<strong>这集的技术要点</strong>:优化镜面到漫反射变换。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 587 的核心概念是优化镜面到漫反射变换。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day588": {
+      "why": "Day 588:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:光照体素对齐相机。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day589": {
+      "why": "Day 589:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:采样球对齐八面体贴图。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day590": {
+      "why": "开始 raycast 优化",
+      "model": "光照的 raycast 太慢(每帧百万条 ray)。Day 590-617 用 k-d tree + grid raycaster 加速。\n\n<strong>这集的技术要点</strong>:开始光线投射优化。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 590 的核心概念是开始光线投射优化。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Lighting optimization",
+        "Collision rewrite"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Octahedral encoding",
+        "K-d tree",
+        "DDA grid walk",
+        "Voxel collision",
+        "Filmic tone mapping"
+      ],
+      "related_days": [
+        "day547",
+        "day576",
+        "day667"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day591": {
+      "why": "Day 591:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:制作独立光照性能测试。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day592": {
+      "why": "Day 592:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:捕获全部光照数据。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day593": {
+      "why": "Day 593:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:调试光照验证。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day594": {
+      "why": "Day 594:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:从中心-半径切换到最小-最大。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day595": {
+      "why": "🔥 草拟 K-d Tree 循环",
+      "model": "K-d tree:空间递归二分。每层选一个轴(x/y/z)和 split 位置,把空间切成两半。raycast 时只走 ray 路径上的 partition。O(log n) 查找。\n\n<strong>这集的技术要点</strong>:草拟 K-d 树循环。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 595 的核心概念是草拟 K-d 树循环。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Lighting optimization",
+        "Collision rewrite"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Octahedral encoding",
+        "K-d tree",
+        "DDA grid walk",
+        "Voxel collision",
+        "Filmic tone mapping"
+      ],
+      "related_days": [
+        "day547",
+        "day576",
+        "day667"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day596": {
+      "why": "Day 596:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:充实 K-d 树遍历。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day597": {
+      "why": "基础 K-d Tree 构造",
+      "model": "构造:选 split 轴(轮流 x/y/z)和位置(median)。递归到叶子(少量物体)。构造 O(n log n),查询 O(log n)。\n\n<strong>这集的技术要点</strong>:基础 K-d 树构造。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 597 的核心概念是基础 K-d 树构造。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Lighting optimization",
+        "Collision rewrite"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Octahedral encoding",
+        "K-d tree",
+        "DDA grid walk",
+        "Voxel collision",
+        "Filmic tone mapping"
+      ],
+      "related_days": [
+        "day547",
+        "day576",
+        "day667"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day598": {
+      "why": "Day 598:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:为光线投射探索体素划分。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day599": {
+      "why": "Day 599:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:实现网格光线投射后处理。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day600": {
+      "why": "Day 600:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:更好的 AABB 法线推导。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day601": {
+      "why": "Day 601:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:草拟步进表生成器。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day602": {
+      "why": "Day 602:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:网格光线追踪器的提前终止。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day603": {
+      "why": "Day 603:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:网格光线投射器表生成。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day604": {
+      "why": "Day 604:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:加体素工具结构。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day605": {
+      "why": "Day 605:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:清理光照代码。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day606": {
+      "why": "Day 606:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:用可视化调试网格光线投射。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day607": {
+      "why": "Day 607:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:完成调试网格光线投射器。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day608": {
+      "why": "Day 608:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:可视化光照值。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day609": {
+      "why": "Day 609:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:减少不可访问体素的光贡献。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day610": {
+      "why": "Day 610:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:移除错误体素-体素反射。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day611": {
+      "why": "Day 611:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:检查 CPU 体素采样。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day612": {
+      "why": "Day 612:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:体素采样第一遍优化。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day613": {
+      "why": "Day 613:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:合并光线投射器与采样器。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day614": {
+      "why": "Day 614:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:继续精简光线投射器。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day615": {
+      "why": "Day 615:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:优化的网格步进选择。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day616": {
+      "why": "🔥 Tableless Grid Walk(DDA)",
+      "model": "经典 DDA(Digital Differential Analyzer):ray 在体素网格中步进。每次走到最近的网格边界。t_max = min(t_max_x, t_max_y) → 走到那个轴的下一格。不需要预计算 walk table——实时算。\n\n<strong>这集的技术要点</strong>:无表网格步进。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 616 的核心概念是无表网格步进。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Lighting optimization",
+        "Collision rewrite"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Octahedral encoding",
+        "K-d tree",
+        "DDA grid walk",
+        "Voxel collision",
+        "Filmic tone mapping"
+      ],
+      "related_days": [
+        "day547",
+        "day576",
+        "day667"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day617": {
+      "why": "Day 617:raycast 优化(k-d tree + grid DDA)",
+      "model": "Day 588-617:光照性能测试→捕获数据→验证→center-radius→min-max→k-d tree 构造/遍历→voxel partition→grid raycast postamble→AABB normal→walk table→提前终止→table generation→voxel utility→清理→调试可视化→完成调试→光照值可视化→减少不可访问体素→移除错误反射→CPU voxel 采样→第一遍优化→合并 raycaster+ sampler→继续精简→优化网格步进→tableless DDA→半分辨率网格→分析 diffuse blur。\n\n<strong>这集的技术要点</strong>:半分辨率空间网格。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day618": {
+      "why": "资产 Tag Hash",
+      "model": "资产的 tag 用 hash 加速查找。hash(tag_string) → u64 → HashMap 查找。\n\n<strong>这集的技术要点</strong>:分析漫反射模糊。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 618 的核心概念是分析漫反射模糊。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Lighting optimization",
+        "Collision rewrite"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Octahedral encoding",
+        "K-d tree",
+        "DDA grid walk",
+        "Voxel collision",
+        "Filmic tone mapping"
+      ],
+      "related_days": [
+        "day547",
+        "day576",
+        "day667"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day619": {
+      "why": "Day 619:世界生成+碰撞回顾",
+      "model": "Day 618-637:资产 tag hash→tag 使用代码→世界生成器 tag→调试 hash→调查光照 bug(原来是 feature)→清理 traversable→门+brain+围裙→移除 entity generator→有趣 tile pattern→重新审视碰撞→实验体素碰撞→收敛碰撞方案→最终碰撞设计。\n\n<strong>这集的技术要点</strong>:加资产标签哈希。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day620": {
+      "why": "Day 620:世界生成+碰撞回顾",
+      "model": "Day 618-637:资产 tag hash→tag 使用代码→世界生成器 tag→调试 hash→调查光照 bug(原来是 feature)→清理 traversable→门+brain+围裙→移除 entity generator→有趣 tile pattern→重新审视碰撞→实验体素碰撞→收敛碰撞方案→最终碰撞设计。\n\n<strong>这集的技术要点</strong>:资产标签使用代码。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day621": {
+      "why": "Day 621:世界生成+碰撞回顾",
+      "model": "Day 618-637:资产 tag hash→tag 使用代码→世界生成器 tag→调试 hash→调查光照 bug(原来是 feature)→清理 traversable→门+brain+围裙→移除 entity generator→有趣 tile pattern→重新审视碰撞→实验体素碰撞→收敛碰撞方案→最终碰撞设计。\n\n<strong>这集的技术要点</strong>:世界生成器中的资产标签。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day622": {
+      "why": "Day 622:世界生成+碰撞回顾",
+      "model": "Day 618-637:资产 tag hash→tag 使用代码→世界生成器 tag→调试 hash→调查光照 bug(原来是 feature)→清理 traversable→门+brain+围裙→移除 entity generator→有趣 tile pattern→重新审视碰撞→实验体素碰撞→收敛碰撞方案→最终碰撞设计。\n\n<strong>这集的技术要点</strong>:调试资产标签哈希。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day623": {
+      "why": "调查光照 bug",
+      "model": "经典「原来是 feature」——以为是 bug 的光照效果其实是正确的物理行为。\n\n<strong>这集的技术要点</strong>:调查光照 bug。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 623 的核心概念是调查光照 bug。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Lighting optimization",
+        "Collision rewrite"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Octahedral encoding",
+        "K-d tree",
+        "DDA grid walk",
+        "Voxel collision",
+        "Filmic tone mapping"
+      ],
+      "related_days": [
+        "day547",
+        "day576",
+        "day667"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day624": {
+      "why": "Day 624:世界生成+碰撞回顾",
+      "model": "Day 618-637:资产 tag hash→tag 使用代码→世界生成器 tag→调试 hash→调查光照 bug(原来是 feature)→清理 traversable→门+brain+围裙→移除 entity generator→有趣 tile pattern→重新审视碰撞→实验体素碰撞→收敛碰撞方案→最终碰撞设计。\n\n<strong>这集的技术要点</strong>:原来这真的是 feature。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day625": {
+      "why": "Day 625:世界生成+碰撞回顾",
+      "model": "Day 618-637:资产 tag hash→tag 使用代码→世界生成器 tag→调试 hash→调查光照 bug(原来是 feature)→清理 traversable→门+brain+围裙→移除 entity generator→有趣 tile pattern→重新审视碰撞→实验体素碰撞→收敛碰撞方案→最终碰撞设计。\n\n<strong>这集的技术要点</strong>:修复「光照」bug。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day626": {
+      "why": "Day 626:世界生成+碰撞回顾",
+      "model": "Day 618-637:资产 tag hash→tag 使用代码→世界生成器 tag→调试 hash→调查光照 bug(原来是 feature)→清理 traversable→门+brain+围裙→移除 entity generator→有趣 tile pattern→重新审视碰撞→实验体素碰撞→收敛碰撞方案→最终碰撞设计。\n\n<strong>这集的技术要点</strong>:清理可遍历物。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day627": {
+      "why": "Day 627:世界生成+碰撞回顾",
+      "model": "Day 618-637:资产 tag hash→tag 使用代码→世界生成器 tag→调试 hash→调查光照 bug(原来是 feature)→清理 traversable→门+brain+围裙→移除 entity generator→有趣 tile pattern→重新审视碰撞→实验体素碰撞→收敛碰撞方案→最终碰撞设计。\n\n<strong>这集的技术要点</strong>:用瓦片开门。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day628": {
+      "why": "Day 628:世界生成+碰撞回顾",
+      "model": "Day 618-637:资产 tag hash→tag 使用代码→世界生成器 tag→调试 hash→调查光照 bug(原来是 feature)→清理 traversable→门+brain+围裙→移除 entity generator→有趣 tile pattern→重新审视碰撞→实验体素碰撞→收敛碰撞方案→最终碰撞设计。\n\n<strong>这集的技术要点</strong>:大脑与围裙。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day629": {
+      "why": "Day 629:世界生成+碰撞回顾",
+      "model": "Day 618-637:资产 tag hash→tag 使用代码→世界生成器 tag→调试 hash→调查光照 bug(原来是 feature)→清理 traversable→门+brain+围裙→移除 entity generator→有趣 tile pattern→重新审视碰撞→实验体素碰撞→收敛碰撞方案→最终碰撞设计。\n\n<strong>这集的技术要点</strong>:移除实体生成器。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day630": {
+      "why": "Day 630:世界生成+碰撞回顾",
+      "model": "Day 618-637:资产 tag hash→tag 使用代码→世界生成器 tag→调试 hash→调查光照 bug(原来是 feature)→清理 traversable→门+brain+围裙→移除 entity generator→有趣 tile pattern→重新审视碰撞→实验体素碰撞→收敛碰撞方案→最终碰撞设计。\n\n<strong>这集的技术要点</strong>:加有趣瓦片图案。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day631": {
+      "why": "重新审视碰撞",
+      "model": "Casey 回顾 Day 050 的 Minkowski 碰撞,准备重写为体素化方案。原因:Minkowski 对复杂形状(非 AABB)难扩展。\n\n<strong>这集的技术要点</strong>:重新审视碰撞。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 631 的核心概念是重新审视碰撞。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Lighting optimization",
+        "Collision rewrite"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Octahedral encoding",
+        "K-d tree",
+        "DDA grid walk",
+        "Voxel collision",
+        "Filmic tone mapping"
+      ],
+      "related_days": [
+        "day547",
+        "day576",
+        "day667"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day632": {
+      "why": "Day 632:世界生成+碰撞回顾",
+      "model": "Day 618-637:资产 tag hash→tag 使用代码→世界生成器 tag→调试 hash→调查光照 bug(原来是 feature)→清理 traversable→门+brain+围裙→移除 entity generator→有趣 tile pattern→重新审视碰撞→实验体素碰撞→收敛碰撞方案→最终碰撞设计。\n\n<strong>这集的技术要点</strong>:实验体素化碰撞。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day633": {
+      "why": "Day 633:世界生成+碰撞回顾",
+      "model": "Day 618-637:资产 tag hash→tag 使用代码→世界生成器 tag→调试 hash→调查光照 bug(原来是 feature)→清理 traversable→门+brain+围裙→移除 entity generator→有趣 tile pattern→重新审视碰撞→实验体素碰撞→收敛碰撞方案→最终碰撞设计。\n\n<strong>这集的技术要点</strong>:收敛到碰撞方案。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day634": {
+      "why": "Day 634:世界生成+碰撞回顾",
+      "model": "Day 618-637:资产 tag hash→tag 使用代码→世界生成器 tag→调试 hash→调查光照 bug(原来是 feature)→清理 traversable→门+brain+围裙→移除 entity generator→有趣 tile pattern→重新审视碰撞→实验体素碰撞→收敛碰撞方案→最终碰撞设计。\n\n<strong>这集的技术要点</strong>:最终碰撞解析设计。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day635": {
+      "why": "Day 635:世界生成+碰撞回顾",
+      "model": "Day 618-637:资产 tag hash→tag 使用代码→世界生成器 tag→调试 hash→调查光照 bug(原来是 feature)→清理 traversable→门+brain+围裙→移除 entity generator→有趣 tile pattern→重新审视碰撞→实验体素碰撞→收敛碰撞方案→最终碰撞设计。\n\n<strong>这集的技术要点</strong>:调试体素运动步进。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day636": {
+      "why": "Day 636:世界生成+碰撞回顾",
+      "model": "Day 618-637:资产 tag hash→tag 使用代码→世界生成器 tag→调试 hash→调查光照 bug(原来是 feature)→清理 traversable→门+brain+围裙→移除 entity generator→有趣 tile pattern→重新审视碰撞→实验体素碰撞→收敛碰撞方案→最终碰撞设计。\n\n<strong>这集的技术要点</strong>:解嵌碰撞物体。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day637": {
+      "why": "Day 637:世界生成+碰撞回顾",
+      "model": "Day 618-637:资产 tag hash→tag 使用代码→世界生成器 tag→调试 hash→调查光照 bug(原来是 feature)→清理 traversable→门+brain+围裙→移除 entity generator→有趣 tile pattern→重新审视碰撞→实验体素碰撞→收敛碰撞方案→最终碰撞设计。\n\n<strong>这集的技术要点</strong>:加碰撞球。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day638": {
+      "why": "🔥🔥🔥 体素碰撞重构开始",
+      "model": "把碰撞从 Minkowski(AABB 精确)重写为体素化方案(网格离散)。占 8 集的大重构。debug 图表录制(碰撞可视化)。voxel flood fill 搜索碰撞路径。corner collision 调查。\n\n<strong>这集的技术要点</strong>:录制图表命令。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 638 的核心概念是录制图表命令。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Lighting optimization",
+        "Collision rewrite"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Octahedral encoding",
+        "K-d tree",
+        "DDA grid walk",
+        "Voxel collision",
+        "Filmic tone mapping"
+      ],
+      "related_days": [
+        "day547",
+        "day576",
+        "day667"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day639": {
+      "why": "Day 639:🔥 体素碰撞重构+光照简化",
+      "model": "Day 638-645:体素碰撞(8 集大重构)。debug 图表录制。flood fill 碰撞。corner collision 调试。Day 646-654:简化光照(去 Z walk table)→光表重建→采样位置调试→光反馈修复→随机 ray origin→filmic curve(ACES)→自发光地砖。\n\n<strong>这集的技术要点</strong>:绘制调试图表。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day640": {
+      "why": "Day 640:🔥 体素碰撞重构+光照简化",
+      "model": "Day 638-645:体素碰撞(8 集大重构)。debug 图表录制。flood fill 碰撞。corner collision 调试。Day 646-654:简化光照(去 Z walk table)→光表重建→采样位置调试→光反馈修复→随机 ray origin→filmic curve(ACES)→自发光地砖。\n\n<strong>这集的技术要点</strong>:调查角落碰撞。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day641": {
+      "why": "Voxel Flood Fill 碰撞搜索",
+      "model": "flood fill:从 entity 位置开始,广度优先扩展到所有可走的体素。如果目标体素被 flood fill 到=可走。比 raycast 更适合复杂形状。\n\n<strong>这集的技术要点</strong>:体素 flood fill 碰撞搜索。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 641 的核心概念是体素 flood fill 碰撞搜索。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Lighting optimization",
+        "Collision rewrite"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Octahedral encoding",
+        "K-d tree",
+        "DDA grid walk",
+        "Voxel collision",
+        "Filmic tone mapping"
+      ],
+      "related_days": [
+        "day547",
+        "day576",
+        "day667"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day642": {
+      "why": "Day 642:🔥 体素碰撞重构+光照简化",
+      "model": "Day 638-645:体素碰撞(8 集大重构)。debug 图表录制。flood fill 碰撞。corner collision 调试。Day 646-654:简化光照(去 Z walk table)→光表重建→采样位置调试→光反馈修复→随机 ray origin→filmic curve(ACES)→自发光地砖。\n\n<strong>这集的技术要点</strong>:调试体素碰撞边界。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day643": {
+      "why": "Day 643:🔥 体素碰撞重构+光照简化",
+      "model": "Day 638-645:体素碰撞(8 集大重构)。debug 图表录制。flood fill 碰撞。corner collision 调试。Day 646-654:简化光照(去 Z walk table)→光表重建→采样位置调试→光反馈修复→随机 ray origin→filmic curve(ACES)→自发光地砖。\n\n<strong>这集的技术要点</strong>:猎捕碰撞 bug。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day644": {
+      "why": "Day 644:🔥 体素碰撞重构+光照简化",
+      "model": "Day 638-645:体素碰撞(8 集大重构)。debug 图表录制。flood fill 碰撞。corner collision 调试。Day 646-654:简化光照(去 Z walk table)→光表重建→采样位置调试→光反馈修复→随机 ray origin→filmic curve(ACES)→自发光地砖。\n\n<strong>这集的技术要点</strong>:单步图表。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day645": {
+      "why": "Day 645:🔥 体素碰撞重构+光照简化",
+      "model": "Day 638-645:体素碰撞(8 集大重构)。debug 图表录制。flood fill 碰撞。corner collision 调试。Day 646-654:简化光照(去 Z walk table)→光表重建→采样位置调试→光反馈修复→随机 ray origin→filmic curve(ACES)→自发光地砖。\n\n<strong>这集的技术要点</strong>:碰撞切换到体素中心。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day646": {
+      "why": "Day 646:🔥 体素碰撞重构+光照简化",
+      "model": "Day 638-645:体素碰撞(8 集大重构)。debug 图表录制。flood fill 碰撞。corner collision 调试。Day 646-654:简化光照(去 Z walk table)→光表重建→采样位置调试→光反馈修复→随机 ray origin→filmic curve(ACES)→自发光地砖。\n\n<strong>这集的技术要点</strong>:从光照移除 Z。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day647": {
+      "why": "Day 647:🔥 体素碰撞重构+光照简化",
+      "model": "Day 638-645:体素碰撞(8 集大重构)。debug 图表录制。flood fill 碰撞。corner collision 调试。Day 646-654:简化光照(去 Z walk table)→光表重建→采样位置调试→光反馈修复→随机 ray origin→filmic curve(ACES)→自发光地砖。\n\n<strong>这集的技术要点</strong>:调试简化光照。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day648": {
+      "why": "Day 648:🔥 体素碰撞重构+光照简化",
+      "model": "Day 638-645:体素碰撞(8 集大重构)。debug 图表录制。flood fill 碰撞。corner collision 调试。Day 646-654:简化光照(去 Z walk table)→光表重建→采样位置调试→光反馈修复→随机 ray origin→filmic curve(ACES)→自发光地砖。\n\n<strong>这集的技术要点</strong>:重建光表。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day649": {
+      "why": "Day 649:🔥 体素碰撞重构+光照简化",
+      "model": "Day 638-645:体素碰撞(8 集大重构)。debug 图表录制。flood fill 碰撞。corner collision 调试。Day 646-654:简化光照(去 Z walk table)→光表重建→采样位置调试→光反馈修复→随机 ray origin→filmic curve(ACES)→自发光地砖。\n\n<strong>这集的技术要点</strong>:移除光照步进表。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day650": {
+      "why": "Day 650:🔥 体素碰撞重构+光照简化",
+      "model": "Day 638-645:体素碰撞(8 集大重构)。debug 图表录制。flood fill 碰撞。corner collision 调试。Day 646-654:简化光照(去 Z walk table)→光表重建→采样位置调试→光反馈修复→随机 ray origin→filmic curve(ACES)→自发光地砖。\n\n<strong>这集的技术要点</strong>:调试光采样位置。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day651": {
+      "why": "Day 651:🔥 体素碰撞重构+光照简化",
+      "model": "Day 638-645:体素碰撞(8 集大重构)。debug 图表录制。flood fill 碰撞。corner collision 调试。Day 646-654:简化光照(去 Z walk table)→光表重建→采样位置调试→光反馈修复→随机 ray origin→filmic curve(ACES)→自发光地砖。\n\n<strong>这集的技术要点</strong>:修复光反馈。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day652": {
+      "why": "Day 652:🔥 体素碰撞重构+光照简化",
+      "model": "Day 638-645:体素碰撞(8 集大重构)。debug 图表录制。flood fill 碰撞。corner collision 调试。Day 646-654:简化光照(去 Z walk table)→光表重建→采样位置调试→光反馈修复→随机 ray origin→filmic curve(ACES)→自发光地砖。\n\n<strong>这集的技术要点</strong>:随机光线起点。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day653": {
+      "why": "🔥 Filmic Response Curve",
+      "model": "ACES 色调映射:把 HDR(linear,可能 >1.0)映射到 LDR(0-255)。公式:out = (x*(2.51x+0.03))/(x*(2.43x+0.59)+0.14)。比 Reinhard(out=x/(x+1)) 更电影感。\n\n<strong>这集的技术要点</strong>:加电影级响应曲线。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 653 的核心概念是加电影级响应曲线。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Lighting optimization",
+        "Collision rewrite"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Octahedral encoding",
+        "K-d tree",
+        "DDA grid walk",
+        "Voxel collision",
+        "Filmic tone mapping"
+      ],
+      "related_days": [
+        "day547",
+        "day576",
+        "day667"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day654": {
+      "why": "Day 654:🔥 体素碰撞重构+光照简化",
+      "model": "Day 638-645:体素碰撞(8 集大重构)。debug 图表录制。flood fill 碰撞。corner collision 调试。Day 646-654:简化光照(去 Z walk table)→光表重建→采样位置调试→光反馈修复→随机 ray origin→filmic curve(ACES)→自发光地砖。\n\n<strong>这集的技术要点</strong>:自发光地砖。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day655": {
+      "why": "Day 655:移动队列+关卡生成+实体简化+收官",
+      "model": "Day 655-662:移动队列+即时关卡生成+随机 overworld+layout 连接+从 layout 生成 entity。Day 663-667:实体存储简化(pack/unpack)→tile occupancy 简化→🎉 全剧终。\n\n<strong>这集的技术要点</strong>:重新审视实体移动。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 655 的核心概念是重新审视实体移动。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day656": {
+      "why": "Day 656:移动队列+关卡生成+实体简化+收官",
+      "model": "Day 655-662:移动队列+即时关卡生成+随机 overworld+layout 连接+从 layout 生成 entity。Day 663-667:实体存储简化(pack/unpack)→tile occupancy 简化→🎉 全剧终。\n\n<strong>这集的技术要点</strong>:草拟移动队列。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 656 的核心概念是草拟移动队列。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day657": {
+      "why": "Day 657:移动队列+关卡生成+实体简化+收官",
+      "model": "Day 655-662:移动队列+即时关卡生成+随机 overworld+layout 连接+从 layout 生成 entity。Day 663-667:实体存储简化(pack/unpack)→tile occupancy 简化→🎉 全剧终。\n\n<strong>这集的技术要点</strong>:实现移动队列。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 657 的核心概念是实现移动队列。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day658": {
+      "why": "Day 658:移动队列+关卡生成+实体简化+收官",
+      "model": "Day 655-662:移动队列+即时关卡生成+随机 overworld+layout 连接+从 layout 生成 entity。Day 663-667:实体存储简化(pack/unpack)→tile occupancy 简化→🎉 全剧终。\n\n<strong>这集的技术要点</strong>:处理手套碰撞。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 658 的核心概念是处理手套碰撞。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day659": {
+      "why": "即时模式关卡生成",
+      "model": "关卡生成从「预生成」改成「即时生成」——玩家走到哪生成到哪。类似 Day 033 的虚拟化 tile map,但用于关卡结构。\n\n<strong>这集的技术要点</strong>:即时模式关卡生成。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 659 的核心概念是即时模式关卡生成。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Lighting optimization",
+        "Collision rewrite"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Octahedral encoding",
+        "K-d tree",
+        "DDA grid walk",
+        "Voxel collision",
+        "Filmic tone mapping"
+      ],
+      "related_days": [
+        "day547",
+        "day576",
+        "day667"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day660": {
+      "why": "Day 660:移动队列+关卡生成+实体简化+收官",
+      "model": "Day 655-662:移动队列+即时关卡生成+随机 overworld+layout 连接+从 layout 生成 entity。Day 663-667:实体存储简化(pack/unpack)→tile occupancy 简化→🎉 全剧终。\n\n<strong>这集的技术要点</strong>:随机主世界布局。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 660 的核心概念是随机主世界布局。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day661": {
+      "why": "Day 661:移动队列+关卡生成+实体简化+收官",
+      "model": "Day 655-662:移动队列+即时关卡生成+随机 overworld+layout 连接+从 layout 生成 entity。Day 663-667:实体存储简化(pack/unpack)→tile occupancy 简化→🎉 全剧终。\n\n<strong>这集的技术要点</strong>:连接主世界地图。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 661 的核心概念是连接主世界地图。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day662": {
+      "why": "Day 662:移动队列+关卡生成+实体简化+收官",
+      "model": "Day 655-662:移动队列+即时关卡生成+随机 overworld+layout 连接+从 layout 生成 entity。Day 663-667:实体存储简化(pack/unpack)→tile occupancy 简化→🎉 全剧终。\n\n<strong>这集的技术要点</strong>:从布局生成实体。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 662 的核心概念是从布局生成实体。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day663": {
+      "why": "🔥 实体存储简化 Part I",
+      "model": "Casey 最终的代码清理。pack/unpack 机制重构。从复杂的稀疏存储简化为更直接的方案。\n\n<strong>这集的技术要点</strong>:简化实体存储 第一部分。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 663 的核心概念是简化实体存储 第一部分。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Lighting optimization",
+        "Collision rewrite"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Octahedral encoding",
+        "K-d tree",
+        "DDA grid walk",
+        "Voxel collision",
+        "Filmic tone mapping"
+      ],
+      "related_days": [
+        "day547",
+        "day576",
+        "day667"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day664": {
+      "why": "Day 664:移动队列+关卡生成+实体简化+收官",
+      "model": "Day 655-662:移动队列+即时关卡生成+随机 overworld+layout 连接+从 layout 生成 entity。Day 663-667:实体存储简化(pack/unpack)→tile occupancy 简化→🎉 全剧终。\n\n<strong>这集的技术要点</strong>:简化实体存储 第二部分。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 664 的核心概念是简化实体存储 第二部分。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day665": {
+      "why": "Day 665:移动队列+关卡生成+实体简化+收官",
+      "model": "Day 655-662:移动队列+即时关卡生成+随机 overworld+layout 连接+从 layout 生成 entity。Day 663-667:实体存储简化(pack/unpack)→tile occupancy 简化→🎉 全剧终。\n\n<strong>这集的技术要点</strong>:改变实体打包解包方式。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 665 的核心概念是改变实体打包解包方式。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day666": {
+      "why": "Day 666:移动队列+关卡生成+实体简化+收官",
+      "model": "Day 655-662:移动队列+即时关卡生成+随机 overworld+layout 连接+从 layout 生成 entity。Day 663-667:实体存储简化(pack/unpack)→tile occupancy 简化→🎉 全剧终。\n\n<strong>这集的技术要点</strong>:实体打包与解包。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 666 的核心概念是实体打包与解包。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [],
+      "map_siblings": [],
+      "map_children": [],
+      "related_days": [],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    },
+    "day667": {
+      "why": "🎉🎉🎉 Simplified Tile Occupancy Checking——全剧终!",
+      "model": "Handmade Hero 最后一集。最终代码形态:完整游戏引擎(平台层+游戏代码+渲染器+资产管线+debug 系统+光照+碰撞+编辑器+世界生成器)。667 集=2 年工程。\n\n<strong>这集的技术要点</strong>:简化瓦片占用检查。\n\n这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。Phase 8 的核心是:🔥🔥 Octahedral 编码(Day 576 3D 方向压成 2D 纹理)、无限弹射间接光(Day 584 GI)、k-d tree raycast(Day 595 空间递归二分)、DDA grid walk(Day 616 无表步进)、🔥🔥🔥 体素碰撞重构(Day 638 从 Minkowski 改成 flood fill)、Filmic ACES(Day 653 HDR→LDR 色调映射)、实体存储简化(Day 663 pack/unpack)、🎉 全剧终(Day 667)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 667 的核心概念是简化瓦片占用检查。在游戏引擎架构中,这属于这集是 Phase 8(光照优化+碰撞重构+收官)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Lighting optimization",
+        "Collision rewrite"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Octahedral encoding",
+        "K-d tree",
+        "DDA grid walk",
+        "Voxel collision",
+        "Filmic tone mapping"
+      ],
+      "related_days": [
+        "day547",
+        "day576",
+        "day667"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "Octahedral 编码怎么把 3D 方向压成 2D?",
+          "a": "L1 归一化(|x|+|y|+|z|=1)。上半球直接投影 (x,y)。下半球折叠到正方形边缘。2D 纹理存,GPU 双线性采样,无接缝。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "k-d tree 比 brute force raycast 快多少?构建成本?",
+          "a": "brute force O(n) 每条 ray。k-d tree O(log n)。构建 O(n log n)(递归选 split)。但 k-d tree 不适合动态场景(每次改都要重建)。"
+        }
+      ]
+    }
+  }
+}

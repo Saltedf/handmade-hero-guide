@@ -1,0 +1,3055 @@
+{
+  "phase_num": 4,
+  "phase_meta": {
+    "id": "phase-4",
+    "title": "Phase 4 — 性能优化 + 多线程 + 资产(Day 112–175)",
+    "range": "Day 112–175 · 64 集 · 预计 10–12 周",
+    "intro": "这是 Handmade Hero 的工程化阶段。Day 121 是著名的 <strong>tiled SIMD rendering marathon</strong>(一集几小时,Casey 把整个软渲染器拆成 tile 并行化);Day 122 起开始多线程;Day 132 起开始设计自己的二进制资产格式(.hha);Day 138 起手写声音 mixer;Day 157 起写通用内存分配器;Day 162 起做字体。\n\n这一阶段每一集都值得反复看。对 Rust 学习者,这是 unsafe / atomic / MaybeUninit / alignment 真正变得必要的阶段——Casey 在 C 里靠 convention 解决的事,Rust 里你要么用 unsafe 表达「我相信这里」,要么重新设计避免 unsafe。",
+    "goal": "把软渲染器并行化、跑满多核;做出 .hha 资产文件 + 自己的声音 mixer + 字体渲染 + 通用分配器。",
+    "exit": "程序用满所有 CPU 核心;能加载 .hha 资产文件;能播放自己混音的多轨音频;能在屏幕上渲染 TrueType 字体。",
+    "rust_topics": [
+      "`std::sync::atomic` 全家桶(Ordering::Acquire/Release/SeqCst)",
+      "手写 lock-free work queue(`AtomicUsize` + `compare_exchange`)",
+      "`MaybeUninit<T>` 与 uninitialized memory",
+      "`alloc::alloc::Layout` 与自定义 allocator",
+      "`wide` crate 或手写 `__m128`/`__m256`/`__m512` SIMD",
+      "`std::io::Cursor` 解析二进制资产"
+    ],
+    "cs_supplement": [],
+    "resources": []
+  },
+  "episodes": [
+    {
+      "slug": "code/day112",
+      "title_en": "Day 112: A Mental Model of CPU Performance",
+      "title_zh": "CPU 性能心智模型",
+      "url": "https://guide.handmadehero.org/code/day112/",
+      "difficulty": 4,
+      "duration": "2h",
+      "type": "concept",
+      "learn": "🔥 CPU 性能心智模型:吞吐 vs 延迟,port pressure"
+    },
+    {
+      "slug": "code/day113",
+      "title_en": "Day 113: Simple Performance Counters",
+      "title_zh": "简单性能计数器",
+      "url": "https://guide.handmadehero.org/code/day113/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day114",
+      "title_en": "Day 114: Preparing a Function for Optimization",
+      "title_zh": "为优化准备一个函数",
+      "url": "https://guide.handmadehero.org/code/day114/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day115",
+      "title_en": "Day 115: SIMD Basics",
+      "title_zh": "SIMD 基础",
+      "url": "https://guide.handmadehero.org/code/day115/",
+      "difficulty": 4,
+      "duration": "2h",
+      "type": "concept",
+      "learn": "🔥 SIMD 入门:__m128, 4-wide float"
+    },
+    {
+      "slug": "code/day116",
+      "title_en": "Day 116: Converting Math Operations to SIMD",
+      "title_zh": "把数学运算转换为 SIMD",
+      "url": "https://guide.handmadehero.org/code/day116/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day117",
+      "title_en": "Day 117: Packing Pixels for the Framebuffer",
+      "title_zh": "为帧缓冲打包像素",
+      "url": "https://guide.handmadehero.org/code/day117/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day118",
+      "title_en": "Day 118: Wide Unpacking and Masking",
+      "title_zh": "宽位解包与掩码",
+      "url": "https://guide.handmadehero.org/code/day118/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day119",
+      "title_en": "Day 119: Counting Intrinsics",
+      "title_zh": "统计内联函数",
+      "url": "https://guide.handmadehero.org/code/day119/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day120",
+      "title_en": "Day 120: Measuring Port Usage with IACA",
+      "title_zh": "用 IACA 测量端口使用",
+      "url": "https://guide.handmadehero.org/code/day120/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day121",
+      "title_en": "Day 121: Rendering in Tiles (Marathon)",
+      "title_zh": "分块渲染(马拉松)",
+      "url": "https://guide.handmadehero.org/code/day121/",
+      "difficulty": 5,
+      "duration": "Marathon",
+      "type": "milestone",
+      "learn": "🔥🔥🔥 马拉松集:把软渲染拆成 tile 并行化(几小时一集)"
+    },
+    {
+      "slug": "code/day122",
+      "title_en": "Day 122: Introduction to Multithreading",
+      "title_zh": "多线程入门",
+      "url": "https://guide.handmadehero.org/code/day122/",
+      "difficulty": 4,
+      "duration": "2h",
+      "type": "concept",
+      "learn": "🔥 多线程入门"
+    },
+    {
+      "slug": "code/day123",
+      "title_en": "Day 123: Interlocked Operations",
+      "title_zh": "互锁操作",
+      "url": "https://guide.handmadehero.org/code/day123/",
+      "difficulty": 4,
+      "duration": "2h",
+      "type": "concept",
+      "learn": "原子操作"
+    },
+    {
+      "slug": "code/day124",
+      "title_en": "Day 124: Memory Barriers and Semaphores",
+      "title_zh": "内存屏障与信号量",
+      "url": "https://guide.handmadehero.org/code/day124/",
+      "difficulty": 5,
+      "duration": "2h",
+      "type": "concept",
+      "learn": "内存屏障与序(Rust Ordering::Acquire/Release)"
+    },
+    {
+      "slug": "code/day125",
+      "title_en": "Day 125: Abstracting the Work Queue",
+      "title_zh": "抽象工作队列",
+      "url": "https://guide.handmadehero.org/code/day125/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day126",
+      "title_en": "Day 126: Circular FIFO Work Queue",
+      "title_zh": "循环 FIFO 工作队列",
+      "url": "https://guide.handmadehero.org/code/day126/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day127",
+      "title_en": "Day 127: Aligning Rendering Memory",
+      "title_zh": "对齐渲染内存",
+      "url": "https://guide.handmadehero.org/code/day127/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day128",
+      "title_en": "Day 128: Push-time Transforms",
+      "title_zh": "推送时变换",
+      "url": "https://guide.handmadehero.org/code/day128/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day129",
+      "title_en": "Day 129: Adding Orthographic Projection",
+      "title_zh": "加正交投影",
+      "url": "https://guide.handmadehero.org/code/day129/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day130",
+      "title_en": "Day 130: Seamless Bilinear Tiling",
+      "title_zh": "无缝双线性平铺",
+      "url": "https://guide.handmadehero.org/code/day130/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day131",
+      "title_en": "Day 131: Asynchronous Ground Chunk Composition",
+      "title_zh": "异步地面区块合成",
+      "url": "https://guide.handmadehero.org/code/day131/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day132",
+      "title_en": "Day 132: Asset Streaming",
+      "title_zh": "资产流式加载",
+      "url": "https://guide.handmadehero.org/code/day132/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day133",
+      "title_en": "Day 133: Preliminary Asset Structuring",
+      "title_zh": "资产初步组织",
+      "url": "https://guide.handmadehero.org/code/day133/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day134",
+      "title_en": "Day 134: Mapping Assets to Bitmaps",
+      "title_zh": "资产映射到位图",
+      "url": "https://guide.handmadehero.org/code/day134/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day135",
+      "title_en": "Day 135: Typed Asset Arrays",
+      "title_zh": "类型化资产数组",
+      "url": "https://guide.handmadehero.org/code/day135/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day136",
+      "title_en": "Day 136: Tag-based Asset Retrieval",
+      "title_zh": "基于标签的资产检索",
+      "url": "https://guide.handmadehero.org/code/day136/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day137",
+      "title_en": "Day 137: Matching Periodic Tags",
+      "title_zh": "匹配周期性标签",
+      "url": "https://guide.handmadehero.org/code/day137/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day138",
+      "title_en": "Day 138: Loading WAV Files",
+      "title_zh": "加载 WAV 文件",
+      "url": "https://guide.handmadehero.org/code/day138/",
+      "difficulty": 3,
+      "duration": "2h",
+      "type": "coding",
+      "learn": "🔥 手写 WAV 加载器"
+    },
+    {
+      "slug": "code/day139",
+      "title_en": "Day 139: Introduction to Sound Mixing",
+      "title_zh": "声音混音入门",
+      "url": "https://guide.handmadehero.org/code/day139/",
+      "difficulty": 4,
+      "duration": "2h",
+      "type": "coding",
+      "learn": "🔥 手写声音混音器"
+    },
+    {
+      "slug": "code/day140",
+      "title_en": "Day 140: Implemented a Sound Mixer",
+      "title_zh": "实现声音混音器",
+      "url": "https://guide.handmadehero.org/code/day140/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day141",
+      "title_en": "Day 141: Streaming Large Audio in Chunks",
+      "title_zh": "分块流式加载大音频",
+      "url": "https://guide.handmadehero.org/code/day141/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day142",
+      "title_en": "Day 142: Per-sample Volume Interpolation",
+      "title_zh": "逐样本音量插值",
+      "url": "https://guide.handmadehero.org/code/day142/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day143",
+      "title_en": "Day 143: Pitch Shifting in the Mixer",
+      "title_zh": "混音器中的变调",
+      "url": "https://guide.handmadehero.org/code/day143/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day144",
+      "title_en": "Day 144: SSE Mixer Pre and Post Loops",
+      "title_zh": "SSE 混音器前后循环",
+      "url": "https://guide.handmadehero.org/code/day144/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day145",
+      "title_en": "Day 145: SSE Mixer Main Loop",
+      "title_zh": "SSE 混音器主循环",
+      "url": "https://guide.handmadehero.org/code/day145/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day146",
+      "title_en": "Day 146: Accumulation vs. Explicit Calculation",
+      "title_zh": "累加 vs 显式计算",
+      "url": "https://guide.handmadehero.org/code/day146/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day147",
+      "title_en": "Day 147: Defining the Asset File",
+      "title_zh": "定义资产文件",
+      "url": "https://guide.handmadehero.org/code/day147/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day148",
+      "title_en": "Day 148: Writing the Asset File Header",
+      "title_zh": "写资产文件头部",
+      "url": "https://guide.handmadehero.org/code/day148/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day149",
+      "title_en": "Day 149: Writing Assets to the Asset File",
+      "title_zh": "把资产写入资产文件",
+      "url": "https://guide.handmadehero.org/code/day149/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day150",
+      "title_en": "Day 150: Loading Assets from the Asset File",
+      "title_zh": "从资产文件加载资产",
+      "url": "https://guide.handmadehero.org/code/day150/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day151",
+      "title_en": "Day 151: New Platform File API",
+      "title_zh": "新平台文件 API",
+      "url": "https://guide.handmadehero.org/code/day151/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day152",
+      "title_en": "Day 152: New Win32 File API Implementation",
+      "title_zh": "新 Win32 文件 API 实现",
+      "url": "https://guide.handmadehero.org/code/day152/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day153",
+      "title_en": "Day 153: Merging Multiple Asset Files",
+      "title_zh": "合并多个资产文件",
+      "url": "https://guide.handmadehero.org/code/day153/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day154",
+      "title_en": "Day 154: Finding Assets Files with Win32",
+      "title_zh": "用 Win32 查找资产文件",
+      "url": "https://guide.handmadehero.org/code/day154/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day155",
+      "title_en": "Day 155: Introduction to Particle Systems",
+      "title_zh": "粒子系统入门",
+      "url": "https://guide.handmadehero.org/code/day155/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "concept",
+      "learn": ""
+    },
+    {
+      "slug": "code/day156",
+      "title_en": "Day 156: Lagrangian vs. Eulerian Simulation",
+      "title_zh": "拉格朗日 vs 欧拉模拟",
+      "url": "https://guide.handmadehero.org/code/day156/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day157",
+      "title_en": "Day 157: Introduction to General Purpose Allocation",
+      "title_zh": "通用分配入门",
+      "url": "https://guide.handmadehero.org/code/day157/",
+      "difficulty": 4,
+      "duration": "2h",
+      "type": "coding",
+      "learn": "🔥 通用内存分配器"
+    },
+    {
+      "slug": "code/day158",
+      "title_en": "Day 158: Tracking Asset Usage",
+      "title_zh": "跟踪资产使用",
+      "url": "https://guide.handmadehero.org/code/day158/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day159",
+      "title_en": "Day 159: Cleaning Up the Loaded Asset Infrastructure",
+      "title_zh": "清理已加载资产基础设施",
+      "url": "https://guide.handmadehero.org/code/day159/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "refactor",
+      "learn": ""
+    },
+    {
+      "slug": "code/day160",
+      "title_en": "Day 160: Basic General Purpose Allocation",
+      "title_zh": "基础通用分配",
+      "url": "https://guide.handmadehero.org/code/day160/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day161",
+      "title_en": "Day 161: Finishing the General Purpose Allocator",
+      "title_zh": "完成通用分配器",
+      "url": "https://guide.handmadehero.org/code/day161/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "refactor",
+      "learn": ""
+    },
+    {
+      "slug": "code/day162",
+      "title_en": "Day 162: Introduction to Fonts",
+      "title_zh": "字体入门",
+      "url": "https://guide.handmadehero.org/code/day162/",
+      "difficulty": 4,
+      "duration": "2h",
+      "type": "concept",
+      "learn": "🔥 TrueType 字体入门"
+    },
+    {
+      "slug": "code/day163",
+      "title_en": "Day 163: Asset Processing with STB TrueType",
+      "title_zh": "用 STB TrueType 处理资产",
+      "url": "https://guide.handmadehero.org/code/day163/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day164",
+      "title_en": "Day 164: Asset Processing with Windows Fonts",
+      "title_zh": "用 Windows 字体处理资产",
+      "url": "https://guide.handmadehero.org/code/day164/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day165",
+      "title_en": "Day 165: Fixing an Asset System Thread Bug",
+      "title_zh": "修复资产系统线程 bug",
+      "url": "https://guide.handmadehero.org/code/day165/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day166",
+      "title_en": "Day 166: Adding Locks to the Asset Operations",
+      "title_zh": "给资产操作加锁",
+      "url": "https://guide.handmadehero.org/code/day166/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day167",
+      "title_en": "Day 167: Finishing Win32 Font Glyph Extraction",
+      "title_zh": "完成 Win32 字体字形提取",
+      "url": "https://guide.handmadehero.org/code/day167/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "refactor",
+      "learn": ""
+    },
+    {
+      "slug": "code/day168",
+      "title_en": "Day 168: Rendering Lines of Text",
+      "title_zh": "渲染文本行",
+      "url": "https://guide.handmadehero.org/code/day168/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day169",
+      "title_en": "Day 169: Aligning Text to a Baseline",
+      "title_zh": "文本对齐到基线",
+      "url": "https://guide.handmadehero.org/code/day169/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day170",
+      "title_en": "Day 170: Defining Font Metadata",
+      "title_zh": "定义字体元数据",
+      "url": "https://guide.handmadehero.org/code/day170/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day171",
+      "title_en": "Day 171: Adding Font Metadata to the Asset Builder",
+      "title_zh": "资产构建器加字体元数据",
+      "url": "https://guide.handmadehero.org/code/day171/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day172",
+      "title_en": "Day 172: Extracting Kerning Tables from Windows",
+      "title_zh": "从 Windows 提取字距表",
+      "url": "https://guide.handmadehero.org/code/day172/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day173",
+      "title_en": "Day 173: Precise Font Alignment",
+      "title_zh": "精确字体对齐",
+      "url": "https://guide.handmadehero.org/code/day173/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day174",
+      "title_en": "Day 174: Adding Sparse Unicode Support",
+      "title_zh": "加稀疏 Unicode 支持",
+      "url": "https://guide.handmadehero.org/code/day174/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day175",
+      "title_en": "Day 175: Finishing Sparse Unicode Support",
+      "title_zh": "完成稀疏 Unicode 支持",
+      "url": "https://guide.handmadehero.org/code/day175/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "milestone",
+      "learn": "🎉 M4 完成:字体能渲染,分配器完工"
+    }
+  ],
+  "lessons": {
+    "day112": {
+      "why": "CPU 性能心智模型——游戏优化 90% 是让数据在 L1 缓存里。",
+      "model": "你以为 CPU 每周期 1 条指令。实际:超标量+乱序执行,每周期 3-5 条。但<strong>等内存让一切崩溃</strong>。\n\n读取延迟:\n- 寄存器:0 周期\n- L1(32KB):4 周期\n- L2(256KB):12 周期\n- L3(8MB):40 周期\n- RAM(GB):200+ 周期\n\n从 RAM 读一个数据时,CPU 本可执行 200 条指令。<strong>游戏优化 90% = 让数据在 L1 里</strong>——数据布局(cache line 64 字节)比算法更重要。\n\nData-Oriented Design 的核心:先想数据怎么存(连续内存),再想算法。Mike Acton:「当数据改变时,性能改变」。\n\n<strong>这集的技术要点</strong>:CPU 性能心智模型。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "CPU pipeline",
+        "Cache hierarchy"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "L1/L2/L3 latency",
+        "Cache line 64 bytes"
+      ],
+      "related_days": [
+        "day115",
+        "day121"
+      ],
+      "comparison": "CPU 等内存时能做 200 条指令。优化 = 让数据在 L1。数据布局 > 算法复杂度。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "L1 和 RAM 读取延迟差多少?",
+          "a": "L1 = 4 周期,RAM = 200+ 周期,差 50 倍。从 RAM 读时 CPU 本可执行 200 条指令。所以数据布局(连续内存)比算法复杂度更影响性能。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day113": {
+      "why": "简单性能计数器——用 RDTSC/QPC 测函数耗时。后面 Day 176+ debug 系统的基础。",
+      "model": "核心:auto begin = rdtsc(); do_work(); auto end = rdtsc(); auto cycles = end - begin。RDTSC 读 CPU 周期计数器,精度 0.3ns。Rust: core::arch::x86_64::_rdtsc()。\n\nCasey 用宏自动包裹函数:函数入口记 begin,出口记 end。零侵入性——游戏代码不用手动加计时。\n\n<strong>这集的技术要点</strong>:简单性能计数器。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Performance measurement"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "RDTSC cycle counter",
+        "Function timing"
+      ],
+      "related_days": [
+        "day010",
+        "day176"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day114": {
+      "why": "选定一个 hot function 做 baseline 测量——Day 093 的纹理四边形光栅化内循环。",
+      "model": "优化三步:1) 测量(baseline);2) 优化;3) 再测量验证。Day 114 做第一步——选 hot function,测 baseline cycle 数。确认瓶颈在光栅化(每像素采样+光照)。\n\n<strong>这集的技术要点</strong>:为优化准备一个函数。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Optimization methodology"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Baseline measurement"
+      ],
+      "related_days": [
+        "day113",
+        "day115"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day115": {
+      "why": "SIMD 入门——SSE 指令集、__m128、intrinsic 函数。一条指令同时处理 4 个 float。",
+      "model": "SIMD = Single Instruction Multiple Data。__m128 = 128 位寄存器,装 4 个 f32。\n\n核心 intrinsics:\n- _mm_set1_ps(x):4 个 float 设为 x\n- _mm_load_ps(ptr):从内存 load 4 个 float(必须 16 字节对齐)\n- _mm_add_ps(a,b):4 个 float 同时加\n- _mm_mul_ps(a,b):4 个 float 同时乘\n- _mm_store_ps(ptr,a):store 4 个 float\n\n一条 _mm_add_ps 同时算 4 个加法。理论 4× 加速。实际 2-3×(受内存带宽限制)。\n\nRust: std::arch::x86_64 模块。AVX: __m256(8 个 float),AVX-512: __m512(16 个 float)。\n\n关键:数据必须 16 字节对齐(#[repr(align(16))]),否则 _mm_load_ps 段错。用 _mm_loadu_ps 处理未对齐(慢)。\n\n<strong>这集的技术要点</strong>:SIMD 基础。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "SIMD basics",
+        "SSE intrinsics"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "__m128",
+        "_mm_add_ps",
+        "16-byte alignment"
+      ],
+      "related_days": [
+        "day112",
+        "day116",
+        "day121"
+      ],
+      "comparison": "所有 SSE 指令一条处理 4 个 float。AVX 8 个。AVX-512 16 个。但实际加速受内存带宽限制。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "__m128 一次能处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32(4×32=128 位)。16 字节对齐因为 _mm_load_ps 用 movaps 指令(要求对齐),不对齐会段错。用 _mm_loadu_ps(不要求对齐)但慢。Rust: #[repr(align(16))]。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day116": {
+      "why": "把 SIMD 应用到渲染器——逐像素的纹理采样+光照改成 4-wide SIMD 版。",
+      "model": "之前:for pixel { sample(); light(); blend(); }。SIMD 版:一次 load 4 个像素到 __m128,SIMD 做采样+光照+blend,store 回 4 个像素。挑战:SIMD 不能 if/else(所有通道同时执行同一指令),用 mask(_mm_cmpgt_ps 得到每通道 mask,然后 _mm_and_ps 选择结果)替代分支。\n\n<strong>这集的技术要点</strong>:把数学运算转换为 SIMD。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "SIMD optimization"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "4-wide pixel processing",
+        "Mask branching"
+      ],
+      "related_days": [
+        "day115"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day117": {
+      "why": "SIMD 像素打包——ARGB 像素从内存加载到 __m128 的方式。AoS vs SoA。",
+      "model": "像素在内存里是 ARGB ARGB ARGB ARGB(AoS)。SIMD 要做 4 个 R 一起算时,要先 unpack(把 4 个像素的 R 抽出来)。_mm_shuffle_ps + _mm_unpacklo/hi。或改存储格式为 SoA(所有 R 放一起)。Casey 用 AoS+unpack(不改存储,兼容)。\n\n<strong>这集的技术要点</strong>:为帧缓冲打包像素。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "SIMD optimization"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "4-wide pixel processing",
+        "Mask branching"
+      ],
+      "related_days": [
+        "day115"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day118": {
+      "why": "宽位解包和掩码——SIMD 不能 if/else,用 mask 替代。",
+      "model": "_mm_cmpgt_ps(a, b) 得到 mask:每通道 0xFFFFFFFF(true)或 0(false)。然后用 _mm_or_ps / _mm_and_ps 组合两个分支的结果。本质是「两个分支都算,用 mask 选择」。这是 SIMD 编程的核心技巧——branchless programming。\n\n<strong>这集的技术要点</strong>:宽位解包与掩码。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "SIMD optimization"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "4-wide pixel processing",
+        "Mask branching"
+      ],
+      "related_days": [
+        "day115"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day119": {
+      "why": "Intrinsic 计数——分析 SIMD 代码效率。太多 intrinsic=overhead 大。",
+      "model": "Casey 手动数每像素的 intrinsic 调用。理想:每像素 < 10 个 intrinsic。如果 > 20,说明 overhead 可能抵消 SIMD 的并行收益。用 IACA(Day 120)做精确分析。\n\n<strong>这集的技术要点</strong>:统计内联函数。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "SIMD optimization"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "4-wide pixel processing",
+        "Mask branching"
+      ],
+      "related_days": [
+        "day115"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day120": {
+      "why": "IACA 分析 port usage——每条指令去哪个 CPU 端口,有没有瓶颈。",
+      "model": "Intel Architecture Code Analyzer:分析编译后机器码在 Intel CPU 上的执行效率。告诉你每周期执行多少 μops,哪个 port 瓶颈。Rust 替代:cargo asm(看汇编)+ perf stat(实际测)。典型 Intel CPU 有 8 个 port:port 0/1 做乘法/逻辑,port 2/3 做内存读,port 4 内存写,port 5 跳转。\n\n<strong>这集的技术要点</strong>:用 IACA 测量端口使用。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "SIMD optimization"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "4-wide pixel processing",
+        "Mask branching"
+      ],
+      "related_days": [
+        "day115"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day121": {
+      "why": "🔥🔥🔥 Rendering in Tiles Marathon——HH 全剧最经典的一集。把渲染拆成 64×64 tile,SIMD+多线程并行。",
+      "model": "Casey 花 2-5 小时在这一集(「marathon」)。做的事:\n\n1. 把屏幕分成 64×64 tile\n2. 每个 tile 独立渲染(无数据竞争——不同 tile 写不同内存)\n3. SIMD 处理 tile 内像素(__m128 一次 4 像素)\n4. 多线程:每个 CPU 核渲染不同 tile\n\n三个优化同时应用:tile 化(数据局部性/cache friendly)+ 并行化(多核)+ SIMD 化(4-wide 运算)。结果:渲染速度 3-4× 提升。\n\n核心洞察:tile 化让「cache 友好 + 多核 + SIMD」三者结合。这是 Day 122+ 多线程的基础——work queue 的第一个实际应用。\n\n<strong>这集的技术要点</strong>:分块渲染(马拉松)。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Tiled rendering",
+        "SIMD + multithreading",
+        "Marathon"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "64×64 tile",
+        "Per-tile SIMD",
+        "Thread-per-tile"
+      ],
+      "related_days": [
+        "day115",
+        "day122",
+        "day350"
+      ],
+      "comparison": "tile 化让数据局部性(cache friendly)+ 并行化(多核)+ SIMD 化(4-wide)三者结合。单独任何一个只能 2-3×,三者结合能 10×。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "为什么 tile 化能同时提升 cache 和并行?",
+          "a": "64×64 tile = 16KB 像素数据(4字节×64×64),正好放 L1(32KB)。每个 tile 独立渲染(不同 tile 写不同内存)= 无数据竞争 = 可以多线程并行。tile 内像素 SIMD 处理。三者结合=cache friendly + 多核 + 4-wide SIMD。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day122": {
+      "why": "多线程入门——现代 CPU 有 4-16 核,之前 HH 只用 1 个。",
+      "model": "多线程:主线程 + N 个工作线程。Day 121 的 tile 渲染:主线程把 tile 分给工作线程,各自渲染,完成后合成。\n\n问题:线程怎么分配任务?怎么同步?Day 123-126 解决——用原子操作 + work queue。\n\nRust 多线程:std::thread::spawn + std::sync::atomic + Arc<Mutex>。Send/Sync trait 保证线程安全。Casey 在 C 里靠纪律,Rust 编译器帮你检查。\n\n<strong>这集的技术要点</strong>:多线程入门。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Multithreading basics"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Worker threads",
+        "Task distribution"
+      ],
+      "related_days": [
+        "day121",
+        "day123"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day123": {
+      "why": "互锁操作(原子操作)——多个线程同时修改同一变量时不丢更新。",
+      "model": "问题:两个线程同时 x += 1。都读到 x=5,都写 6——本应 7。原子操作:AtomicUsize::fetch_add 保证读改写不可中断。\n\nRust: std::sync::atomic::AtomicUsize / AtomicBool / AtomicPtr。方法:load/store/fetch_add/compare_exchange。\n\ncompare_exchange(expected, new):如果当前值=expected,改为 new。返回是否成功。这是 lock-free 数据结构(CAS loop)的基础。\n\n<strong>这集的技术要点</strong>:互锁操作。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Atomic operations"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "fetch_add",
+        "compare-and-swap (CAS)"
+      ],
+      "related_days": [
+        "day122",
+        "day124"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day124": {
+      "why": "🔥🔥 内存屏障与序——HH 最重要的并发理论集。CPU 乱序执行指令,多线程下导致微妙 bug。",
+      "model": "问题:线程 A 写 data=42; ready=true。线程 B: if ready { print(data) }。你以为 B 看到 ready=true 时 data 一定=42。<strong>错!</strong>\n\nCPU 可能重排:先写 ready 再写 data(因为 ready 在另一个 cache line,先 flush)。B 看到 ready=true 但 data=0。\n\n<strong>内存屏障</strong>强制顺序。Rust 的 Ordering:\n- Release(写):「之前的写不会被重排到这之后」\n- Acquire(读):「之后的读不会被重排到这之前」\n- 配对使用:线程 A ready.store(true, Release) + 线程 B if ready.load(Acquire) → B 看到 ready=true 时,data=42 一定可见\n\nRelaxed:只保证本操作原子,不管其他变量(计数器用)。SeqCst:最强,全局顺序(不确定就用这个)。\n\n<strong>这集的技术要点</strong>:内存屏障与信号量。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Memory ordering",
+        "Memory barriers"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Ordering::Release/Acquire",
+        "CPU reordering"
+      ],
+      "related_days": [
+        "day123",
+        "day125"
+      ],
+      "comparison": "CPU 会乱序执行:写 data 后写 ready,可能被重排成先 ready 后 data。Acquire/Release 配对强制顺序。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "为什么需要内存屏障?不用会怎样?",
+          "a": "CPU 乱序执行:线程 A 写 data=42; ready=true,可能被重排成先 ready 后 data。线程 B 看到 ready=true 但 data 还是 0。Acquire/Release 配对强制「data 的写在 ready 之前可见」。这是 lock-free 编程的核心。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day125": {
+      "why": "抽象 work queue——主线程 push 任务,工作线程 pop 执行。Day 126 实现具体 circular FIFO。",
+      "model": "Work queue 接口:push(task) / pop() -> Option<task>。内部用原子操作 + 内存屏障实现 lock-free FIFO。\n\n主线程每帧 push N 个 tile 渲染任务。工作线程 pop 并执行。pop 是原子操作——两个线程同时 pop,只有一个拿到任务。\n\n<strong>这集的技术要点</strong>:抽象工作队列。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Work queue abstraction"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "push/pop API",
+        "Lock-free FIFO"
+      ],
+      "related_days": [
+        "day124",
+        "day126"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day126": {
+      "why": "循环 FIFO work queue——固定大小环形 buffer,head/tail 原子推进。",
+      "model": "Circular FIFO:固定大小数组。head = 下一个待消费,tail = 下一个待生产。\n\npush:原子推进 tail。pop:原子推进 head。\n\n挑战:full/empty 判断(head==tail 可能是 full 也 empty)。trick:保留一个空槽——(tail+1) % SIZE == head 时为 full。\n\nRust 替代:crossbeam-channel(成熟的 lock-free channel)。但 Casey 手写为了教学——理解原理。\n\n<strong>这集的技术要点</strong>:循环 FIFO 工作队列。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Circular FIFO queue"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Ring buffer",
+        "Head/tail atomic"
+      ],
+      "related_days": [
+        "day125",
+        "day127"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day127": {
+      "why": "对齐渲染内存——SIMD 要 16 字节对齐,tile buffer 不对齐会段错。",
+      "model": "#[repr(align(16))] 确保所有 tile buffer 对齐。#[repr(align(64))] 对齐到 cache line,避免 false sharing(两个线程的变量在同一 cache line,互相 invalidate)。\n\n<strong>这集的技术要点</strong>:对齐渲染内存。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Rendering optimization"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Aligned memory",
+        "Ortho projection",
+        "Seamless tiling"
+      ],
+      "related_days": [
+        "day126"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day128": {
+      "why": "推送时变换——push 命令时就算好世界坐标,渲染时不用再算。",
+      "model": "之前:push 只存局部坐标+base,渲染时算世界坐标。Day 128:push 时算好世界坐标,渲染器只做 blit。少算,代价是 push buffer 每命令大一点。\n\n<strong>这集的技术要点</strong>:推送时变换。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 128 的核心概念是推送时变换。在游戏引擎架构中,这属于这集是 Phase 4(性能+多线程+资产)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Rendering optimization"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Aligned memory",
+        "Ortho projection",
+        "Seamless tiling"
+      ],
+      "related_days": [
+        "day126"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day129": {
+      "why": "正交投影——不除以 z(远近一样大)。适合 UI / 俯视角。",
+      "model": "透视:screen = world / z(近大远小)。正交:screen = world × scale(不除 z,远近一样)。正交用于 UI(不管 z 大小一致)、俯视角策略游戏。\n\n<strong>这集的技术要点</strong>:加正交投影。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 129 的核心概念是加正交投影。在游戏引擎架构中,这属于这集是 Phase 4(性能+多线程+资产)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Rendering optimization"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Aligned memory",
+        "Ortho projection",
+        "Seamless tiling"
+      ],
+      "related_days": [
+        "day126"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day130": {
+      "why": "无缝双线性平铺——tile 重复时边缘不能有缝。",
+      "model": "UV wrap 时边缘做 alpha blend 过渡。或用 Wang tiles(边缘匹配的 tile 集)。Day 087 同思路。\n\n<strong>这集的技术要点</strong>:无缝双线性平铺。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 130 的核心概念是无缝双线性平铺。在游戏引擎架构中,这属于这集是 Phase 4(性能+多线程+资产)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Rendering optimization"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Aligned memory",
+        "Ortho projection",
+        "Seamless tiling"
+      ],
+      "related_days": [
+        "day126"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day131": {
+      "why": "异步地面区块合成——Day 082 的缓存合成放到工作线程,不阻塞主线程。",
+      "model": "主线程标记「需要合成」,工作线程异步合成,完成后通知。主线程渲染时缓存未就绪用旧的(fallback),不阻塞。\n\n<strong>这集的技术要点</strong>:异步地面区块合成。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 131 的核心概念是异步地面区块合成。在游戏引擎架构中,这属于这集是 Phase 4(性能+多线程+资产)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Async composition"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Background composition",
+        "Fallback rendering"
+      ],
+      "related_days": [
+        "day082",
+        "day132"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day132": {
+      "why": "资产流式加载——大资产(纹理、音频)按需异步加载,不启动时全加载。",
+      "model": "启动只加载必要的(menu+角色),其余按需。玩家走到新区域→后台线程加载→主线程继续渲染(fallback)→资产就绪后切换。这是开放世界游戏(GTA、Skyrim)的标配。\n\n<strong>这集的技术要点</strong>:资产流式加载。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 132 的核心概念是资产流式加载。在游戏引擎架构中,这属于这集是 Phase 4(性能+多线程+资产)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Asset streaming"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Background loading",
+        "Fallback textures"
+      ],
+      "related_days": [
+        "day131",
+        "day133"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day133": {
+      "why": "Day 133:资产系统逐步构建——组织/映射/类型化数组/标签检索/周期标签匹配。",
+      "model": "Day 133:资产初步组织(按类型分组)。Day 134:资产→位图映射(BitmapId)。Day 135:类型化数组(Vec<Bitmap> 而不是 Vec<Asset>)。Day 136:tag-based 检索(「sword」tag 查所有剑)。Day 137:周期性标签匹配(自动循环动画)。\n\n<strong>这集的技术要点</strong>:资产初步组织。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Asset pipeline"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Asset ID system",
+        "Tag-based lookup"
+      ],
+      "related_days": [
+        "day132"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day134": {
+      "why": "Day 134:资产系统逐步构建——组织/映射/类型化数组/标签检索/周期标签匹配。",
+      "model": "Day 133:资产初步组织(按类型分组)。Day 134:资产→位图映射(BitmapId)。Day 135:类型化数组(Vec<Bitmap> 而不是 Vec<Asset>)。Day 136:tag-based 检索(「sword」tag 查所有剑)。Day 137:周期性标签匹配(自动循环动画)。\n\n<strong>这集的技术要点</strong>:资产映射到位图。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Asset pipeline"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Asset ID system",
+        "Tag-based lookup"
+      ],
+      "related_days": [
+        "day132"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day135": {
+      "why": "Day 135:资产系统逐步构建——组织/映射/类型化数组/标签检索/周期标签匹配。",
+      "model": "Day 133:资产初步组织(按类型分组)。Day 134:资产→位图映射(BitmapId)。Day 135:类型化数组(Vec<Bitmap> 而不是 Vec<Asset>)。Day 136:tag-based 检索(「sword」tag 查所有剑)。Day 137:周期性标签匹配(自动循环动画)。\n\n<strong>这集的技术要点</strong>:类型化资产数组。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Asset pipeline"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Asset ID system",
+        "Tag-based lookup"
+      ],
+      "related_days": [
+        "day132"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day136": {
+      "why": "Day 136:资产系统逐步构建——组织/映射/类型化数组/标签检索/周期标签匹配。",
+      "model": "Day 133:资产初步组织(按类型分组)。Day 134:资产→位图映射(BitmapId)。Day 135:类型化数组(Vec<Bitmap> 而不是 Vec<Asset>)。Day 136:tag-based 检索(「sword」tag 查所有剑)。Day 137:周期性标签匹配(自动循环动画)。\n\n<strong>这集的技术要点</strong>:基于标签的资产检索。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Asset pipeline"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Asset ID system",
+        "Tag-based lookup"
+      ],
+      "related_days": [
+        "day132"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day137": {
+      "why": "Day 137:资产系统逐步构建——组织/映射/类型化数组/标签检索/周期标签匹配。",
+      "model": "Day 133:资产初步组织(按类型分组)。Day 134:资产→位图映射(BitmapId)。Day 135:类型化数组(Vec<Bitmap> 而不是 Vec<Asset>)。Day 136:tag-based 检索(「sword」tag 查所有剑)。Day 137:周期性标签匹配(自动循环动画)。\n\n<strong>这集的技术要点</strong>:匹配周期性标签。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Asset pipeline"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Asset ID system",
+        "Tag-based lookup"
+      ],
+      "related_days": [
+        "day132"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day138": {
+      "why": "手写 WAV parser——类似 BMP,RIFF 容器 + fmt/data chunk。极简。",
+      "model": "WAV 结构:RIFF 头(魔数 'RIFF'+大小+'WAVE') → fmt chunk(采样率/位深/声道) → data chunk(原始 PCM 样本)。比 BMP 还简单(无压缩/无 padding/无 BGR)。\n\n解析:读魔数验证→读 fmt chunk 拿 sample_rate/bits_per_sample/channels→读 data chunk 拿样本。\n\nRust: 手写,不用 hound crate。为了学原理——理解二进制解析。\n\n<strong>这集的技术要点</strong>:加载 WAV 文件。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "WAV format",
+        "Audio parsing"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "RIFF/WAVE header",
+        "fmt chunk",
+        "data chunk"
+      ],
+      "related_days": [
+        "day036",
+        "day139"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day139": {
+      "why": "声音混音入门——多个声音同时播放时样本相加。",
+      "model": "混音本质:for each output_sample { sum = 0; for each playing_sound { sum += sound.next_sample() * sound.volume; } output = clamp(sum, -1.0, 1.0); }\n\n防 clip:sum 可能超过 1.0(多个声源叠加)。clamp 到 [-1, 1](hard clip)或用 soft clip(tanh(sum))更自然。\n\nDay 140 完整实现,Day 141+ 加 streaming/pitch shift/SSE 优化。\n\n<strong>这集的技术要点</strong>:声音混音入门。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Sound mixing"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Sample addition",
+        "Volume multiply",
+        "Clip prevention"
+      ],
+      "related_days": [
+        "day138",
+        "day140"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day140": {
+      "why": "完整混音器——多声源+音量+循环+防 clip。",
+      "model": "Mixer 核心:per-sample sum 所有声源 × volume。Day 141 加 streaming(大文件不全加载)。Day 142 per-sample volume interpolation(淡入淡出)。Day 143 pitch shift(变调)。Day 144-146 SSE 优化(一次混 4 个样本)。Day 146 累加 vs 显式计算的精度差异。\n\n<strong>这集的技术要点</strong>:实现声音混音器。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Audio engineering"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Mixer",
+        "SSE audio",
+        "Pitch shift"
+      ],
+      "related_days": [
+        "day139"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day141": {
+      "why": "声音混音器扩展",
+      "model": "Day 140-146 逐步完善混音器。\n\n<strong>这集的技术要点</strong>:分块流式加载大音频。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 141 的核心概念是分块流式加载大音频。在游戏引擎架构中,这属于这集是 Phase 4(性能+多线程+资产)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Audio engineering"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Mixer",
+        "SSE audio",
+        "Pitch shift"
+      ],
+      "related_days": [
+        "day139"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day142": {
+      "why": "声音混音器扩展",
+      "model": "Day 140-146 逐步完善混音器。\n\n<strong>这集的技术要点</strong>:逐样本音量插值。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 142 的核心概念是逐样本音量插值。在游戏引擎架构中,这属于这集是 Phase 4(性能+多线程+资产)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Audio engineering"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Mixer",
+        "SSE audio",
+        "Pitch shift"
+      ],
+      "related_days": [
+        "day139"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day143": {
+      "why": "声音混音器扩展",
+      "model": "Day 140-146 逐步完善混音器。\n\n<strong>这集的技术要点</strong>:混音器中的变调。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 143 的核心概念是混音器中的变调。在游戏引擎架构中,这属于这集是 Phase 4(性能+多线程+资产)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Audio engineering"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Mixer",
+        "SSE audio",
+        "Pitch shift"
+      ],
+      "related_days": [
+        "day139"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day144": {
+      "why": "声音混音器扩展",
+      "model": "Day 140-146 逐步完善混音器。\n\n<strong>这集的技术要点</strong>:SSE 混音器前后循环。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 144 的核心概念是SSE 混音器前后循环。在游戏引擎架构中,这属于这集是 Phase 4(性能+多线程+资产)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Audio engineering"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Mixer",
+        "SSE audio",
+        "Pitch shift"
+      ],
+      "related_days": [
+        "day139"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day145": {
+      "why": "声音混音器扩展",
+      "model": "Day 140-146 逐步完善混音器。\n\n<strong>这集的技术要点</strong>:SSE 混音器主循环。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 145 的核心概念是SSE 混音器主循环。在游戏引擎架构中,这属于这集是 Phase 4(性能+多线程+资产)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Audio engineering"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Mixer",
+        "SSE audio",
+        "Pitch shift"
+      ],
+      "related_days": [
+        "day139"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day146": {
+      "why": "声音混音器扩展",
+      "model": "Day 140-146 逐步完善混音器。\n\n<strong>这集的技术要点</strong>:累加 vs 显式计算。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 146 的核心概念是累加 vs 显式计算。在游戏引擎架构中,这属于这集是 Phase 4(性能+多线程+资产)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Audio engineering"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Mixer",
+        "SSE audio",
+        "Pitch shift"
+      ],
+      "related_days": [
+        "day139"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day147": {
+      "why": "定义 .hha 资产文件格式——Casey 自创的二进制打包格式。",
+      "model": ".hha = Handmade Hero Asset。一个文件打包所有资产(位图/WAV/字体)。\n\n结构:文件头(magic + version + asset_count) + 资产索引数组(每 entry: type/offset/size) + 资产数据。\n\nDay 148-156 逐步实现:写头部→写资产→加载→新文件 API→合并多文件→查找。\n\n<strong>这集的技术要点</strong>:定义资产文件。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        ".hha binary format"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "File header",
+        "Asset index",
+        "Asset data"
+      ],
+      "related_days": [
+        "day132",
+        "day148"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day148": {
+      "why": "Day 148:.hha 资产系统逐步实现。",
+      "model": "Day 148 写头部(magic+version+count)。Day 149 写资产数据。Day 150 加载(从.hha 按 ID 查)。Day 151-152 新平台文件 API。Day 153 合并多 .hha。Day 154 查找文件。Day 155-156 粒子系统入门+拉格朗日vs欧拉模拟。\n\n<strong>这集的技术要点</strong>:写资产文件头部。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        ".hha implementation"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Asset serialization",
+        "ID lookup"
+      ],
+      "related_days": [
+        "day147"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day149": {
+      "why": "Day 149:.hha 资产系统逐步实现。",
+      "model": "Day 148 写头部(magic+version+count)。Day 149 写资产数据。Day 150 加载(从.hha 按 ID 查)。Day 151-152 新平台文件 API。Day 153 合并多 .hha。Day 154 查找文件。Day 155-156 粒子系统入门+拉格朗日vs欧拉模拟。\n\n<strong>这集的技术要点</strong>:把资产写入资产文件。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        ".hha implementation"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Asset serialization",
+        "ID lookup"
+      ],
+      "related_days": [
+        "day147"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day150": {
+      "why": "Day 150:.hha 资产系统逐步实现。",
+      "model": "Day 148 写头部(magic+version+count)。Day 149 写资产数据。Day 150 加载(从.hha 按 ID 查)。Day 151-152 新平台文件 API。Day 153 合并多 .hha。Day 154 查找文件。Day 155-156 粒子系统入门+拉格朗日vs欧拉模拟。\n\n<strong>这集的技术要点</strong>:从资产文件加载资产。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        ".hha implementation"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Asset serialization",
+        "ID lookup"
+      ],
+      "related_days": [
+        "day147"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day151": {
+      "why": "Day 151:.hha 资产系统逐步实现。",
+      "model": "Day 148 写头部(magic+version+count)。Day 149 写资产数据。Day 150 加载(从.hha 按 ID 查)。Day 151-152 新平台文件 API。Day 153 合并多 .hha。Day 154 查找文件。Day 155-156 粒子系统入门+拉格朗日vs欧拉模拟。\n\n<strong>这集的技术要点</strong>:新平台文件 API。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        ".hha implementation"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Asset serialization",
+        "ID lookup"
+      ],
+      "related_days": [
+        "day147"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day152": {
+      "why": "Day 152:.hha 资产系统逐步实现。",
+      "model": "Day 148 写头部(magic+version+count)。Day 149 写资产数据。Day 150 加载(从.hha 按 ID 查)。Day 151-152 新平台文件 API。Day 153 合并多 .hha。Day 154 查找文件。Day 155-156 粒子系统入门+拉格朗日vs欧拉模拟。\n\n<strong>这集的技术要点</strong>:新 Win32 文件 API 实现。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        ".hha implementation"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Asset serialization",
+        "ID lookup"
+      ],
+      "related_days": [
+        "day147"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day153": {
+      "why": "Day 153:.hha 资产系统逐步实现。",
+      "model": "Day 148 写头部(magic+version+count)。Day 149 写资产数据。Day 150 加载(从.hha 按 ID 查)。Day 151-152 新平台文件 API。Day 153 合并多 .hha。Day 154 查找文件。Day 155-156 粒子系统入门+拉格朗日vs欧拉模拟。\n\n<strong>这集的技术要点</strong>:合并多个资产文件。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        ".hha implementation"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Asset serialization",
+        "ID lookup"
+      ],
+      "related_days": [
+        "day147"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day154": {
+      "why": "Day 154:.hha 资产系统逐步实现。",
+      "model": "Day 148 写头部(magic+version+count)。Day 149 写资产数据。Day 150 加载(从.hha 按 ID 查)。Day 151-152 新平台文件 API。Day 153 合并多 .hha。Day 154 查找文件。Day 155-156 粒子系统入门+拉格朗日vs欧拉模拟。\n\n<strong>这集的技术要点</strong>:用 Win32 查找资产文件。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        ".hha implementation"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Asset serialization",
+        "ID lookup"
+      ],
+      "related_days": [
+        "day147"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day155": {
+      "why": "Day 155:.hha 资产系统逐步实现。",
+      "model": "Day 148 写头部(magic+version+count)。Day 149 写资产数据。Day 150 加载(从.hha 按 ID 查)。Day 151-152 新平台文件 API。Day 153 合并多 .hha。Day 154 查找文件。Day 155-156 粒子系统入门+拉格朗日vs欧拉模拟。\n\n<strong>这集的技术要点</strong>:粒子系统入门。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        ".hha implementation"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Asset serialization",
+        "ID lookup"
+      ],
+      "related_days": [
+        "day147"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day156": {
+      "why": "Day 156:.hha 资产系统逐步实现。",
+      "model": "Day 148 写头部(magic+version+count)。Day 149 写资产数据。Day 150 加载(从.hha 按 ID 查)。Day 151-152 新平台文件 API。Day 153 合并多 .hha。Day 154 查找文件。Day 155-156 粒子系统入门+拉格朗日vs欧拉模拟。\n\n<strong>这集的技术要点</strong>:拉格朗日 vs 欧拉模拟。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        ".hha implementation"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Asset serialization",
+        "ID lookup"
+      ],
+      "related_days": [
+        "day147"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day157": {
+      "why": "通用内存分配器——之前用 arena(Day 014,不能单个 free),Day 157 加支持 malloc/free 的分配器。",
+      "model": "Arena 不支持单个 free(只能整块 reset)。某些资产(临时大纹理)需要单个释放。Day 157 实现:free list(空闲块链表)+ coalesce(合并相邻空闲)。\n\nmalloc:从 free list 找足够大的块,切出需要大小,剩余放回。free:标记空闲,合并相邻空闲块(防碎片)。这是 OS 内存管理的基础概念。\n\n<strong>这集的技术要点</strong>:通用分配入门。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "General purpose allocator"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Free list",
+        "Coalescing",
+        "malloc/free"
+      ],
+      "related_days": [
+        "day014",
+        "day160"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day158": {
+      "why": "Day 158:通用分配器逐步完善 + 字体入门。",
+      "model": "Day 158-161:分配器(跟踪资产使用、清理、基础分配、完成)。Day 162:字体(TrueType)入门。\n\n<strong>这集的技术要点</strong>:跟踪资产使用。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 158 的核心概念是跟踪资产使用。在游戏引擎架构中,这属于这集是 Phase 4(性能+多线程+资产)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Memory management",
+        "Fonts"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Allocator",
+        "TrueType"
+      ],
+      "related_days": [
+        "day157"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day159": {
+      "why": "Day 159:通用分配器逐步完善 + 字体入门。",
+      "model": "Day 158-161:分配器(跟踪资产使用、清理、基础分配、完成)。Day 162:字体(TrueType)入门。\n\n<strong>这集的技术要点</strong>:清理已加载资产基础设施。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 159 的核心概念是清理已加载资产基础设施。在游戏引擎架构中,这属于这集是 Phase 4(性能+多线程+资产)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Memory management",
+        "Fonts"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Allocator",
+        "TrueType"
+      ],
+      "related_days": [
+        "day157"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day160": {
+      "why": "Day 160:通用分配器逐步完善 + 字体入门。",
+      "model": "Day 158-161:分配器(跟踪资产使用、清理、基础分配、完成)。Day 162:字体(TrueType)入门。\n\n<strong>这集的技术要点</strong>:基础通用分配。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 160 的核心概念是基础通用分配。在游戏引擎架构中,这属于这集是 Phase 4(性能+多线程+资产)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Memory management",
+        "Fonts"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Allocator",
+        "TrueType"
+      ],
+      "related_days": [
+        "day157"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day161": {
+      "why": "Day 161:通用分配器逐步完善 + 字体入门。",
+      "model": "Day 158-161:分配器(跟踪资产使用、清理、基础分配、完成)。Day 162:字体(TrueType)入门。\n\n<strong>这集的技术要点</strong>:完成通用分配器。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。\n\n<strong>深入理解</strong>:Day 161 的核心概念是完成通用分配器。在游戏引擎架构中,这属于这集是 Phase 4(性能+多线程+资产)的一部分。理解这个概念后,你能在自己的项目中应用同样的模式。关键是理解 Casey <strong>为什么</strong>这样做,而不只是<strong>怎么</strong>做——「为什么」是设计决策的理由,「怎么」是具体实现。理由可以迁移到其他项目,实现因语言/平台而异。",
+      "map_parents": [
+        "Memory management",
+        "Fonts"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Allocator",
+        "TrueType"
+      ],
+      "related_days": [
+        "day157"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day162": {
+      "why": "Day 162:字体系统——TrueType glyph 提取、文字布局、kerning、Unicode 支持。",
+      "model": "Day 162 字体入门。Day 163-164 STB TrueType 提取 glyph(从.ttf拿字符轮廓,光栅化成像素)。Day 165-166 线程安全(资产并发访问字体)。Day 168 渲染文本行(多个 glyph 排成一排)。Day 169 对齐 baseline。Day 170-171 字体元数据。Day 172 kerning(字对间距)。Day 174-175 Unicode 支持(中文等多字节字符)。\n\n<strong>这集的技术要点</strong>:字体入门。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Font rendering",
+        "TrueType"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Glyph extraction",
+        "Text layout",
+        "Kerning",
+        "Unicode"
+      ],
+      "related_days": [
+        "day162"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day163": {
+      "why": "Day 163:字体系统——TrueType glyph 提取、文字布局、kerning、Unicode 支持。",
+      "model": "Day 162 字体入门。Day 163-164 STB TrueType 提取 glyph(从.ttf拿字符轮廓,光栅化成像素)。Day 165-166 线程安全(资产并发访问字体)。Day 168 渲染文本行(多个 glyph 排成一排)。Day 169 对齐 baseline。Day 170-171 字体元数据。Day 172 kerning(字对间距)。Day 174-175 Unicode 支持(中文等多字节字符)。\n\n<strong>这集的技术要点</strong>:用 STB TrueType 处理资产。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Font rendering",
+        "TrueType"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Glyph extraction",
+        "Text layout",
+        "Kerning",
+        "Unicode"
+      ],
+      "related_days": [
+        "day162"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day164": {
+      "why": "Day 164:字体系统——TrueType glyph 提取、文字布局、kerning、Unicode 支持。",
+      "model": "Day 162 字体入门。Day 163-164 STB TrueType 提取 glyph(从.ttf拿字符轮廓,光栅化成像素)。Day 165-166 线程安全(资产并发访问字体)。Day 168 渲染文本行(多个 glyph 排成一排)。Day 169 对齐 baseline。Day 170-171 字体元数据。Day 172 kerning(字对间距)。Day 174-175 Unicode 支持(中文等多字节字符)。\n\n<strong>这集的技术要点</strong>:用 Windows 字体处理资产。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Font rendering",
+        "TrueType"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Glyph extraction",
+        "Text layout",
+        "Kerning",
+        "Unicode"
+      ],
+      "related_days": [
+        "day162"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day165": {
+      "why": "Day 165:字体系统——TrueType glyph 提取、文字布局、kerning、Unicode 支持。",
+      "model": "Day 162 字体入门。Day 163-164 STB TrueType 提取 glyph(从.ttf拿字符轮廓,光栅化成像素)。Day 165-166 线程安全(资产并发访问字体)。Day 168 渲染文本行(多个 glyph 排成一排)。Day 169 对齐 baseline。Day 170-171 字体元数据。Day 172 kerning(字对间距)。Day 174-175 Unicode 支持(中文等多字节字符)。\n\n<strong>这集的技术要点</strong>:修复资产系统线程 bug。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Font rendering",
+        "TrueType"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Glyph extraction",
+        "Text layout",
+        "Kerning",
+        "Unicode"
+      ],
+      "related_days": [
+        "day162"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day166": {
+      "why": "Day 166:字体系统——TrueType glyph 提取、文字布局、kerning、Unicode 支持。",
+      "model": "Day 162 字体入门。Day 163-164 STB TrueType 提取 glyph(从.ttf拿字符轮廓,光栅化成像素)。Day 165-166 线程安全(资产并发访问字体)。Day 168 渲染文本行(多个 glyph 排成一排)。Day 169 对齐 baseline。Day 170-171 字体元数据。Day 172 kerning(字对间距)。Day 174-175 Unicode 支持(中文等多字节字符)。\n\n<strong>这集的技术要点</strong>:给资产操作加锁。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Font rendering",
+        "TrueType"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Glyph extraction",
+        "Text layout",
+        "Kerning",
+        "Unicode"
+      ],
+      "related_days": [
+        "day162"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day167": {
+      "why": "Day 167:字体系统——TrueType glyph 提取、文字布局、kerning、Unicode 支持。",
+      "model": "Day 162 字体入门。Day 163-164 STB TrueType 提取 glyph(从.ttf拿字符轮廓,光栅化成像素)。Day 165-166 线程安全(资产并发访问字体)。Day 168 渲染文本行(多个 glyph 排成一排)。Day 169 对齐 baseline。Day 170-171 字体元数据。Day 172 kerning(字对间距)。Day 174-175 Unicode 支持(中文等多字节字符)。\n\n<strong>这集的技术要点</strong>:完成 Win32 字体字形提取。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Font rendering",
+        "TrueType"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Glyph extraction",
+        "Text layout",
+        "Kerning",
+        "Unicode"
+      ],
+      "related_days": [
+        "day162"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day168": {
+      "why": "Day 168:字体系统——TrueType glyph 提取、文字布局、kerning、Unicode 支持。",
+      "model": "Day 162 字体入门。Day 163-164 STB TrueType 提取 glyph(从.ttf拿字符轮廓,光栅化成像素)。Day 165-166 线程安全(资产并发访问字体)。Day 168 渲染文本行(多个 glyph 排成一排)。Day 169 对齐 baseline。Day 170-171 字体元数据。Day 172 kerning(字对间距)。Day 174-175 Unicode 支持(中文等多字节字符)。\n\n<strong>这集的技术要点</strong>:渲染文本行。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Font rendering",
+        "TrueType"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Glyph extraction",
+        "Text layout",
+        "Kerning",
+        "Unicode"
+      ],
+      "related_days": [
+        "day162"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day169": {
+      "why": "Day 169:字体系统——TrueType glyph 提取、文字布局、kerning、Unicode 支持。",
+      "model": "Day 162 字体入门。Day 163-164 STB TrueType 提取 glyph(从.ttf拿字符轮廓,光栅化成像素)。Day 165-166 线程安全(资产并发访问字体)。Day 168 渲染文本行(多个 glyph 排成一排)。Day 169 对齐 baseline。Day 170-171 字体元数据。Day 172 kerning(字对间距)。Day 174-175 Unicode 支持(中文等多字节字符)。\n\n<strong>这集的技术要点</strong>:文本对齐到基线。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Font rendering",
+        "TrueType"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Glyph extraction",
+        "Text layout",
+        "Kerning",
+        "Unicode"
+      ],
+      "related_days": [
+        "day162"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day170": {
+      "why": "Day 170:字体系统——TrueType glyph 提取、文字布局、kerning、Unicode 支持。",
+      "model": "Day 162 字体入门。Day 163-164 STB TrueType 提取 glyph(从.ttf拿字符轮廓,光栅化成像素)。Day 165-166 线程安全(资产并发访问字体)。Day 168 渲染文本行(多个 glyph 排成一排)。Day 169 对齐 baseline。Day 170-171 字体元数据。Day 172 kerning(字对间距)。Day 174-175 Unicode 支持(中文等多字节字符)。\n\n<strong>这集的技术要点</strong>:定义字体元数据。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Font rendering",
+        "TrueType"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Glyph extraction",
+        "Text layout",
+        "Kerning",
+        "Unicode"
+      ],
+      "related_days": [
+        "day162"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day171": {
+      "why": "Day 171:字体系统——TrueType glyph 提取、文字布局、kerning、Unicode 支持。",
+      "model": "Day 162 字体入门。Day 163-164 STB TrueType 提取 glyph(从.ttf拿字符轮廓,光栅化成像素)。Day 165-166 线程安全(资产并发访问字体)。Day 168 渲染文本行(多个 glyph 排成一排)。Day 169 对齐 baseline。Day 170-171 字体元数据。Day 172 kerning(字对间距)。Day 174-175 Unicode 支持(中文等多字节字符)。\n\n<strong>这集的技术要点</strong>:资产构建器加字体元数据。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Font rendering",
+        "TrueType"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Glyph extraction",
+        "Text layout",
+        "Kerning",
+        "Unicode"
+      ],
+      "related_days": [
+        "day162"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day172": {
+      "why": "Day 172:字体系统——TrueType glyph 提取、文字布局、kerning、Unicode 支持。",
+      "model": "Day 162 字体入门。Day 163-164 STB TrueType 提取 glyph(从.ttf拿字符轮廓,光栅化成像素)。Day 165-166 线程安全(资产并发访问字体)。Day 168 渲染文本行(多个 glyph 排成一排)。Day 169 对齐 baseline。Day 170-171 字体元数据。Day 172 kerning(字对间距)。Day 174-175 Unicode 支持(中文等多字节字符)。\n\n<strong>这集的技术要点</strong>:从 Windows 提取字距表。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Font rendering",
+        "TrueType"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Glyph extraction",
+        "Text layout",
+        "Kerning",
+        "Unicode"
+      ],
+      "related_days": [
+        "day162"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day173": {
+      "why": "Day 173:字体系统——TrueType glyph 提取、文字布局、kerning、Unicode 支持。",
+      "model": "Day 162 字体入门。Day 163-164 STB TrueType 提取 glyph(从.ttf拿字符轮廓,光栅化成像素)。Day 165-166 线程安全(资产并发访问字体)。Day 168 渲染文本行(多个 glyph 排成一排)。Day 169 对齐 baseline。Day 170-171 字体元数据。Day 172 kerning(字对间距)。Day 174-175 Unicode 支持(中文等多字节字符)。\n\n<strong>这集的技术要点</strong>:精确字体对齐。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Font rendering",
+        "TrueType"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Glyph extraction",
+        "Text layout",
+        "Kerning",
+        "Unicode"
+      ],
+      "related_days": [
+        "day162"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day174": {
+      "why": "Day 174:字体系统——TrueType glyph 提取、文字布局、kerning、Unicode 支持。",
+      "model": "Day 162 字体入门。Day 163-164 STB TrueType 提取 glyph(从.ttf拿字符轮廓,光栅化成像素)。Day 165-166 线程安全(资产并发访问字体)。Day 168 渲染文本行(多个 glyph 排成一排)。Day 169 对齐 baseline。Day 170-171 字体元数据。Day 172 kerning(字对间距)。Day 174-175 Unicode 支持(中文等多字节字符)。\n\n<strong>这集的技术要点</strong>:加稀疏 Unicode 支持。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Font rendering",
+        "TrueType"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Glyph extraction",
+        "Text layout",
+        "Kerning",
+        "Unicode"
+      ],
+      "related_days": [
+        "day162"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    },
+    "day175": {
+      "why": "Day 175:字体系统——TrueType glyph 提取、文字布局、kerning、Unicode 支持。",
+      "model": "Day 162 字体入门。Day 163-164 STB TrueType 提取 glyph(从.ttf拿字符轮廓,光栅化成像素)。Day 165-166 线程安全(资产并发访问字体)。Day 168 渲染文本行(多个 glyph 排成一排)。Day 169 对齐 baseline。Day 170-171 字体元数据。Day 172 kerning(字对间距)。Day 174-175 Unicode 支持(中文等多字节字符)。\n\n<strong>这集的技术要点</strong>:完成稀疏 Unicode 支持。\n\n这集是 Phase 4(性能+多线程+资产)的一部分。Phase 4 的核心是:CPU cache 延迟(Day 112 L1 vs RAM 50×)、SIMD __m128(Day 115 一次 4 float)、Day 121 marathon(tile 化+SIMD+多线程)、内存屏障 Acquire/Release(Day 124)、work queue(Day 125-126 lock-free FIFO)、.hha 格式(Day 147)、手写 WAV parser(Day 138)、手写混音器(Day 139)、通用分配器 free list(Day 157)、TrueType 字体(Day 162)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Font rendering",
+        "TrueType"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Glyph extraction",
+        "Text layout",
+        "Kerning",
+        "Unicode"
+      ],
+      "related_days": [
+        "day162"
+      ],
+      "comparison": "",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "L1 cache 和 RAM 读取延迟差多少倍?这对数据布局有什么影响?",
+          "a": "L1=4 周期,RAM=200+周期,差 50 倍。影响:数据要连续存放(cache line 64 字节),不要用链表(每节点不同 cache line)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "SIMD __m128 一次处理几个 float?为什么要 16 字节对齐?",
+          "a": "4 个 f32。16 字节对齐因为 movaps 指令要求,不对齐段错。#[repr(align(16))]。"
+        }
+      ]
+    }
+  }
+}

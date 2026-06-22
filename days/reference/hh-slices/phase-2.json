@@ -1,0 +1,2482 @@
+{
+  "phase_num": 2,
+  "phase_meta": {
+    "id": "phase-2",
+    "title": "Phase 2 — 2D 游戏(Day 26–70)",
+    "range": "Day 026–070 · 45 集 · 预计 6–8 周",
+    "intro": "平台层就位后,Casey 终于开始\"做游戏\"。这 45 集里他从空场地一步步搭出一个可玩的 2D 俯视角小游戏:有 tile 地图、有玩家、有怪物、有投射物、有碰撞。这一阶段的核心不是任何具体的 API,而是<strong>如何用纯逻辑代码组织一个游戏</strong>。\n\n对 Rust 学习者来说,这是第一次大规模实战 ownership 系统:实体如何在内存里布局、如何避免循环引用、什么时候用索引替代指针、什么时候用 arena 替代 Vec。Casey 在 C 里靠 raw pointer 解决的问题,Rust 会强制你想清楚生命周期。",
+    "goal": "完成一个有玩家移动、tile 碰撞、怪物 AI、投射物、sim region 的 2D 关卡。",
+    "exit": "完成 Day 070 的「Exploration To-do List」后,游戏里能走来走去、打怪、被怪打、捡道具。",
+    "rust_topics": [
+      "`SlotMap` 或 generational arena(替代 Casey 的 entity index 方案)",
+      "ownership 在游戏实体上的实战:谁拥有 entity,谁借用",
+      "`RefCell` vs 显式分阶段更新(避免运行时借用检查)",
+      "bitfield crate 或手写位域(输入结构)",
+      "`std::collections::HashMap` 替代 Casey 的手写 hash table(后面 Day 55 会换成手写)"
+    ],
+    "cs_supplement": [],
+    "resources": []
+  },
+  "episodes": [
+    {
+      "slug": "code/day026",
+      "title_en": "Day 026: Introduction to Game Architecture",
+      "title_zh": "游戏架构入门",
+      "url": "https://guide.handmadehero.org/code/day026/",
+      "difficulty": 3,
+      "duration": "2h",
+      "type": "concept",
+      "learn": "🔥 三明治分层架构的完整阐述"
+    },
+    {
+      "slug": "code/day027",
+      "title_en": "Day 027: Exploration-based Architecture",
+      "title_zh": "探索式架构",
+      "url": "https://guide.handmadehero.org/code/day027/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day028",
+      "title_en": "Day 028: Drawing a Tile Map",
+      "title_zh": "绘制瓦片地图",
+      "url": "https://guide.handmadehero.org/code/day028/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day029",
+      "title_en": "Day 029: Basic Tile Map Collision Checking",
+      "title_zh": "基础瓦片地图碰撞检测",
+      "url": "https://guide.handmadehero.org/code/day029/",
+      "difficulty": 1,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day030",
+      "title_en": "Day 030: Moving Between Tile Maps",
+      "title_zh": "在瓦片地图之间移动",
+      "url": "https://guide.handmadehero.org/code/day030/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day031",
+      "title_en": "Day 031: Tilemap Coordinate Systems",
+      "title_zh": "瓦片地图坐标系",
+      "url": "https://guide.handmadehero.org/code/day031/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day032",
+      "title_en": "Day 032: Unified Position Representation",
+      "title_zh": "统一的位置表示",
+      "url": "https://guide.handmadehero.org/code/day032/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day033",
+      "title_en": "Day 033: Virtualized Tile Maps",
+      "title_zh": "虚拟化瓦片地图",
+      "url": "https://guide.handmadehero.org/code/day033/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day034",
+      "title_en": "Day 034: Tile Map Memory",
+      "title_zh": "瓦片地图内存",
+      "url": "https://guide.handmadehero.org/code/day034/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day035",
+      "title_en": "Day 035: Basic Sparse Tilemap Storage",
+      "title_zh": "基础稀疏瓦片地图存储",
+      "url": "https://guide.handmadehero.org/code/day035/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day036",
+      "title_en": "Day 036: Loading BMPs",
+      "title_zh": "加载 BMP",
+      "url": "https://guide.handmadehero.org/code/day036/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day037",
+      "title_en": "Day 037: Basic Bitmap Rendering",
+      "title_zh": "基础位图渲染",
+      "url": "https://guide.handmadehero.org/code/day037/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day038",
+      "title_en": "Day 038: Basic Linear Bitmap Blending",
+      "title_zh": "基础线性位图混合",
+      "url": "https://guide.handmadehero.org/code/day038/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day039",
+      "title_en": "Day 039: Basic Bitmap Rendering Cleanup",
+      "title_zh": "基础位图渲染清理",
+      "url": "https://guide.handmadehero.org/code/day039/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "refactor",
+      "learn": ""
+    },
+    {
+      "slug": "code/day040",
+      "title_en": "Day 040: Cursor Hiding and Fullscreen Support",
+      "title_zh": "隐藏光标与全屏支持",
+      "url": "https://guide.handmadehero.org/code/day040/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day041",
+      "title_en": "Day 041: Overview of the Types of Math Used in Games",
+      "title_zh": "游戏数学类型概览",
+      "url": "https://guide.handmadehero.org/code/day041/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "concept",
+      "learn": ""
+    },
+    {
+      "slug": "code/day042",
+      "title_en": "Day 042: Basic 2D Vectors",
+      "title_zh": "基础 2D 向量",
+      "url": "https://guide.handmadehero.org/code/day042/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day043",
+      "title_en": "Day 043: The Equations of Motion",
+      "title_zh": "运动方程",
+      "url": "https://guide.handmadehero.org/code/day043/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day044",
+      "title_en": "Day 044: Reflecting Vectors",
+      "title_zh": "向量反射",
+      "url": "https://guide.handmadehero.org/code/day044/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day045",
+      "title_en": "Day 045: Geometric vs. Temporal Movement Search",
+      "title_zh": "几何搜索 vs 时间搜索",
+      "url": "https://guide.handmadehero.org/code/day045/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day046",
+      "title_en": "Day 046: Basic Multiplayer Support",
+      "title_zh": "基础多人支持",
+      "url": "https://guide.handmadehero.org/code/day046/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day047",
+      "title_en": "Day 047: Vector Lengths",
+      "title_zh": "向量长度",
+      "url": "https://guide.handmadehero.org/code/day047/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day048",
+      "title_en": "Day 048: Line Segment Intersection Collisions",
+      "title_zh": "线段相交碰撞",
+      "url": "https://guide.handmadehero.org/code/day048/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day049",
+      "title_en": "Day 049: Debugging Canonical Coordinates",
+      "title_zh": "调试规范坐标",
+      "url": "https://guide.handmadehero.org/code/day049/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "debug",
+      "learn": ""
+    },
+    {
+      "slug": "code/day050",
+      "title_en": "Day 050: Basic Minkowski-based Collision Detection",
+      "title_zh": "基础 Minkowski 碰撞检测",
+      "url": "https://guide.handmadehero.org/code/day050/",
+      "difficulty": 4,
+      "duration": "2h",
+      "type": "concept",
+      "learn": "🔥 Minkowski 碰撞:把所有碰撞化归为 AABB"
+    },
+    {
+      "slug": "code/day051",
+      "title_en": "Day 051: Separating Entities By Update Frequency",
+      "title_zh": "按更新频率分离实体",
+      "url": "https://guide.handmadehero.org/code/day051/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "refactor",
+      "learn": ""
+    },
+    {
+      "slug": "code/day052",
+      "title_en": "Day 052: Entity Movement in Camera Space",
+      "title_zh": "相机空间中的实体运动",
+      "url": "https://guide.handmadehero.org/code/day052/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day053",
+      "title_en": "Day 053: Environment Elements as Entities",
+      "title_zh": "环境元素作为实体",
+      "url": "https://guide.handmadehero.org/code/day053/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day054",
+      "title_en": "Day 054: Removing the Dormant Entity Concept",
+      "title_zh": "移除休眠实体概念",
+      "url": "https://guide.handmadehero.org/code/day054/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day055",
+      "title_en": "Day 055: Hash-based World Storage",
+      "title_zh": "基于哈希的世界存储",
+      "url": "https://guide.handmadehero.org/code/day055/",
+      "difficulty": 3,
+      "duration": "2h",
+      "type": "coding",
+      "learn": "🔥 第一次手写 hash table,用于稀疏世界存储"
+    },
+    {
+      "slug": "code/day056",
+      "title_en": "Day 056: Switch from Tiles to Entities",
+      "title_zh": "从瓦片切换到实体",
+      "url": "https://guide.handmadehero.org/code/day056/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day057",
+      "title_en": "Day 057: Spatially Partitioning Entities",
+      "title_zh": "实体空间划分",
+      "url": "https://guide.handmadehero.org/code/day057/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day058",
+      "title_en": "Day 058: Using the Spatial Partition",
+      "title_zh": "使用空间划分",
+      "url": "https://guide.handmadehero.org/code/day058/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day059",
+      "title_en": "Day 059: Adding a Basic Familiar Entity",
+      "title_zh": "加基础随从实体",
+      "url": "https://guide.handmadehero.org/code/day059/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day060",
+      "title_en": "Day 060: Adding Hitpoints",
+      "title_zh": "加生命值",
+      "url": "https://guide.handmadehero.org/code/day060/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day061",
+      "title_en": "Day 061: Adding a Simple Attack",
+      "title_zh": "加简单攻击",
+      "url": "https://guide.handmadehero.org/code/day061/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day062",
+      "title_en": "Day 062: Basic Moving Projectiles",
+      "title_zh": "基础可移动投射物",
+      "url": "https://guide.handmadehero.org/code/day062/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day063",
+      "title_en": "Day 063: Simulation Regions",
+      "title_zh": "模拟区域",
+      "url": "https://guide.handmadehero.org/code/day063/",
+      "difficulty": 4,
+      "duration": "2h",
+      "type": "concept",
+      "learn": "🔥 Sim region 概念:只模拟相机周围,性能恒定"
+    },
+    {
+      "slug": "code/day064",
+      "title_en": "Day 064: Mapping Entity Indexes to Pointers",
+      "title_zh": "实体索引到指针的映射",
+      "url": "https://guide.handmadehero.org/code/day064/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day065",
+      "title_en": "Day 065: Finishing the Simulation Region Change",
+      "title_zh": "完成模拟区域改造",
+      "url": "https://guide.handmadehero.org/code/day065/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "refactor",
+      "learn": ""
+    },
+    {
+      "slug": "code/day066",
+      "title_en": "Day 066: Adding Support for Non-spatial Entities",
+      "title_zh": "加非空间实体支持",
+      "url": "https://guide.handmadehero.org/code/day066/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day067",
+      "title_en": "Day 067: Making Updates Conditional",
+      "title_zh": "让更新变成有条件的",
+      "url": "https://guide.handmadehero.org/code/day067/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day068",
+      "title_en": "Day 068: Exact Enforcement of Maximum Movement Distances",
+      "title_zh": "精确强制最大移动距离",
+      "url": "https://guide.handmadehero.org/code/day068/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day069",
+      "title_en": "Day 069: Pairwise Collision Rules",
+      "title_zh": "成对碰撞规则",
+      "url": "https://guide.handmadehero.org/code/day069/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "coding",
+      "learn": ""
+    },
+    {
+      "slug": "code/day070",
+      "title_en": "Day 070: Exploration To-do List",
+      "title_zh": "探索待办清单",
+      "url": "https://guide.handmadehero.org/code/day070/",
+      "difficulty": 2,
+      "duration": "1h",
+      "type": "milestone",
+      "learn": "🎉 M2 完成:可玩 2D 关卡"
+    }
+  ],
+  "lessons": {
+    "day026": {
+      "why": "Day 026 是 Phase 2 的<strong>开场</strong>——Casey 暂停编码,花一整集讨论「<strong>游戏架构</strong>」。这集和 Day 011 一样是奠基集,但 Day 011 关注平台/游戏分离,Day 026 关注<strong>游戏代码内部</strong>的架构。\n\n具体讨论什么?Casey 提出游戏代码内部应该再分两层:<strong>游戏逻辑</strong>(rules、AI、物理)和<strong>渲染</strong>(怎么把状态画成像素)。这是 HH 全剧最重要的架构决策之一,后面 600+ 集都按这个结构组织。\n\n为什么重要?因为大部分游戏 bug 来自「逻辑和渲染耦合」——比如玩家位置变了但屏幕没更新,或者屏幕显示了已经死掉的怪物。分层让 bug 无处藏身。",
+      "model": "Casey 这集提出「<strong>三明治分层</strong>」(三明治 = sandwich,因为 Casey 用了这个比喻):\n\n<pre>┌─────────────────────────────┐\n│  平台层(已经在 Day 11 分好) │\n└─────────────┬───────────────┘\n              │ game_input + game_memory + dt\n              ▼\n┌─────────────────────────────┐\n│  游戏代码(handmade.rs)     │\n│  ┌───────────────────────┐  │\n│  │ 游戏逻辑层             │  │ ← 决定「世界现在是什么样」\n│  │ • 实体系统             │  │\n│  │ • 物理 / AI           │  │\n│  │ • 战斗规则            │  │\n│  └───────────┬───────────┘  │\n│              │ render commands\n│              ▼              │\n│  ┌───────────────────────┐  │\n│  │ 渲染层                │  │ ← 决定「怎么画出来」\n│  │ • push bitmap         │  │\n│  │ • push text           │  │\n│  │ • push rect           │  │\n│  └───────────┬───────────┘  │\n└──────────────┼──────────────┘\n               │ render_buf\n               ▼\n┌─────────────────────────────┐\n│  渲染器(renderer.rs)       │\n└─────────────────────────────┘</pre>\n\n游戏逻辑层产出 render commands(高层渲染指令),渲染层把 commands 翻译成像素写到 frame buffer。\n\n<strong>关键约束:逻辑层不直接画像素</strong>。所有渲染必须通过 push command。这让逻辑层变得:\n1. <strong>可测试</strong>:不依赖渲染后端,可以 mock 测\n2. <strong>跨平台</strong>:换 OpenGL / Vulkan / WebGPU 不动逻辑\n3. <strong>可重放</strong>:记录每帧 commands,可逆推\n\n<strong>Casey 在 Day 88 会正式实现 push buffer</strong>,但这集就埋下伏笔。这集 Casey 主要做的是「先把游戏状态结构搭起来」——定义 PlayerState、WorldState 等,留出 render 接口的位置。\n\n<strong>游戏状态结构示例(Rust)</strong>:\n\n<pre><code>pub struct GameState {\n    pub player: Player,\n    pub entities: Vec&lt;Entity&gt;,\n    pub world: World,\n    pub time: f32,\n}\n\npub struct Player {\n    pub pos: Vec2,\n    pub vel: Vec2,\n    pub hp: i32,\n}\n\nimpl GameState {\n    pub fn update(&mut self, input: &GameInput, dt: f32) {\n        // 逻辑层:更新世界\n        self.player.update(input, dt);\n        for e in &mut self.entities {\n            e.update(dt);\n        }\n    }\n    \n    pub fn render(&self, render_buf: &mut RenderBuf) {\n        // 渲染层:画出来\n        render_buf.push_bitmap(self.player.pos, player_bitmap_id);\n        for e in &self.entities {\n            render_buf.push_bitmap(e.pos, e.bitmap_id);\n        }\n    }\n}</code></pre>\n\n注意 <code>update</code> 和 <code>render</code> 是<strong>完全分开</strong>的两个方法。update 只改 state,render 只读 state + push commands。这种分离是 HH 后面所有逻辑的基础。",
+      "map_parents": [
+        "三明治架构(平台 / 逻辑 / 渲染)",
+        "Model-View 分离(MVC 的精神)",
+        "Single Responsibility Principle(单一职责)"
+      ],
+      "map_siblings": [
+        {
+          "name": "MVC(Model-View-Controller)",
+          "note": "Web 后端的经典分离"
+        },
+        {
+          "name": "ECS(Entity Component System)",
+          "note": "现代游戏引擎的数据驱动架构"
+        },
+        {
+          "name": "MVP / MVVM",
+          "note": "前端框架的变体"
+        },
+        {
+          "name": "Data-Oriented Design",
+          "note": "Mike Acton 倡导,casey 借鉴"
+        }
+      ],
+      "map_children": [
+        "GameState(逻辑状态)",
+        "RenderBuf / push commands(渲染指令)",
+        "update() vs render() 分离",
+        "Entity / Player 等领域模型"
+      ],
+      "related_days": [
+        "day011",
+        "day027",
+        "day088",
+        "day240"
+      ],
+      "comparison": "<strong>共通点</strong>:所有软件架构都在解决「数据 / 逻辑 / 表现」的分离。Casey 的三明治分层和 MVC、ECS 都是这个原则的应用。\n\n<strong>差别</strong>:抽象层级。\n- MVC:Model = 业务,View = UI,Controller = 协调。粒度粗\n- ECS:Entity = ID,Component = 数据,System = 逻辑。粒度细\n- Casey:GameState + update + render。粒度中\n\nCasey 选中等粒度是因为 HH 教学需要平衡——太粗(MVC)游戏代码不灵活,太细(ECS)初学者晕。Day 063 sim region 会进一步细化,但保持在 Casey 风格内。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 这集强调「逻辑层不直接画像素」。如果违反这个原则,直接在 update 里调用 <code>renderer.draw_pixel(...)</code>,会发生什么问题?",
+          "a": "三个核心问题:\n\n<strong>1. 测试困难</strong>。update 直接调 renderer,你必须 mock renderer 才能测 update。但 mock renderer 复杂(要验证 draw 调用顺序),让单测变得难写。\n\n<strong>2. 跨后端困难</strong>。换 OpenGL / Vulkan / WebGPU 时,update 里的渲染调用都要改。本来应该只改 renderer,现在 update 也要改。\n\n<strong>3. 重放 / 多视图困难</strong>。游戏有多个视图(主视图、小地图、debug overlay)时,update 已经把像素画死了,没法重画。如果用 push command,可以多次 render 同一份 commands 到不同视图。\n\nCasey 后面 Day 88 引入 push buffer 就是为了解决这些。这集他埋下伏笔——update 和 render 分开,后面才能插 push buffer。\n\n延伸:这是「<strong>command pattern</strong>」(命令模式)的应用。所有 UI 框架(Qt、ImGui)、3D 引擎(OpenGL display list)、CQRS 后端都用这个模式。"
+        },
+        {
+          "level": 2,
+          "type": "practice",
+          "q": "在你的 HH Rust 项目里,定义 <code>GameState</code> 结构,包含一个 <code>Player</code>(位置 + 速度 + HP)。实现 <code>update</code>(根据输入移动玩家)和 <code>render</code>(push 一个 sprite 在玩家位置)两个方法。要求两个方法<strong>不互相调用</strong>——只通过 state 通信。\n\n提示:用 Day 003 的 back_buffer 渲染简化版「render」,不用真做 push buffer。",
+          "a": "<pre><code>#[derive(Default)]\npub struct Vec2 { pub x: f32, pub y: f32 }\n\npub struct Player {\n    pub pos: Vec2,\n    pub vel: Vec2,\n    pub hp: i32,\n}\nimpl Player {\n    fn update(&mut self, input: &GameInput, dt: f32) {\n        let speed = 200.0;\n        let mut vx = 0.0;\n        let mut vy = 0.0;\n        if input.left { vx -= 1.0; }\n        if input.right { vx += 1.0; }\n        if input.up { vy -= 1.0; }\n        if input.down { vy += 1.0; }\n        self.pos.x += vx * speed * dt;\n        self.pos.y += vy * speed * dt;\n    }\n}\n\npub struct GameState { pub player: Player }\nimpl GameState {\n    pub fn update(&mut self, input: &GameInput, dt: f32) {\n        self.player.update(input, dt);  // 逻辑层\n    }\n    pub fn render(&self, buf: &mut [u32], w: i32, h: i32) {\n        // 渲染层:画一个 10x10 绿色方块在玩家位置\n        let px = self.player.pos.x as i32;\n        let py = self.player.pos.y as i32;\n        for dy in 0..10 {\n            for dx in 0..10 {\n                let x = px + dx;\n                let y = py + dy;\n                if x >= 0 && x < w && y >= 0 && y < h {\n                    buf[(y * w + x) as usize] = 0xFF00FF00;\n                }\n            }\n        }\n    }\n}</code></pre>\n\n跑起来,你能用方向键控制绿色方块。注意 update 改 pos,render 读 pos——逻辑和渲染完全分离。"
+        },
+        {
+          "level": 3,
+          "type": "transfer",
+          "q": "Casey 的「update / render 分离」原则在很多领域都有体现。各举一个例子:\n\n1. Web 前端:React 的什么设计是这个原则的应用?\n2. 数据库:什么是「update」什么是「render」?\n3. 操作系统:文件系统的什么设计是这个原则?",
+          "a": "<strong>1. React</strong>:setState(更新状态)= update,ReactDOM.render / JSX(描述 UI)= render。React 的核心创新是<strong>声明式渲染</strong>——你只描述「state 应该长什么样」,React 自动算 DOM diff。这本质就是 Casey 的 update/render 分离,只是 React 把 render 进一步自动化。\n\n<strong>2. 数据库</strong>:SQL UPDATE/INSERT(改数据)= update,SELECT(查数据)= render。事务修改物理存储,查询把存储数据「画」给应用看。CASE: OLTP(事务)= update,OLAP(分析)= render。ClickHouse 这种 OLAP 数据库本质就是「专门做 render」的。\n\n<strong>3. 文件系统</strong>:write(写数据块)= update,read(读数据块组合成文件)= render。VFS(虚拟文件系统)层把不同文件系统(ext4 / btrfs / fat)的「update」抽象出来,应用看到的「read」结果一致。这和 Casey 的「跨后端」思路一样。\n\n<strong>共通原则</strong>:<strong>命令查询分离(CQRS)</strong>。所有复杂系统都用这个原则——update 改变状态,render 读状态展示。两者解耦,各自优化。Casey 在 HH 教的是这个原则的游戏开发版本。"
+        }
+      ],
+      "supplements": [
+        {
+          "title": "📚 Rust 知识补充:方法 vs 关联函数,&self vs &mut self",
+          "body": "Day 026 你看到 <code>impl Player { fn update(&mut self, ...) }</code>,我讲一下 Rust 的方法语法。\n\n<strong>关联函数(类似静态方法)</strong>:<code>Player::new()</code>,没 self 参数。调用 <code>Player::new()</code> 不需要实例。\n\n<strong>方法(需要实例)</strong>:<code>fn update(&mut self, ...)</code>,第一个参数是 self 的某种形式:\n- <code>&self</code>:只读借用,不能改 self。用于 getter、查询\n- <code>&mut self</code>:可变借用,能改 self。用于 setter、update\n- <code>self</code>:消耗所有权,调用后实例不可用。用于转换(比如 into())\n\n调用语法糖:<code>player.update(input, dt)</code> 等价于 <code>Player::update(&mut player, input, dt)</code>。点号自动借借。\n\n<strong>Day 026 的 update 用 &mut self</strong>:因为要改 pos。render 用 <code>&self</code>(通过 game state 的不可变借用):只读 pos,不改。这种区分让 Rust 编译器帮你检查——如果你不小心在 render 里改 state,编译报错。\n\n<strong>借用规则</strong>:同一时刻只能有一个 &mut,或者任意多个 &。所以 update(要 &mut)和 render(要 &)不能同时调用——天然防止数据竞争。\n\n这是 Rust 比 C 优势的地方:Casey 在 C 里靠纪律保证 update/render 不冲突,Rust 编译器帮你保证。"
+        }
+      ]
+    },
+    "day027": {
+      "why": "Day 027 Casey 提出「<strong>Exploration-based Architecture</strong>」(探索式架构)——这是他整个 HH 项目的<strong>核心方法论</strong>。\n\n核心思想:<strong>不要预先设计</strong>。你不知道游戏要变成什么样,过早设计 = 浪费。先写最简单的能跑的版本,发现问题再重构。\n\n这和传统软件工程的「先设计后实现」相反。Casey 不是反工程师,他是从 30 年游戏开发经验得出:游戏<strong>本质上是探索</strong>——你不知道玩法好不好玩,直到玩家试。预先设计 lock 死,失去调整空间。\n\n这集教学价值很大,因为它教你一种<strong>思维模式</strong>,不是具体技术。",
+      "model": "Casey 这集的核心论点:<strong>「过早设计是万恶之源」</strong>。\n\n他用几个例子说明:\n\n<strong>例子 1:过早抽象</strong>\n\n新手看到两个相似函数,提取出 trait / interface。但后来发现两个函数其实<strong>不一样</strong>——一个有副作用,一个没有。trait 强行统一,反而要加 if 分支。\n\n正确做法:<strong>等到第三个相似函数出现再抽象</strong>。Rule of Three。\n\n<strong>例子 2:过早优化</strong>\n\n新手用 SIMD 写 hot loop。但循环里只有 10 个元素,SIMD 比标量慢(启动开销大于加速)。\n\n正确做法:<strong>先写最简单的标量版本,profiler 说慢再 SIMD</strong>。\n\n<strong>例子 3:过早通用化</strong>\n\n新手写「支持所有输入设备」的抽象。但游戏只有键盘 + 一个手柄,通用化是浪费。\n\n正确做法:<strong>YAGNI</strong>(You Aren't Gonna Need It)。先支持现有需求,新需求来再加。\n\n<strong>Casey 的反模式:Big Design Up Front (BDUF)</strong>\n\n传统软件工程强调 BDUF——先写完整设计文档,再编码。Casey 认为这对游戏<strong>不适用</strong>:\n1. 游戏设计本身在演化,设计文档很快过时\n2. 玩家反馈决定方向,文档无法预测玩家\n3. 重构成本远小于错误设计成本\n\n<strong>Casey 的方法论</strong>:\n1. <strong>写最简单的能跑的版本</strong>\n2. <strong>玩一会儿,看哪里别扭</strong>\n3. <strong>针对别扭的地方重构</strong>\n4. <strong>重复</strong>\n\n这种「演化式」开发让 HH 看起来很乱——Casey 经常一集推翻上一集的设计。但这是<strong>理性</strong>的——他每集都在学习,新学到的知识反馈到代码。\n\n<strong>对比:你的 HH 跟做策略</strong>\n\n跟做学习者容易陷入两个极端:\n- <strong>极端 1:照抄 Casey</strong>。不动脑子跟着改,不理解为什么\n- <strong>极端 2:预先想清楚再写</strong>。在 Casey 改之前自己想「这里应该这样」\n\n正确策略:<strong>边抄边想「Casey 为什么这样设计,如果是我会怎么写」</strong>。Casey 改的时候,理解他的「反思 → 重构」过程,这比代码本身更值钱。",
+      "map_parents": [
+        "演化式架构(Evolutionary Architecture)",
+        "YAGNI 原则",
+        "敏捷开发(Agile)"
+      ],
+      "map_siblings": [
+        {
+          "name": "BDUF(Big Design Up Front)",
+          "note": "瀑布模型的核心理念,Casey 反对"
+        },
+        {
+          "name": "TDD(Test-Driven Development)",
+          "note": "「先写测试」也是一种探索式"
+        },
+        {
+          "name": "Lean Startup",
+          "note": "「最小可行产品」商业版的探索式"
+        },
+        {
+          "name": "Spiral Model",
+          "note": "Barry Boehm 的螺旋模型,迭代式开发"
+        }
+      ],
+      "map_children": [
+        "Rule of Three(三次重复再抽象)",
+        "YAGNI(You Aren't Gonna Need It)",
+        "Refactoring(重构,不是预先设计)",
+        "Profiler-driven optimization(数据驱动优化)"
+      ],
+      "related_days": [
+        "day011",
+        "day024",
+        "day308",
+        "day498"
+      ],
+      "comparison": "<strong>共通点</strong>:所有现代软件开发方法论都反对 BDUF——Agile、Lean、Scrum 都是。\n\n<strong>差别</strong>:探索的程度。\n- <strong>Hardcore 探索(Casey)</strong>:完全无设计,边写边定。适合个人项目、游戏、研究\n- <strong>Balanced(Agile/Scrum)</strong>:轻量设计(sprint planning)+ 演化。适合团队项目\n- <strong>BDUF(瀑布)</strong>:完整设计再实现。适合需求极稳定的领域(航空、医疗)\n\nCasey 风格不适合团队大项目(沟通成本高),但适合个人学习项目(最大化学习效率)。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 反对 BDUF(Big Design Up Front),主张「探索式」。但 HH 项目跑了 667 集没崩,显然有某种秩序。Casey 是怎么平衡「探索」和「秩序」的?\n\n提示:Day 011 的平台/游戏分离是不是 BDUF?",
+          "a": "<strong>Day 011 的架构是 BDUF,但只 BDUF 了「核心不变量」</strong>。\n\nCasey 的策略:<strong>核心抽象预先设计,细节探索式</strong>。\n\n预先设计的核心(不变的):\n- 平台 / 游戏分离(Day 011)\n- update / render 分离(Day 026)\n- 状态外置 + 热重载(Day 014, 021)\n- push buffer 模式(Day 88)\n\n这些是「<strong>不容易改的</strong>」决策,值得预先想清楚。\n\n探索式的(边写边改):\n- 具体游戏玩法(玩家速度、怪物 AI)\n- 实体系统的具体结构(Day 50 → Day 64 → Day 277 演化)\n- 渲染细节(Day 121 SIMD → Day 235 OpenGL → Day 394 lighting)\n\n这些是「<strong>容易改的</strong>」决策,预先想是浪费。\n\n<strong>判断标准</strong>:这个决策改起来成本多大?\n- 成本大(架构级)→ BDUF\n- 成本小(实现级)→ 探索\n\n这是工程成熟的标志——知道哪些必须想清楚,哪些可以「先做再说」。新手要么全 BDUF(过度设计),要么全探索(架构乱),Casey 演示了正确的平衡。"
+        },
+        {
+          "level": 3,
+          "type": "transfer",
+          "q": "「探索式开发」在游戏之外的领域怎么用?各举一个例子:\n\n1. 创业:Lean Startup 怎么应用?\n2. 科研:科学家怎么做?\n3. 写作:小说家怎么写长篇?",
+          "a": "<strong>1. 创业(Lean Startup)</strong>:不要先建完整产品(MVP 之外都浪费)。先做最小可行产品(MVP),给早期用户用,根据反馈 pivot。Steve Blank 的 Customer Development 也是这个思路——商业模式本身是假设,要通过实验验证。\n\nSlack 早期是游戏公司(Tiny Speck),游戏失败了但内部聊天工具好用,他们 pivot 成 Slack。如果一开始就 BDUF 做 Slack,可能错过了。\n\n<strong>2. 科研</strong>:科学家不预先设计实验,而是根据前一个实验结果设计下一个。Richard Feynman 说「<strong>科学是不确定性的艺术</strong>」。如果你预先知道结果,那就不是科研。\n\nCasey 在 HH 调试 bug 的过程就是科研——他不知道 bug 在哪,通过实验缩小范围,最后定位。Day 308 cycle check debugging、Day 419 missing lighting debugging 都是。\n\n<strong>3. 写作(小说)</strong>:Stephen King 在《On Writing》里说,他写小说不预先规划情节,而是「让角色自己走」。他先创造角色和初始情境,然后看角色怎么发展。这种「<strong> Gardener 风格</strong>」(园艺派) vs 「<strong>Architect 风格</strong>」(建筑师派,先有大纲)是写作界的经典分野。\n\nGeorge R.R. Martin 是 Gardener,J.K. Rowling 是 Architect。两种都能写出名著,看作者风格。\n\n<strong>共通原则</strong>:<strong>面对未知,小步试错比一次性大投入更高效</strong>。这是复杂系统的不变真理。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        }
+      ]
+    },
+    "day028": {
+      "why": "Day 028 终于开始写<strong>实际游戏内容</strong>——绘制 tile map(瓦片地图)。\n\n什么是 tile map?经典 2D 游戏(超级马里奥、塞尔达、星之卡比)都用 tile:整个世界由小方块组成,每个方块是一种纹理(草地、水、石头)。这种表示法既<strong>省内存</strong>(一块纹理重复用),又<strong>好编辑</strong>(地图就是 2D 数组)。\n\nCasey 这集做的事:定义 tile 数据结构,把 tile 渲染到屏幕。听起来简单,但有几个非平凡决策:tile 大小、坐标系、可见区域剔除。这集打好基础,Day 29-35 会扩展(碰撞、移动、稀疏存储)。",
+      "model": "我打个比方:tile map 就像<strong>乐高积木拼成的地板</strong>。每个 tile 是一个固定大小的小积木(比如 32×32 像素),整张地图是这些小积木按 2D 网格拼起来。\n\n<strong>Casey 的数据结构</strong>:\n\n<pre><code>struct TileMap {\n    tiles: Vec&lt;TileValue&gt;,  // 2D 数组(展开为 1D)\n    width: i32,\n    height: i32,\n}\n\nenum TileValue {\n    Empty,\n    Grass,\n    Stone,\n    Water,\n    // ...\n}\n\nimpl TileMap {\n    fn get(&self, x: i32, y: i32) -> TileValue {\n        self.tiles[(y * self.width + x) as usize]\n    }\n    fn set(&mut self, x: i32, y: i32, v: TileValue) {\n        self.tiles[(y * self.width + x) as usize] = v;\n    }\n}</code></pre>\n\n注意 <code>y * width + x</code> —— 这是 <strong>row-major order</strong>(行优先)。前面 Day 003 讲过。Tile 数组在内存里按行存,第一行所有 tile 在 [0..width),第二行在 [width..2*width),以此类推。\n\n<strong>渲染</strong>:每帧画屏幕上可见的 tile,屏幕外的不画(可见性剔除)。\n\n<pre><code>fn render_tiles(map: &TileMap, camera: Vec2, buf: &mut RenderBuf) {\n    let tile_size = 32;  // 每个 tile 32×32 像素\n    let tiles_per_screen_x = SCREEN_WIDTH / tile_size + 1;\n    let tiles_per_screen_y = SCREEN_HEIGHT / tile_size + 1;\n    let cam_tile_x = (camera.x / tile_size as f32) as i32;\n    let cam_tile_y = (camera.y / tile_size as f32) as i32;\n    \n    for ty in 0..tiles_per_screen_y {\n        for tx in 0..tiles_per_screen_x {\n            let world_tx = cam_tile_x + tx;\n            let world_ty = cam_tile_y + ty;\n            let tile = map.get(world_tx, world_ty);\n            let bitmap = match tile {\n                TileValue::Grass => GRASS_BITMAP,\n                TileValue::Stone => STONE_BITMAP,\n                // ...\n                _ => continue,\n            };\n            let screen_x = world_tx * tile_size - camera.x as i32;\n            let screen_y = world_ty * tile_size - camera.y as i32;\n            buf.push_bitmap(screen_x, screen_y, bitmap);\n        }\n    }\n}</code></pre>\n\n<strong>关键概念:camera (相机)</strong>\n\n世界可能很大(10000×10000 tile),但屏幕只显示 1920×1080。Camera 是世界的「窗口」——它定义了「屏幕左上角对应世界的哪个位置」。\n\n渲染时:tile 的世界坐标 - camera = 屏幕坐标。这样玩家移动时,只要改 camera,所有 tile 自动平移。\n\n<strong>tile 大小的选择</strong>\n\nCasey 选 32×32。为什么?\n- 太小(8×8):细节多但绘制慢(tile 数量爆炸)\n- 太大(128×128):细节少,大地图占用内存大\n- 32×32 是「细节 vs 性能」的平衡\n\n2D 游戏标准:16×16(老 RPG)、32×32(主流)、64×64(HD 游戏)。",
+      "map_parents": [
+        "2D 网格表示(2D grid representation)",
+        "Tile-based game design",
+        "可见性剔除(culling)"
+      ],
+      "map_siblings": [
+        {
+          "name": "Vector graphics(矢量图)",
+          "note": "不用 tile,数学描述图形"
+        },
+        {
+          "name": "Voxel(3D tile)",
+          "note": "3D 版本的 tile,Minecraft 用"
+        },
+        {
+          "name": "Heightmap",
+          "note": "地形用高度图,RTS 用"
+        },
+        {
+          "name": "SDF(Signed Distance Field)",
+          "note": "数学函数描述形状,现代字体渲染用"
+        }
+      ],
+      "map_children": [
+        "TileValue 枚举",
+        "row-major 2D 数组",
+        "Camera 坐标变换",
+        "可见 tile 计算(屏幕剔除)"
+      ],
+      "related_days": [
+        "day003",
+        "day029",
+        "day030",
+        "day031",
+        "day033"
+      ],
+      "comparison": "<strong>共通点</strong>:所有 2D 游戏都用某种网格表示——tile、cell、quad。本质都是「把连续空间离散化」。\n\n<strong>差别</strong>:网格大小。\n- <strong>粗 tile(64×64+)</strong>:地图小,细节多,适合策略游戏(Civilization)\n- <strong>中 tile(32×32)</strong>:平衡,RPG 主流(Zelda、Final Fantasy)\n- <strong>细 tile(16×16-)</strong>:像素艺术游戏(Celeste、Stardew Valley)\n- <strong>无 tile(矢量 / 3D)</strong>:现代 3D 游戏,但底层常还是 tile(地形)\n\nCasey 选 32 是中等粒度,适合教学。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "为什么 tile 用整数索引(tile_x, tile_y),不用浮点坐标?如果用浮点 tile 坐标会发生什么?",
+          "a": "<strong>因为 tile 是离散概念</strong>。一个 tile 是一个完整的「单元」,不存在「tile 1.5」这种东西。\n\n用浮点会导致:\n1. <strong>数组索引必须是整数</strong>。浮点要 round/floor,如果坐标算错(浮点误差)可能 round 到错误 tile\n2. <strong>边界歧义</strong>。坐标 (1.4, 2.6) 在 tile (1, 2) 还是 (1, 3)?取决于 round 规则,容易出 bug\n3. <strong>碰撞检测复杂</strong>。tile 碰撞假设离散,浮点要额外处理\n\n正确做法:<strong>世界坐标用浮点</strong>(玩家位置、速度),<strong>tile 坐标用整数</strong>(网格查询)。两者通过 floor 转换:\n\n<pre><code>let world_x = 100.5;\nlet tile_x = (world_x / TILE_SIZE as f32).floor() as i32;</code></pre>\n\nCasey 在 Day 031 详细讨论这个转换。Game dev 的经典 trap。"
+        },
+        {
+          "level": 2,
+          "type": "practice",
+          "q": "实现一个最小 tile map 渲染器。要求:\n\n1. 定义 <code>TileMap</code>,内部 <code>Vec&lt;TileValue&gt;</code>,大小 100×100\n2. 初始化:边界一圈是 Wall,内部是 Floor,中心 5×5 是 Water\n3. 渲染:camera 在 (0, 0),屏幕 800×600,tile 大小 32,画出可见部分\n\n提示:TileValue 是 Empty / Wall / Floor / Water 四种,每种用不同颜色画方块。",
+          "a": "<pre><code>#[derive(Clone, Copy, PartialEq)]\nenum TileValue { Empty, Wall, Floor, Water }\n\nstruct TileMap {\n    tiles: Vec&lt;TileValue&gt;,\n    width: i32,\n    height: i32,\n}\nimpl TileMap {\n    fn new(w: i32, h: i32) -> Self {\n        let mut tiles = vec![TileValue::Empty; (w * h) as usize];\n        // 边界 Wall,内部 Floor,中心 5×5 Water\n        for y in 0..h {\n            for x in 0..w {\n                let i = (y * w + x) as usize;\n                if x == 0 || y == 0 || x == w-1 || y == h-1 {\n                    tiles[i] = TileValue::Wall;\n                } else if (x - w/2).abs() < 3 && (y - h/2).abs() < 3 {\n                    tiles[i] = TileValue::Water;\n                } else {\n                    tiles[i] = TileValue::Floor;\n                }\n            }\n        }\n        Self { tiles, width: w, height: h }\n    }\n    fn get(&self, x: i32, y: i32) -> TileValue {\n        if x < 0 || y < 0 || x >= self.width || y >= self.height {\n            return TileValue::Empty;\n        }\n        self.tiles[(y * self.width + x) as usize]\n    }\n}\n\nfn render(map: &TileMap, camera: (i32, i32), buf: &mut [u32], bw: i32, bh: i32) {\n    const TILE: i32 = 32;\n    let tx_start = camera.0 / TILE;\n    let ty_start = camera.1 / TILE;\n    let tx_count = bw / TILE + 1;\n    let ty_count = bh / TILE + 1;\n    \n    for ty in 0..ty_count {\n        for tx in 0..tx_count {\n            let world_tx = tx_start + tx;\n            let world_ty = ty_start + ty;\n            let tile = map.get(world_tx, world_ty);\n            let color = match tile {\n                TileValue::Wall => 0xFF666666,\n                TileValue::Floor => 0xFFDDDDDD,\n                TileValue::Water => 0xFF4444FF,\n                TileValue::Empty => 0xFF000000,\n            };\n            let sx = world_tx * TILE - camera.0;\n            let sy = world_ty * TILE - camera.1;\n            // 填充 32×32 像素\n            for py in 0..TILE {\n                for px in 0..TILE {\n                    let x = sx + px;\n                    let y = sy + py;\n                    if x >= 0 && x < bw && y >= 0 && y < bh {\n                        buf[(y * bw + x) as usize] = color;\n                    }\n                }\n            }\n        }\n    }\n}</code></pre>\n\n跑起来你看到一个 800×600 窗口,外圈灰墙,中间白地板,中心一片蓝水。试着改 camera 看不同区域。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        }
+      ],
+      "supplements": [
+        {
+          "title": "📚 Rust 知识补充:enum 和 match",
+          "body": "Day 028 用 <code>enum TileValue</code>,我讲一下 Rust enum。\n\nRust enum 比其他语言的 enum 强很多——它可以<strong>带数据</strong>:\n\n<pre><code>enum TileValue {\n    Empty,                              // 无数据\n    Grass { variant: u8 },              // 命名字段\n    Water { depth: f32 },               // 带浮点\n    Custom(u32, u32, u8),               // 元组形式\n}\n\nlet t = TileValue::Grass { variant: 2 };\nmatch t {\n    TileValue::Empty => println!(\"空\"),\n    TileValue::Grass { variant } => println!(\"草 variant={}\", variant),\n    TileValue::Water { depth } if depth > 0.5 => println!(\"深水\"),\n    _ => println!(\"其他\"),\n}</code></pre>\n\n这种「带数据的 enum」叫 <strong>tagged union</strong>(标签联合)或 <strong>sum type</strong>。等价的 C 代码:\n\n<pre><code>struct TileValue {\n    enum Type { Empty, Grass, Water, Custom } type;\n    union {\n        struct { u8 variant; } grass;\n        struct { f32 depth; } water;\n        struct { u32 a, b; u8 c; } custom;\n    };\n};</code></pre>\n\nC 里要手动管理 tag + union,Rust enum 自动。而且 Rust 强制 match 穷尽——你忘了处理某个变体,编译报错。\n\nDay 028 Casey 在 C 里用 enum + switch(等价)。Rust 翻译用 enum + match,语义一致但类型安全。\n\n<strong>性能</strong>:Rust enum 编译后就是 tagged union,和 C 一样高效。没有运行时开销。\n\n延伸:Rust 的 Option&lt;T&gt; 和 Result&lt;T, E&gt; 都是 enum。Option = Some(T) | None,Result = Ok(T) | Err(E)。Rust 的「无 null」设计就靠这两个 enum。"
+        }
+      ]
+    },
+    "day029": {
+      "why": "Day 028 你画了 tile map,绿方块在上面自由移动——但能穿墙。Day 029 加碰撞:方块碰到 Wall tile 就停住。\n\n你想想,没有碰撞的游戏是什么样的?玩家穿过墙壁、掉出地图、走进水里不停留——完全没有「世界感」。碰撞是游戏世界「存在感」的基础。超级马里奥踩在平台上、塞尔达的林克被墙挡住、宝可梦不能走出草丛——都是碰撞在起作用。\n\nCasey 这集做的事看起来简单(检查 tile 是否 Wall),但里面藏着一个游戏手感的灵魂技巧:<strong>分轴碰撞(wall sliding)</strong>。没有这个技巧,玩家会被墙「黏住」,体验极差。我详细讲。",
+      "model": "<strong>最朴素的碰撞</strong>\n\n玩家是一个 AABB(轴对齐矩形),比如 32×32 像素。墙也是一个 AABB。两个 AABB 碰撞 = x 方向重叠且 y 方向重叠。\n\n但 Casey 不用「entity vs entity」碰撞,而是用「entity vs tile」碰撞——更简单。因为 tile 是网格化的,查 tile 只需 <code>map.get(tile_x, tile_y)</code>,O(1)。\n\n算法:玩家 AABB 覆盖哪些 tile?遍历这些 tile,有 Wall 就不让走。\n\n<pre><code>// 检查玩家 AABB 是否能放在 (new_x, new_y)\nfn can_move_to(map: &TileMap, new_x: f32, new_y: f32, size: f32) -> bool {\n    let tile_left = (new_x / TILE_SIZE) as i32;\n    let tile_right = ((new_x + size) / TILE_SIZE) as i32;\n    let tile_top = (new_y / TILE_SIZE) as i32;\n    let tile_bottom = ((new_y + size) / TILE_SIZE) as i32;\n    \n    for ty in tile_top..=tile_bottom {\n        for tx in tile_left..=tile_right {\n            if map.get(tx, ty) == TileValue::Wall {\n                return false; // 撞墙了\n            }\n        }\n    }\n    true // 所有覆盖的 tile 都不是 Wall\n}</code></pre>\n\n<strong>关键技巧:分轴碰撞(wall sliding)</strong>\n\n这是这集最重要的概念,我详细讲。\n\n<strong>错误做法(同时检查 x 和 y)</strong>:\n\n<pre><code>let new_x = pos.x + vel.x * dt;\nlet new_y = pos.y + vel.y * dt;\nif can_move_to(map, new_x, new_y, SIZE) {\n    pos.x = new_x;\n    pos.y = new_y;\n}</code></pre>\n\n问题:玩家斜向右上走,右边有墙。新位置 (x+1, y-1) 的 x 撞墙,can_move_to 返回 false,完全不动。玩家被「黏」在原地——明明上面没墙却不走。体验极差。\n\n<strong>正确做法(分轴检查)</strong>:\n\n<pre><code>// 先试 x 方向\nlet new_x = pos.x + vel.x * dt;\nif can_move_to(map, new_x, pos.y, SIZE) {\n    pos.x = new_x;  // x 方向能走\n}\n// 再试 y 方向\nlet new_y = pos.y + vel.y * dt;\nif can_move_to(map, pos.x, new_y, SIZE) {\n    pos.y = new_y;  // y 方向能走\n}</code></pre>\n\n效果:玩家斜向右上走,x 撞墙(x 不动),y 方向通过(y 动)。结果:玩家沿墙向上滑行。这就是 <strong>wall sliding</strong>——贴着墙走的感觉。\n\n所有好的 2D 游戏都有 wall sliding。超级马里奥贴着砖块滑、塞尔达沿墙走、星之卡比挤过窄缝——都是分轴碰撞的结果。\n\n<strong>Casey 这集还埋了一个伏笔:高速穿墙</strong>\n\n如果玩家速度很快(比如 3000 像素/秒),一帧 dt=0.016s,移动 48 像素。墙只有 32 像素厚——起点和终点都不在墙内,但中间穿过了。Day 045 的 temporal search 解决这个问题(把移动拆成小步,每步检查)。这集先做简单版。",
+      "map_parents": [
+        "AABB collision(AABB 碰撞)",
+        "Discrete collision detection(离散碰撞检测)",
+        "Wall sliding(贴墙滑行)"
+      ],
+      "map_siblings": [
+        {
+          "name": "Continuous collision detection",
+          "note": "Day 045 Casey 升级,扫描起点到终点路径,防高速穿墙"
+        },
+        {
+          "name": "Sphere-AABB collision",
+          "note": "玩家是圆形 vs tile 矩形,边缘更圆滑"
+        },
+        {
+          "name": "SAT(Separating Axis Theorem)",
+          "note": "通用凸多边形碰撞,2D/3D 都能用"
+        }
+      ],
+      "map_children": [
+        "AABB 四角 → tile 索引转换",
+        "Tile loop(遍历覆盖的 tile)",
+        "Per-axis check(分轴碰撞)",
+        "Wall sliding 行为"
+      ],
+      "related_days": [
+        "day028",
+        "day045",
+        "day048",
+        "day050"
+      ],
+      "comparison": "<strong>共通点</strong>:所有 2D tile 游戏都用 AABB + tile 查询。\n\n<strong>差别</strong>:精度。\n- <strong>Discrete(这集)</strong>:检查终点位置。快但高速可能穿墙\n- <strong>Swept(扫描)</strong>:检查起点到终点的路径。慢但精确\n- <strong>Sub-stepping(子步)</strong>:把一帧拆成多个小步,每步 discrete。中间方案\n\nCasey Day 045 升级到 swept。游戏开发常见做法。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 用「分轴碰撞」(先 x 再 y),而不是「同时检查 x 和 y」。如果你写成同时检查 <code>if can_move(x, y) { pos = (x, y); }</code>,具体会发生什么问题?给一个场景。",
+          "a": "<strong>同时检查让玩家被墙「黏住」</strong>。\n\n场景:玩家在墙的左边,按住「右+上」键(斜向右上移动)。\n- 新位置 = (x+1, y-1)\n- x 方向撞墙,can_move(x+1, y-1) = false\n- 完全不动!即使 y 方向(上面)没墙,玩家也不走\n\n分轴:先试 x(x+1, y)——撞墙,不动。再试 y(x, y-1)——通过,玩家向上走一格。结果:玩家沿墙向上滑行。\n\n这就是 wall sliding——游戏手感的灵魂。超级马里奥、塞尔达、暗黑破坏神都用分轴。新手往往做合并轴,游戏感觉「黏」「卡」。"
+        },
+        {
+          "level": 2,
+          "type": "practice",
+          "q": "在你的 HH 项目里实现 Day 029 的碰撞。要求:\n1. 定义 <code>fn can_move_to(map, x, y, size) -> bool</code>\n2. 分轴碰撞:先 x 后 y\n3. 测试:方块能沿墙滑行,不能穿墙\n\n提示:用 Day 028 的 TileMap + get() 方法。",
+          "a": "<pre><code>fn update_player(p: &mut Player, input: &GameInput, map: &TileMap, dt: f32) {\n    let speed = 200.0;\n    let mut vx = 0.0;\n    let mut vy = 0.0;\n    if input.left { vx -= 1.0; }\n    if input.right { vx += 1.0; }\n    if input.up { vy -= 1.0; }\n    if input.down { vy += 1.0; }\n    \n    // 归一化对角线速度\n    let len = (vx*vx + vy*vy).sqrt();\n    if len > 0.0 { vx /= len; vy /= len; }\n    vx *= speed * dt;\n    vy *= speed * dt;\n    \n    // 分轴碰撞\n    let new_x = p.pos.x + vx;\n    if can_move_to(map, new_x, p.pos.y, PLAYER_SIZE) {\n        p.pos.x = new_x;\n    }\n    let new_y = p.pos.y + vy;\n    if can_move_to(map, p.pos.x, new_y, PLAYER_SIZE) {\n        p.pos.y = new_y;\n    }\n}</code></pre>\n\n跑起来,你能沿墙滑行,撞到墙停下但不「黏」。"
+        },
+        {
+          "level": 3,
+          "type": "transfer",
+          "q": "分轴碰撞解决了「沿墙滑行」的问题。但还有一个问题:如果玩家速度很快(比如 3000 像素/秒),一帧移动 48 像素,墙厚 32 像素——玩家直接穿过墙了!怎么解决?\n\n提示:Day 045 的 temporal search 怎么做?",
+          "a": "<strong>Temporal search:把移动拆成小步</strong>。\n\n每步移动量不超过 TILE_SIZE/2(比如 16 像素)。如果总移动 48 像素,拆成 3 步,每步 16 像素,每步检查碰撞。\n\n<pre><code>let total_dx = vx;\nlet total_dy = vy;\nlet max_step = TILE_SIZE as f32 * 0.5;\nlet steps = ((total_dx.abs().max(total_dy.abs())) / max_step).ceil() as i32;\nlet steps = steps.max(1);\nfor _ in 0..steps {\n    // 每步只走 1/steps 的距离,分轴检查\n    let step_x = total_dx / steps as f32;\n    let step_y = total_dy / steps as f32;\n    let nx = p.pos.x + step_x;\n    if can_move_to(map, nx, p.pos.y, SIZE) { p.pos.x = nx; }\n    let ny = p.pos.y + step_y;\n    if can_move_to(map, p.pos.x, ny, SIZE) { p.pos.y = ny; }\n}</code></pre>\n\n这样每步最多走 16 像素,不会跳过 32 像素的墙。代价:CPU 多次 can_move_to 调用,但每次便宜(几个 tile 查询)。"
+        }
+      ],
+      "supplements": [
+        {
+          "title": "📚 Rust 知识补充:for 循环和范围",
+          "body": "Day 029 的碰撞代码用了 <code>for ty in tile_top..=tile_bottom</code>。我讲一下 Rust 的 for 循环。\n\nRust 的 for 循环和 C 不同——它遍历「迭代器」(iterator),不是 C 的 <code>for (int i = 0; i < n; i++)</code>。\n\n三种范围:\n- <code>a..b</code>:从 a 到 b,不含 b。例:<code>0..3</code> = [0, 1, 2]\n- <code>a..=b</code>:从 a 到 b,含 b。例:<code>0..=3</code> = [0, 1, 2, 3]\n- <code>iter()</code>:遍历集合(Vec、HashMap 等)\n\n碰撞代码 <code>for ty in tile_top..=tile_bottom</code> = 遍历从 tile_top 到 tile_bottom 的所有整数,含两端。\n\nRust 的 for 比 C 安全:不会越界(范围自动限制),不会忘记 i++。如果范围是空的(tile_top > tile_bottom),循环不执行。"
+        }
+      ]
+    },
+    "day030": {
+      "why": "Day 030 加多 tile map——玩家从草地地图边缘走出去,进入森林地图。这是世界结构的开始:多个地图通过边界连接。\n\n你想想,经典 2D 游戏怎么做的?Zelda 的 Link 从 overworld 走到一个洞口,切到 dungeon 地图。Pokemon 走到城市边缘,切到 Route 地图。Celeste 在关卡选择界面选一个,切到具体关卡。这些「地图切换」就是 Day 030 做的事。\n\nCasey 这集做的事:1) 定义多 tile map 数据结构;2) 处理玩家走出边界时切换地图;3) 加淡入淡出过渡。看起来简单,但有几个非平凡决策(状态保留策略、加载时机)。",
+      "model": "<strong>数据结构</strong>\n\n<pre><code>struct World {\n    maps: Vec&lt;TileMap&gt;,\n    current_map_idx: usize,\n}\n\nstruct TileMap {\n    tiles: Vec&lt;TileValue&gt;,\n    width: i32, height: i32,\n    // 哪条边连到哪张地图\n    door_north: Option&lt;usize&gt;,  // None = 没出口\n    door_south: Option&lt;usize&gt;,\n    door_east: Option&lt;usize&gt;,\n    door_west: Option&lt;usize&gt;,\n}</code></pre>\n\n<strong>边界切换逻辑</strong>\n\n每帧检查玩家位置:\n\n<pre><code>fn check_boundary(p: &mut Player, world: &mut World) {\n    let map = &world.maps[world.current_map_idx];\n    \n    // 走到西边边界(x < 0)\n    if p.pos.x < 0.0 {\n        if let Some(target_idx) = map.door_west {\n            world.switch_to(target_idx);\n            // 从东边进入新地图\n            p.pos.x = (world.maps[target_idx].width * TILE_SIZE - PLAYER_SIZE) as f32;\n        }\n    }\n    // 类似处理东/南/北\n}</code></pre>\n\n<strong>过渡效果:淡入淡出</strong>\n\n切换瞬间整个屏幕变黑,然后渐显新地图。比硬切换(突然变)舒服得多。实现:一个全局 alpha 值,切换时 alpha 从 0 渐到 1(变黑),切完后从 1 渐到 0(渐显)。渲染时把整个画面乘以 alpha。\n\n<strong>关键问题:状态保留</strong>\n\n玩家在地图 A 杀了怪物,走出去到 B,再回来——怪物还在吗?\n\nCasey 用混合策略:\n- <strong>tile 数据保留</strong>:墙破就是破了,门开就是开了。世界状态稳定,不会「reset」\n- <strong>entity 数据重置</strong>:怪物会刷新(可以反复刷),投射物消失(临时)\n\n这种「持久 vs 临时」二分是游戏设计的常见模式。MMO 更激进:玩家房屋永久保留,NPC 定时刷新。",
+      "map_parents": [
+        "World structure(世界结构)",
+        "Map linking / portal(地图连接)",
+        "State persistence(状态持久化)"
+      ],
+      "map_siblings": [
+        {
+          "name": "Open world",
+          "note": "一个大地图,GTA / Skyrim,无切换"
+        },
+        {
+          "name": "Instance-based",
+          "note": "MMO 副本,每个队伍独立地图"
+        },
+        {
+          "name": "Metroidvania",
+          "note": "大世界互联,需解锁能力(空洞骑士)"
+        }
+      ],
+      "map_children": [
+        "Edge connection(边界连接)",
+        "Map switch transition(切换过渡)",
+        "State preservation per map(每张地图状态保留)"
+      ],
+      "related_days": [
+        "day028",
+        "day031",
+        "day033",
+        "day034"
+      ],
+      "comparison": "<strong>共通点</strong>:所有「关卡」类游戏都涉及多地图切换。\n\n<strong>差别</strong>:世界结构。Linear(超级马里奥)/ Hub(Super Mario 64)/ Open(Skyrim)/ Metroidvania(空洞骑士)。Casey Day 30 做 hub world 雏形,Day 33+ 升级为虚拟化大世界。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 让 tile 数据保留(墙破了回来还是破的),entity 重置(怪物回来又有了)。为什么不全部保留?为什么也不全部重置?",
+          "a": "全部保留的问题:1) 内存占用大(每张地图的 entity 都存);2) 玩家积攒大量「未处理」entity,游戏越玩越乱;3) 临时 entity(粒子、投射物)保留无意义。\n\n全部重置的问题:1) 玩家打破的墙又长回来,违和;2) 玩家打开的门又关上了,卡关;3) 任务进度丢失。\n\n混合策略:tile 保留(世界状态稳定),entity 重置(怪物可反复刷,临时效果消失)。这是游戏设计的经典权衡。\n\n延伸:不同游戏选不同平衡。MMO 用激进策略(玩家房屋永久,NPC 定时刷新)。Roguelike 全部重置(每次进入一个全新地图)。Casey 选中间方案,适合教学。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day031": {
+      "why": "Day 031 讨论坐标系——tile 坐标(整数)和世界坐标(浮点像素)的关系。听起来像数学课,但 game dev 里这是反复踩坑的源头。\n\n具体问题:玩家在 tile (3, 5),对应世界坐标哪里?tile 中心还是左上角?如果你搞不清楚,碰撞检测、渲染位置全错——玩家看起来「飘」在 tile 边界上。\n\nCasey 这集给出明确约定,后面所有集都遵守。理解了坐标系,后面 Day 032(WorldPos)、Day 049(调试 canonical coords)才不晕。",
+      "model": "<strong>Casey 的坐标约定</strong>\n\n首先你要搞清楚一件事:<strong>y 轴向下</strong>。这和数学课学的相反(数学 y 向上),但符合屏幕坐标——CRT 显像管从上往下扫描,framebuffer 第 0 行 = 屏幕最上面。游戏用 y 向下 = 渲染时不用翻转 = 代码直观。\n\n完整约定:\n\n<pre>世界坐标(浮点,像素):\n  (0.0, 0.0) 在世界左上角\n  x 向右增加,y 向下增加\n\ntile 坐标(整数):\n  tile (0, 0) 占据世界 [0, 32) × [0, 32) 像素\n  tile (3, 5) 占据世界 [96, 128) × [160, 192) 像素\n\n转换公式:\n  world_to_tile(wx, wy) = (floor(wx / 32), floor(wy / 32))\n  tile_to_world_min(tx, ty) = (tx * 32, ty * 32)\n  tile_to_world_center(tx, ty) = ((tx+0.5) * 32, (ty+0.5) * 32)</pre>\n\n<strong>举个具体例子</strong>\n\n玩家在世界坐标 (100.5, 70.3)。\n- 在哪个 tile?floor(100.5/32) = 3,floor(70.3/32) = 2。tile (3, 2)。\n- tile (3, 2) 的左上角世界坐标:(3×32, 2×32) = (96, 64)。\n- tile (3, 2) 的中心世界坐标:((3+0.5)×32, (2+0.5)×32) = (112, 80)。\n- 玩家在 tile 内的偏移:(100.5-96, 70.3-64) = (4.5, 6.3)。\n\n<strong>关键决策:玩家位置 = AABB 左上角</strong>\n\nCasey 用「玩家 AABB 的左上角」作为玩家位置。这让碰撞代码简单:左上角 + size = 矩形。但「玩家在哪 tile」要算中心(左上角 + size/2)再 floor。\n\n<strong>渲染时坐标转换</strong>\n\n世界坐标 → 屏幕坐标:screen = world - camera。\n\nCamera 在世界 (200, 150)。玩家在世界 (250, 200)。玩家在屏幕 (50, 50)。\n\n这只是一次减法。Camera 移动时,所有 entity 自动平移——只要改 camera,渲染位置自动更新。",
+      "map_parents": [
+        "Coordinate systems(坐标系)",
+        "Reference frame(参考系)",
+        "Discrete vs continuous space(离散 vs 连续)"
+      ],
+      "map_siblings": [
+        {
+          "name": "Screen coords",
+          "note": "y 向下,像素单位,左上角 (0,0)"
+        },
+        {
+          "name": "World coords",
+          "note": "游戏世界坐标,2D y 向下,3D y 向上"
+        },
+        {
+          "name": "NDC",
+          "note": "OpenGL 投影后 [-1,1] 立方体,Day 108+"
+        }
+      ],
+      "map_children": [
+        "World ↔ Tile 转换公式",
+        "Camera 偏移(世界→屏幕)",
+        "Y axis direction(向下 vs 向上)"
+      ],
+      "related_days": [
+        "day028",
+        "day032",
+        "day052",
+        "day104"
+      ],
+      "comparison": "<strong>共通点</strong>:所有 2D 游戏都有「世界 ↔ 屏幕」转换 = 减去 camera 偏移。\n\n<strong>差别</strong>:y 轴方向。2D 用 y 向下(屏幕坐标)。3D(OpenGL)用 y 向上(数学传统)。Casey 在 Day 104 把 render target 改为 y 向上,game 代码还是 y 向下,渲染层转换。Day 026 的 update/render 分离让这次改动只影响渲染层。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 选 y 向下(屏幕坐标),不选 y 向上(数学坐标)。为什么?Day 235 切 OpenGL 时会带来什么麻烦?",
+          "a": "选 y 向下因为显示设备。CRT/LED 从上往下扫描,framebuffer 第 0 行 = 屏幕最上面。y 向下 = 渲染时不用翻转 = 代码直观。\n\nDay 235 切 OpenGL 的麻烦:OpenGL 默认 y 向上(右手系,数学传统)。game 代码用 y 向下 → OpenGL 渲染画面会上下颠倒。\n\n两种解决:\n1. <strong>翻转 y</strong>:渲染时所有 y 取反。简单但要小心文字方向\n2. <strong>用 y 向上 render target</strong>(Day 104 Casey 选这个):game 内部 y 向下,渲染层转换\n\nDay 026 的 update/render 分离再次证明价值——只改渲染层,game 代码不动。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day032": {
+      "why": "Day 032 定义统一位置表示 WorldPos——之前玩家用 Vec2(浮点),entity 各种格式。Casey 这集定义 WorldPos:tile 整数坐标 + tile 内浮点 offset + map_id。消除坐标转换 bug,且解决大世界浮点精度问题。\n\n你想想:如果世界很大(比如 100 万 tile 宽),玩家的世界坐标 wx 可能是 32,000,000.0。f32 在这个数值范围精度只有 ~2 像素——玩家位置帧间抖动,渲染闪烁。用 tile(整数,精确)+ offset(小范围 0-32,精度高)分离,精度永远在 tile 内。这是 game dev 的经典模式,叫 floating point origin。Minecraft 用 chunk + local,No Man's Sky 用 sector + local。",
+      "model": "Casey 的 WorldPos 结构:\n\nstruct WorldPos { map_id: u32, tile_x: i32, tile_y: i32, offset: Vec2 }\n\noffset 在 [0, TILE_SIZE) 范围内。每次 add/sub 后调 normalize:offset 超过 TILE_SIZE 就进位到 tile_x/y,offset 小于 0 就从 tile 借位。这样 offset 永远在有效范围,tile 坐标精确(整数无精度问题),offset 精度高(小范围浮点)。\n\n转换:to_world() = tile * TILE_SIZE + offset。from_world(wx, wy) = floor(wx/TILE_SIZE) + frac(wx/TILE_SIZE)。这种「粗+细」分层是处理大世界坐标的标准方案。\n\nCasey 在 Day 049 调试这个结构的 bug(offset 没正确 normalize 导致位置跳跃)。修复后,后面所有 entity 位置都用 WorldPos。",
+      "map_parents": [
+        "Coordinate normalization",
+        "Floating point precision in large worlds"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Tile + offset representation",
+        "Map ID for multi-map",
+        "normalize() invariant"
+      ],
+      "related_days": [
+        "day031",
+        "day049"
+      ],
+      "comparison": "所有大世界游戏都用 hierarchical 坐标。Minecraft chunk(16x16) + block + offset。Outer Wilds star + planet + local。粒度由游戏规模决定。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 why/model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day033": {
+      "why": "Day 33:虚拟化瓦片地图。这是Phase 2(2D 游戏)的一部分。\n\n这集在 Handmade Hero 整体里的角色:Casey 逐步构建一个完整游戏引擎的过程中,这集解决了虚拟化瓦片地图相关的具体问题。每集看似独立,但累积起来形成从空文件夹到完整游戏的完整路径。\n\n为什么这集重要?因为它是 Casey 开发流程中的一个真实步骤——他在遇到问题或需要功能时,就花一集来解决。你跟做时看到的不是「教科书式」的知识点罗列,而是「真实工程师解决真实问题」的过程。这种「真实感」是 Handmade Hero 区别于其他教程的核心价值。",
+      "model": "<strong>这集的核心内容</strong>\n\nCasey 在这集实现的是:虚拟化瓦片地图。\n\n<strong>怎么理解</strong>:这属于Phase 2(2D 游戏)系列。Casey 在这个阶段做的事是逐步把游戏从「能跑」变成「好玩」再到「完整引擎」。这集是其中一步——可能是加一个新功能、修一个 bug、或者重构一段代码。\n\n<strong>Rust 翻译建议</strong>:Casey 用 C/C++ + Win32,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading)。翻译时关注<strong>概念</strong>而不是<strong>语法</strong>——Casey 用 LoadLibrary 你用 libloading,Casey 用 DirectSound 你用 cpal,但底层的<strong>设计模式</strong>是一样的。\n\n<strong>跟做步骤</strong>:1) 看视频理解 Casey 做什么;2) 读源码 diff 看具体代码;3) 在你的 Rust 项目里实现对应功能;4) 运行验证;5) git commit。如果卡住,查「💡 概念卡」和「🧠 心智模型」板块的相关内容。\n\n<strong>关键洞察</strong>:不要只关注「代码怎么写」,要理解「为什么这样设计」。Casey 的每个决策都有理由——可能是性能(cache friendly)、可能是架构(可热重载)、可能是教学价值(先简单后复杂)。理解「为什么」比记住「怎么」更重要,因为「怎么」可以查文档,「为什么」只能通过思考获得。",
+      "map_parents": [
+        "Virtual memory",
+        "Lazy generation",
+        "LRU caching"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "HashMap lazy gen",
+        "LRU eviction",
+        "Seeded RNG"
+      ],
+      "related_days": [
+        "day030",
+        "day034",
+        "day132"
+      ],
+      "comparison": "所有大世界游戏都用虚拟化。Minecraft chunk 粒度(16x16x256),GTA 整个城市预加载。粒度小=流畅但管理复杂。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 why/model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day034": {
+      "why": "Day 034 讨论 tile map 内存布局——具体的 bytes 怎么存。看起来微不足道,但 cache-friendly 布局能让游戏快 10 倍。前面 Day 33 用 HashMap,Casey 这集想换成更紧凑的数组。\n\n核心问题:HashMap 的 O(1) 和 Array 的 O(1) 不一样快。HashMap 每次访问要算 hash、查表、可能 cache miss,平均 50-100 cycle。Array 直接算 index * size,读内存,L1 命中 4 cycle。差 10-25 倍。渲染 1000 tile 时,Array 1.3 微秒 vs HashMap 27 微秒——差 20 倍。这是 Data-Oriented Design 的核心:数据布局比算法更影响性能。",
+      "model": "Casey 讨论三种方案:\n\n方案 A:HashMap<(i32,i32), TileMap>。优点:任意坐标能存。缺点:每条 entry 有 ~50 字节 HashMap 元数据开销。\n\n方案 B:数组(Vec<Option<TileMap>>),固定网格大小。优点:O(1) 访问,无元数据,cache 友好(连续内存)。缺点:固定大小,大量空槽位浪费。\n\n方案 C:混合——世界分大网格(32x32 chunks),每 chunk 内用 HashMap。HashMap 数量有限,每个 HashMap 槽位少。兼顾灵活性和性能。\n\nCasey 的核心洞察:O(1) 不等于 O(1)。constant factor 在 hot path 上差 10-25x。游戏性能优化 90% 都是「让数据在 L1 缓存里」——不是让算法更聪明,而是让数据布局更 cache-friendly。这是 Mike Acton 的 Data-Oriented Design 的核心。",
+      "map_parents": [
+        "Data-Oriented Design",
+        "Cache-friendly layout"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "HashMap vs Array trade-off",
+        "Chunk decomposition"
+      ],
+      "related_days": [
+        "day033",
+        "day055",
+        "day112"
+      ],
+      "comparison": "性能敏感代码都要想数据布局。OOP 封装数据+行为,布局由编译器决定。DOD 开发者完全控制数据布局,行为服务于数据。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 why/model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day035": {
+      "why": "Day 035 实现稀疏 tile map 存储——只存非空 tile,空 tile 不占内存。Day 33-34 虚拟化+内存布局的延续。前面每张 map 按完整 2D 数组存,大量「空」tile 浪费内存。Day 035 改成只存有内容的 tile。\n\n这是 game dev 的核心技能。后面 Day 55 hash table、Day 277 sparse entity system、Day 543 sparse voxel 都同一思想。",
+      "model": "三种稀疏存储方案:\n\n1) HashMap<(i32,i32), TileValue>:每个非空 tile 一条 entry。极致稀疏,但每 entry ~16 字节(key 8 + value + padding),比直接数组元素(1 字节)大 16 倍。\n\n2) Run-length encoding (RLE):存「连续相同 tile 的 runs」如 [Wall*5, Floor*10, Wall*3]。连续 tile 高效,但随机访问要扫 runs。\n\n3) Bitmap + 值数组:Bitmap 标记哪些位置有值(1 bit/tile),值数组紧密排列实际值。紧凑 + O(1) 访问(虽然有 popcount 计算)。\n\nCasey 的选择:根据地图稀疏度动态选。密集(>50% 满)用数组,稀疏用 HashMap 或 bitmap。\n\n没有「银弹」方案——99% 空→HashMap,50% 满→Bitmap,99% 满但大块连续→RLE。真实项目:profiler 数据 + access pattern + benchmark 实测选。",
+      "map_parents": [
+        "Sparse data structures",
+        "Memory compactness"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "HashMap<Tile>",
+        "Bitmap+dense values",
+        "popcount index"
+      ],
+      "related_days": [
+        "day034",
+        "day055",
+        "day277"
+      ],
+      "comparison": "稀疏度阈值:Dense array(<50% 空)、Bitmap+dense(10-50%)、HashMap(>90% 空)。选哪个看场景——profiler + benchmark。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 why/model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day036": {
+      "why": "Day 036 加 BMP 图片加载——用美术师画的图作为 tile 纹理。为什么 BMP 不是 PNG/JPG?BMP 格式无压缩,解析最简单。Casey 先教你 BMP,后面 Day 436+ 才手写 PNG(LZ77+Huffman)。这种递进让 PNG 解析不显得「魔法」——你已经会 BMP,只是再加几步压缩。",
+      "model": "BMP 文件结构极简:14 字节文件头(BITMAPFILEHEADER) + 40 字节信息头(BITMAPINFOHEADER) + 像素数据。\n\n文件头:魔数 'BM'(2字节验证是 BMP)、文件大小、保留、像素数据偏移(到像素开始的字节位置)。\n\n信息头:width(i32)、height(i32,正=bottom-up 负=top-down)、bpp(位深,典型 24/32)、压缩方式(0=无压缩)。\n\n像素数据:row-major,每行 padding 到 4 字节对齐。BGR 顺序(不是 RGB!Windows GDI 传统)。\n\n三个经典坑:\n1) BGR vs RGB:Windows GDI 传统,要手动换序。读 bytes[src]=blue,bytes[src+2]=red。\n2) bottom-up:height 正数时,像素数据从最后一行开始往前存(CRT 传统)。读 y 坐标时要翻转。\n3) row padding:每行要 4 字节对齐。24-bit BMP width=10,每行 30 字节,要 pad 2 字节凑 32。\n\n解析:读魔数验证 -> 读 header 拿 width/height/bpp/offset -> 读像素数据,处理 BGR->RGB 和 bottom-up 翻转。",
+      "map_parents": [
+        "Binary file formats",
+        "Endianness",
+        "Magic number"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "BITMAPFILEHEADER",
+        "BITMAPINFOHEADER",
+        "BGR vs RGB",
+        "bottom-up"
+      ],
+      "related_days": [
+        "day003",
+        "day037",
+        "day436"
+      ],
+      "comparison": "所有图像格式都有「header + pixel data」结构。BMP 无压缩(最大但最快)、PNG 无损(LZ77+Huffman)、JPEG 有损(DCT)、WebP 有损+无损。Casey 教学 BMP->PNG->实战。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "为什么不标准化为 RGB?",
+          "a": "历史原因——1980 年代 OS/2 和 Windows 设计 BMP 时显示硬件用 BGR 顺序。不同格式不同顺序:BMP/GDI 用 BGR(little-endian 传统),PNG/OpenGL 用 RGB(big-endian 传统)。本质都是历史包袱——选了某顺序就不能改(否则破坏兼容)。字节序(endianness)也类似:x86 little-endian,PowerPC big-endian。文件格式必须指定字节序,否则跨平台读会错。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day037": {
+      "why": "Day 037 把 Day 036 加载的 BMP 画到屏幕——bitmap blit(位图位块传送)。Blit = BitBlt(BITmap Block Transfer)。把一块像素从一个地方复制到另一个地方。Day 037 做最简单版:整张 BMP 复制到屏幕指定位置。\n\n为什么单独用一集讲 blit?因为 blit 是所有 2D 渲染的基础。后面 Day 038 alpha 混合 blit、Day 092 旋转缩放 blit、Day 121 SIMD tiled blit、Day 235 OpenGL blit 都是 blit 的变种。理解最简单 blit,后面所有渲染都自然理解。",
+      "model": "算法就是双层 for 循环逐像素拷贝:\n\nfor y in 0..src.height { for x in 0..src.width { dst[dst_y*dst_w + dst_x] = src[y*src_w + x]; } }\n\n范围裁剪:如果 tile 一部分在屏幕外,逐像素判断越界跳过。优化:算有效范围 x_start..x_end / y_start..y_end,只迭代有效像素,无浪费。\n\n性能:32x32 tile = 1024 像素。渲染 1000 tile = 1M 像素。CPU 一帧能做几亿次,1M 不是瓶颈。\n\nCasey 的抽象:不直接 blit 像素,而是 push 命令(PushBitmap{x,y,id})。渲染器消费命令执行 blit。这是 Day 88 push buffer 的雏形——让渲染后端可换(Day 235 切 OpenGL 时游戏代码几乎不改)。\n\nBlit 看似简单,但 Casey 用一整集讲,因为后面所有渲染都是 blit 的扩展。教学顺序「先简单后复杂」的典范。",
+      "map_parents": [
+        "BitBlt",
+        "Raster operations",
+        "Clipping"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "双 for 像素拷贝",
+        "Screen space clipping",
+        "Bitmap struct"
+      ],
+      "related_days": [
+        "day036",
+        "day038",
+        "day088"
+      ],
+      "comparison": "所有 2D 渲染本质都是 blit。差别在变换:简单(1:1)/ 旋转(插值)/ 缩放(双线性)/ 透视(3D 投影)。GPU 全硬件加速,Casey 用 CPU 逐像素算,理解原理。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 why/model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day038": {
+      "why": "Day 38:基础线性位图混合。这是Phase 2(2D 游戏)的一部分。\n\n这集在 Handmade Hero 整体里的角色:Casey 逐步构建一个完整游戏引擎的过程中,这集解决了基础线性位图混合相关的具体问题。每集看似独立,但累积起来形成从空文件夹到完整游戏的完整路径。\n\n为什么这集重要?因为它是 Casey 开发流程中的一个真实步骤——他在遇到问题或需要功能时,就花一集来解决。你跟做时看到的不是「教科书式」的知识点罗列,而是「真实工程师解决真实问题」的过程。这种「真实感」是 Handmade Hero 区别于其他教程的核心价值。",
+      "model": "<strong>这集的核心内容</strong>\n\nCasey 在这集实现的是:基础线性位图混合。\n\n<strong>怎么理解</strong>:这属于Phase 2(2D 游戏)系列。Casey 在这个阶段做的事是逐步把游戏从「能跑」变成「好玩」再到「完整引擎」。这集是其中一步——可能是加一个新功能、修一个 bug、或者重构一段代码。\n\n<strong>Rust 翻译建议</strong>:Casey 用 C/C++ + Win32,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading)。翻译时关注<strong>概念</strong>而不是<strong>语法</strong>——Casey 用 LoadLibrary 你用 libloading,Casey 用 DirectSound 你用 cpal,但底层的<strong>设计模式</strong>是一样的。\n\n<strong>跟做步骤</strong>:1) 看视频理解 Casey 做什么;2) 读源码 diff 看具体代码;3) 在你的 Rust 项目里实现对应功能;4) 运行验证;5) git commit。如果卡住,查「💡 概念卡」和「🧠 心智模型」板块的相关内容。\n\n<strong>关键洞察</strong>:不要只关注「代码怎么写」,要理解「为什么这样设计」。Casey 的每个决策都有理由——可能是性能(cache friendly)、可能是架构(可热重载)、可能是教学价值(先简单后复杂)。理解「为什么」比记住「怎么」更重要,因为「怎么」可以查文档,「为什么」只能通过思考获得。",
+      "map_parents": [
+        "Alpha compositing",
+        "Linear interpolation"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "out = src*src_a + dst*(1-src_a)",
+        "Per-pixel RGBA blend",
+        "0/255 fast path"
+      ],
+      "related_days": [
+        "day037",
+        "day083",
+        "day094"
+      ],
+      "comparison": "所有 GUI 都用 alpha 混合。差别在公式:Normal(标准)/ Additive(光、火)/ Premultiplied(优化)/ Porter-Duff 12 种(SVG/PDF)。Casey 教 normal+premultiplied,够 90% 场景。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 why/model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day039": {
+      "why": "Day 39:基础位图渲染清理。这是Phase 2(2D 游戏)的一部分。\n\n这集在 Handmade Hero 整体里的角色:Casey 逐步构建一个完整游戏引擎的过程中,这集解决了基础位图渲染清理相关的具体问题。每集看似独立,但累积起来形成从空文件夹到完整游戏的完整路径。\n\n为什么这集重要?因为它是 Casey 开发流程中的一个真实步骤——他在遇到问题或需要功能时,就花一集来解决。你跟做时看到的不是「教科书式」的知识点罗列,而是「真实工程师解决真实问题」的过程。这种「真实感」是 Handmade Hero 区别于其他教程的核心价值。",
+      "model": "<strong>这集的核心内容</strong>\n\nCasey 在这集实现的是:基础位图渲染清理。\n\n<strong>怎么理解</strong>:这属于Phase 2(2D 游戏)系列。Casey 在这个阶段做的事是逐步把游戏从「能跑」变成「好玩」再到「完整引擎」。这集是其中一步——可能是加一个新功能、修一个 bug、或者重构一段代码。\n\n<strong>Rust 翻译建议</strong>:Casey 用 C/C++ + Win32,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading)。翻译时关注<strong>概念</strong>而不是<strong>语法</strong>——Casey 用 LoadLibrary 你用 libloading,Casey 用 DirectSound 你用 cpal,但底层的<strong>设计模式</strong>是一样的。\n\n<strong>跟做步骤</strong>:1) 看视频理解 Casey 做什么;2) 读源码 diff 看具体代码;3) 在你的 Rust 项目里实现对应功能;4) 运行验证;5) git commit。如果卡住,查「💡 概念卡」和「🧠 心智模型」板块的相关内容。\n\n<strong>关键洞察</strong>:不要只关注「代码怎么写」,要理解「为什么这样设计」。Casey 的每个决策都有理由——可能是性能(cache friendly)、可能是架构(可热重载)、可能是教学价值(先简单后复杂)。理解「为什么」比记住「怎么」更重要,因为「怎么」可以查文档,「为什么」只能通过思考获得。",
+      "map_parents": [
+        "Refactoring",
+        "Code hygiene"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Extract function",
+        "Rename refactor",
+        "Type safety",
+        "Result error handling"
+      ],
+      "related_days": [
+        "day024",
+        "day159",
+        "day498"
+      ],
+      "comparison": "重构不是浪费,是未来新功能的投资。代码越干净加新功能越快。这是「技术债复利」的反面——「代码整洁的复利」。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 why/model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day040": {
+      "why": "Day 040 加全屏支持和鼠标隐藏。功能简单,但涉及 OS 特定行为(Win32 全屏 API)。Rust 端 winit 帮你处理跨平台。Casey 这集讨论一个经典问题:Exclusive fullscreen vs Borderless fullscreen。\n\nExclusive(独占):改变显示器分辨率,OS 桌面暂停渲染,性能最好,但 Alt+Tab 慢(2-3秒)。老游戏(CS 1.6)用。Borderless(无边框窗口):窗口没标题栏占满屏幕,但桌面继续渲染。Alt+Tab 即时。现代游戏主流(CSGO/Valorant/Overwatch 默认)。",
+      "model": "Win32 API:Exclusive 用 ChangeDisplaySettings(改分辨率),Borderless 用 WS_POPUP 样式+窗口大小=屏幕大小。Rust winit:window.set_fullscreen(Some(Fullscreen::Borderless(None))) 一行搞定。\n\n鼠标隐藏:window.set_cursor_visible(false)。游戏全屏时光标干扰。\n\nKDE Wayland 全屏:Wayland 协议层支持(xdg_toplevel.set_fullscreen),KWin 实现。winit 走 Borderless 优先(Exclusive 需要 DRM,复杂)。KDE 某些版本有 cursor 残留 bug(Plasma 5.27 之前)。\n\n现代游戏 90% 用 Borderless——Alt+Tab 流畅、多显示器友好、无 mode switch 闪烁。Exclusive 只在电竞(追求最低延迟)用。Casey 教 Borderless,简单够用。",
+      "map_parents": [
+        "Window management",
+        "Display modes"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "set_fullscreen API",
+        "set_cursor_visible",
+        "WS_POPUP style"
+      ],
+      "related_days": [
+        "day002",
+        "day038"
+      ],
+      "comparison": "Borderless 主流:切换流畅、Alt+Tab 友好、多显示器友好。Exclusive 优势:性能(OS不渲染省几%)、延迟(无compositor)。电竞 CS:GO/Valorant 提供 Exclusive 给职业玩家。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "核心是什么?",
+          "a": "看 why/model。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day041": {
+      "why": "Casey 暂停编码,概览游戏开发用到的所有数学。目的是让你知道后面 Day 42-50 各集会用到什么数学工具。",
+      "model": "<strong>2D 向量(Vec2)</strong>:两个 f32 分量 (x, y)。表示位置、速度、方向。运算:加(位移合成)、减(位移差)、点积(衡量对齐程度)、长度(勾股定理)、归一化(变单位向量)。Day 42 深入。\n\n<strong>运动方程</strong>:位置 p、速度 v、加速度 a。关系:dp/dt = v(Euler 积分:p += v*dt)。dt = 每帧耗时(秒)。Day 43 讲。\n\n<strong>向量反射</strong>:v' = v - 2(v·n)n。撞墙后速度怎么变。Day 44 讲。\n\n<strong>点积几何意义</strong>:a·b = |a||b|cos(θ)。θ=0(同向)=最大正值,θ=90°(垂直)=0,θ=180°(反向)=最大负值。光照(Lambert = N·L)、投影、可见性测试都用。Day 47-48 用。\n\n<strong>叉积(2D)</strong>:a×b = ax*by - ay*bx(标量)。正值=a 在 b 顺时针方向。判断点在直线哪侧。Day 48 线段相交用。\n\n<strong>线段相交</strong>:两条参数化线段 L1(t)=P1+t(P2-P1),L2(s)=P3+s(P4-P3)。求 t,s 使 L1(t)=L2(s)。Day 48 讲。\n\n<strong>Minkowski 差</strong>:A⊖B = {a-b | a∈A, b∈B}。两体碰撞 ⟺ 原点∈A⊖B。AABB 特例:dx=|ax-bx| < half_a+half_b。Day 50 的核心。\n\n<strong>数值积分</strong>:Euler(p+=v*dt)简单但能量泄漏。Verlet(存位置不存速度)稳定。RK4(4步采样)精确。Casey 用 Euler。Day 43 用。\n\n<strong>性能数学</strong>:sqrt 慢(~30 cycle)。比较距离用 length_sq(不开方)。Fast inverse sqrt(Quake III 的 0x5f3759df trick)。现代 CPU 有 rsqrtss 指令。Day 47 讨论长度。",
+      "map_parents": [
+        "应用数学概览"
+      ],
+      "map_siblings": [
+        {
+          "name": "3D Math Primer",
+          "note": "gamemath.com 免费书"
+        }
+      ],
+      "map_children": [
+        "Vec2 运算",
+        "Euler 积分",
+        "点积/叉积",
+        "Minkowski 差"
+      ],
+      "related_days": [
+        "day042",
+        "day043",
+        "day044",
+        "day047",
+        "day050"
+      ],
+      "comparison": "游戏数学和纯数学差别:游戏用 f32(够用且快),数学用任意精度;游戏接受近似(Euler 积分),数学要精确;游戏重应用(算碰撞),数学重证明。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "点积 a·b=0 意味着什么?游戏里怎么用?",
+          "a": "a·b=0 意味着两向量垂直(θ=90°)。游戏用:NPC 是否在玩家侧面(玩家朝向·玩家到NPC向量=0 → 正好侧面)。光照:N·L=0 → 面和光平行(最暗边缘)。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day042": {
+      "why": "正式定义 Vec2 和所有运算。后面每集都用这些运算。",
+      "model": "<strong>Vec2 定义和运算</strong>\n\n<pre><code>#[derive(Default, Clone, Copy)]\nstruct Vec2 { x: f32, y: f32 }\n\nimpl Vec2 {\n    fn new(x: f32, y: f32) -> Self { Self { x, y } }\n    fn add(self, o: Self) -> Self { Self::new(self.x + o.x, self.y + o.y) }\n    fn sub(self, o: Self) -> Self { Self::new(self.x - o.x, self.y - o.y) }\n    fn mul(self, s: f32) -> Self { Self::new(self.x * s, self.y * s) }\n    fn dot(self, o: Self) -> f32 { self.x * o.x + self.y * o.y }\n    fn length_sq(self) -> f32 { self.dot(self) }\n    fn length(self) -> f32 { self.length_sq().sqrt() }\n    fn normalize(self) -> Self {\n        let len = self.length();\n        if len > 1e-6 { self.mul(1.0 / len) } else { Self::default() }\n    }\n}</code></pre>\n\n<strong>加法的几何意义</strong>:平行四边形法则。从原点到 A,再从 A 走 B 的方向,到达 A+B。物理:位移合成——先向右走 3 步再向上走 4 步 = 直接到右上 (3,4)。\n\n<strong>点积的几何意义</strong>:a·b = |a|×|b|×cos(θ)。\n- θ=0°(同方向):a·b = |a|×|b|(最大正)\n- θ=90°(垂直):a·b = 0\n- θ=180°(反方向):a·b = -|a|×|b|(最大负)\n\n代码实现:dot = ax*bx + ay*by。这个公式等价于 |a||b|cos(θ)——可以反推夹角:θ = acos(a·b / (|a||b|))。\n\n<strong>点积 = 投影</strong>:a·b̂(b 归一化后) = a 在 b 方向上的投影长度。游戏用:玩家到墙的最近距离 = (wall_center - player) · wall_normal。\n\n<strong>长度的性能</strong>:sqrt 是慢操作(~30 cycle)。比较两个 entity 距离时用 length_sq 而不是 length——比如 <code>(a-b).length_sq() < 100.0</code> 比 <code>(a-b).length() < 10.0</code> 快 6 倍(跳过 sqrt)。\n\n<strong>归一化(单位向量)</strong>:保留方向,丢弃大小。法线(N)、方向向量(D)必须归一化——否则点积结果不是 cos(θ) 而是 cos(θ)×|N|×|D|,光照计算错。",
+      "map_parents": [
+        "向量代数"
+      ],
+      "map_siblings": [
+        {
+          "name": "Vec3/Vec4",
+          "note": "Day 71+ 用"
+        },
+        {
+          "name": "glam crate",
+          "note": "Bevy 用的 Rust 向量库,最快"
+        }
+      ],
+      "map_children": [
+        "add/sub/mul",
+        "dot product",
+        "length/length_sq",
+        "normalize"
+      ],
+      "related_days": [
+        "day041",
+        "day043",
+        "day047",
+        "day050",
+        "day089"
+      ],
+      "comparison": "所有 2D 游戏都用 Vec2。Casey 手写(完全控制 SIMD),你也可以用 glam: cargo add glam。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "点积 a·b=0 意味着什么?a·b<0 呢?",
+          "a": "a·b=0:两向量垂直(90°)。a·b<0:夹角>90°(大致反向)。游戏用:N·L(N法线,L光)——N·L>0=面朝光(亮),<0=背光(暗),=0=侧面(边缘)。"
+        },
+        {
+          "level": 2,
+          "type": "practice",
+          "q": "实现 Vec2 + 测试:(3,4) 长度=5,(3,4)归一化=(0.6,0.8),(1,0)·(0,1)=0",
+          "a": "length(3,4) = sqrt(9+16) = sqrt(25) = 5。normalize(3,4) = (3/5, 4/5) = (0.6, 0.8)。dot((1,0),(0,1)) = 1*0 + 0*1 = 0(垂直)。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        }
+      ]
+    },
+    "day043": {
+      "why": "定义运动方程——位置/速度/加速度的关系。所有移动的物体都遵守。",
+      "model": "<strong>牛顿运动方程(数值积分版)</strong>\n\n导数关系:dp/dt = v,dv/dt = a。离散化(Euler 法):\n\n<pre><code>// 每帧\nvel += acc * dt;  // v += a*dt(速度积分)\npos += vel * dt;  // p += v*dt(位置积分)</code></pre>\n\n<strong>具体例子:跳跃</strong>\n\n按跳跃键:vel.y = -300(负=向上,y 向下)。重力:acc.y = 800(向下)。\n\n每帧(dt=1/60):\n- vel.y += 800 * (1/60) = +13.3(重力让速度变正=向下)\n- pos.y += vel.y * (1/60)\n\n帧 0:vel.y=-300,pos.y += -300/60 = -5(向上 5 像素)\n帧 1:vel.y=-300+13.3=-286.7,pos.y += -286.7/60 = -4.8(向上减速)\n帧 2:vel.y=-273.3,pos.y += -4.6\n...\n帧 22(0.375s):vel.y≈0(最高点,不再上升)\n帧 23:vel.y>0(开始下落)\n帧 45(0.75s):vel.y=300,pos.y回到起点(落地)\n\n轨迹:抛物线。最高点 = v₀²/(2g) = 300²/(2×800) = 90000/1600 = 56.25 像素。\n\n<strong>Euler vs Verlet vs RK4</strong>\n\nEuler(Casey 用):p+=v*dt,v+=a*dt。简单。长时间有能量泄漏(轨道衰减)。但游戏物理仿真短时(几秒),泄漏不明显。\n\nVerlet:存当前+上一帧位置(不存速度)。v = (pos - prev_pos)。能量守恒好,适合粒子系统。\n\nRK4:4 步采样,精度高。Kerbal Space Program 用(轨道精度重要)。计算量 4 倍 Euler。",
+      "map_parents": [
+        "数值积分(Euler 法)",
+        "牛顿力学"
+      ],
+      "map_siblings": [
+        {
+          "name": "Verlet",
+          "note": "粒子系统常用"
+        },
+        {
+          "name": "RK4",
+          "note": "高精度,轨道力学用"
+        }
+      ],
+      "map_children": [
+        "Euler 积分 p+=v*dt",
+        "重力/跳跃/抛物线"
+      ],
+      "related_days": [
+        "day042",
+        "day044",
+        "day274"
+      ],
+      "comparison": "游戏选 Euler 因为简单+短时够用。Kerbal Space Program 用 RK4(长时轨道精度重要)。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "玩家跳跃 v.y=-300,重力 a.y=800。何时到最高点?最高多高?",
+          "a": "最高点 v.y=0。时间 t=300/800=0.375s。高度=v₀²/(2g)=300²/(2×800)=56.25 像素。这是跳跃手感的数学——重力小=漂浮,初速度大=跳得高。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day044": {
+      "why": "定义向量反射公式。撞墙后速度怎么变。",
+      "model": "<strong>反射公式</strong>:v' = v - 2(v·n)n\n\nn 是墙的法线(垂直于墙的单位向量)。v 是入射速度。v' 是反射速度。\n\n<strong>推导</strong>:把 v 分解为法线分量 + 切线分量:v = (v·n)n + (v - (v·n)n)。反射 = 翻转法线分量,保留切线:v' = -(v·n)n + (v-(v·n)n) = v - 2(v·n)n。\n\n为什么是 2 倍?翻转 = 原来的减去 2 倍投影。如果只减 1 倍(v-(v·n)n)= 沿墙滑行(无反射)。\n\n<pre><code>fn reflect(v: Vec2, n: Vec2) -> Vec2 {\n    let n = n.normalize();  // n 必须单位向量\n    let d = v.dot(n);\n    v.sub(n.mul(2.0 * d))\n}\n\n// 球向下右(v=(1,5))撞地面(n=(0,-1)向上)\n// reflect((1,5), (0,-1)) = (1,5) - 2*(5*-1)*(0,-1) = (1,5) - (0,10) = (1,-5)\n// 结果:右上(反弹)</code></pre>\n\n<strong>带能量损失的反射</strong>:真实球撞地减速。加 restitution(弹性系数)e:\nv' = v - (1+e)(v·n)n。e=1 完全弹性,e=0 完全非弹性(不反弹)。\n\n<strong>应用</strong>:弹球游戏、台球、激光反射谜题(Portal)。Phong 高光 = reflect(视线, 法线) · 光源方向。",
+      "map_parents": [
+        "向量代数 - 反射"
+      ],
+      "map_siblings": [
+        {
+          "name": "Specular reflection",
+          "note": "Phong 高光用反射向量"
+        }
+      ],
+      "map_children": [
+        "v'=v-2(v·n)n 公式",
+        "法线必须 normalize",
+        "restitution 弹性系数"
+      ],
+      "related_days": [
+        "day042",
+        "day100",
+        "day390"
+      ],
+      "comparison": "反射在很多场景用:物理仿真(球反弹)、光照(Phong 高光=反射向量·视线)、声学(回声路径)。本质都是「入射角=反射角」。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "反射公式为什么是 2 倍(v·n)n 不是 1 倍?",
+          "a": "翻转法线分量 = 原 - 2×投影。1 倍(v-(v·n)n)= 去掉法线分量 = 沿墙滑(无反射)。2 倍才完全翻转法线分量。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day045": {
+      "why": "升级 Day 029 碰撞,从 discrete(检查终点)到 temporal search(检查路径)。解决高速穿墙。",
+      "model": "<strong>Day 029 的问题</strong>:速度 3000 像素/秒,墙厚 32 像素,dt=0.016s → 一帧移动 48 像素 > 墙厚 → 起点和终点都在墙两侧 → can_move_to(终点)=true(终点不在墙内)→ 穿墙。\n\n<strong>Temporal search 解法</strong>:把移动拆成小步,每步 ≤ TILE_SIZE/2。检查每步是否碰撞。\n\n<pre><code>fn move_with_collision(p: &mut Player, map: &TileMap, dt: f32) {\n    let total_dx = p.vel.x * dt;\n    let total_dy = p.vel.y * dt;\n    let max_step = TILE_SIZE as f32 * 0.5;  // 每步最多走半个 tile\n    let dist = total_dx.abs().max(total_dy.abs());\n    let steps = ((dist / max_step).ceil() as i32).max(1);\n    let step_dx = total_dx / steps as f32;\n    let step_dy = total_dy / steps as f32;\n    \n    for _ in 0..steps {\n        // 分轴碰撞(Day 029 的 wall sliding)\n        let nx = p.pos.x + step_dx;\n        if can_move_to(map, nx, p.pos.y, SIZE) { p.pos.x = nx; }\n        let ny = p.pos.y + step_dy;\n        if can_move_to(map, p.pos.x, ny, SIZE) { p.pos.y = ny; }\n    }\n}</code></pre>\n\n每步 ≤ 16 像素(TILE_SIZE/2),不会跳过 32 像素的墙。代价:CPU 多次 can_move_to,但每次便宜(几个 tile 查询)。",
+      "map_parents": [
+        "Continuous collision detection"
+      ],
+      "map_siblings": [
+        {
+          "name": "Swept AABB",
+          "note": "数学精确但复杂"
+        },
+        {
+          "name": "Sub-stepping",
+          "note": "物理引擎通用"
+        }
+      ],
+      "map_children": [
+        "步进 collision check",
+        "max_step=TILE_SIZE/2"
+      ],
+      "related_days": [
+        "day029",
+        "day048",
+        "day050"
+      ],
+      "comparison": "高速碰撞三种方案:temporal search(Casey,简单)/ swept AABB(精确但复杂)/ sub-stepping(物理引擎通用)。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "速度 3000px/s,墙厚 32px,dt=1/60。Day 029 discrete 碰撞会穿墙吗?temporal search 怎么解决?",
+          "a": "一帧移动 3000/60=50px > 32px 墙 → 穿墙。temporal search 拆成 ceil(50/16)=4 步,每步 12.5px < 32px 墙 → 第二步碰到墙,停在墙边。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day046": {
+      "why": "加本地多人(同一屏幕两个玩家)。Day 017 的统一输入抽象让加第二个玩家几乎免费。",
+      "model": "<strong>实现</strong>:Day 017 把键盘和手柄都抽象成 GameController。Day 046 = Player[0] 绑定 controllers[0](键盘),Player[1] 绑定 controllers[1](手柄)。\n\n<pre><code>fn update(&mut self, input: &GameInput, dt: f32) {\n    self.players[0].update(&input.controllers[0], dt);  // 键盘\n    if input.controllers[1].is_connected {\n        self.players[1].update(&input.controllers[1], dt);  // 手柄\n    }\n}</code></pre>\n\n这就是全部。Day 017 的抽象让「加一个玩家」= 读另一个 controller,逻辑完全复用。\n\n<strong>体现的设计原则</strong>:开闭原则(Open-Closed Principle)。加新功能(第二个玩家)不改已有代码(Player 类),只在外部加配置。Day 017 的 GameController 看似过度抽象(单人游戏为什么要 multi-controller),Day 046 证明价值。",
+      "map_parents": [
+        "本地多人",
+        "输入抽象实战"
+      ],
+      "map_siblings": [
+        {
+          "name": "Split-screen",
+          "note": "分屏"
+        },
+        {
+          "name": "Online multiplayer",
+          "note": "网络多人"
+        }
+      ],
+      "map_children": [
+        "Player × Controller 绑定",
+        "开闭原则"
+      ],
+      "related_days": [
+        "day017",
+        "day030"
+      ],
+      "comparison": "本地多人:简单(同进程,零延迟)。网络多人:复杂(状态同步,延迟补偿,anti-cheat)。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Day 046 加第二个玩家几乎免费。这体现了什么设计原则?",
+          "a": "开闭原则(Open-Closed Principle)。Day 017 的 GameController 抽象让加玩家=加一个 controller 绑定,不改 Player 类。好抽象的标志——让未来扩展便宜。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day047": {
+      "why": "讨论向量长度的性能和精度。核心:sqrt 慢,能用平方比较就别开方。",
+      "model": "<strong>性能对比</strong>:\n- <code>(a-b).length() < 10.0</code>:算 sqrt,~30 cycle\n- <code>(a-b).length_sq() < 100.0</code>:不算 sqrt,~5 cycle\n\n差 6 倍。渲染 1000 个 entity 每个查距离,差 6000 cycle/帧。\n\n<strong>规则:比较距离时用平方</strong>。a.distance(b) < R 改成 a.distance_sq(b) < R²。\n\n<strong>Fast inverse sqrt(Quake III trick)</strong>:\n\n<pre><code>fn fast_inv_sqrt(x: f32) -> f32 {\n    let i = x.to_bits();\n    let i = 0x5f3759df - (i >> 1);\n    let y = f32::from_bits(i);\n    y * (1.5 - 0.5 * x * y * y)  // Newton 迭代\n}</code></pre>\n\n利用 IEEE 754 浮点位表示:位 >> 1 近似 log 除以 2,减常数修正偏移。magic number 0x5f3759df 是经验最优偏移。比标准 1.0/sqrt(x) 快 3-4×。\n\n现代 CPU 有 rsqrtss 指令(硬件实现),比这个 trick 还快。所以现代代码不用这个 trick。但理解它让你深入理解浮点表示——「数字不是抽象,是位模式」。",
+      "map_parents": [
+        "Vector length",
+        "Performance optimization"
+      ],
+      "map_siblings": [
+        {
+          "name": "rsqrtss",
+          "note": "现代 CPU 硬件 1/sqrt 指令"
+        }
+      ],
+      "map_children": [
+        "length vs length_sq",
+        "Fast inv sqrt 位 trick",
+        "IEEE 754 浮点表示"
+      ],
+      "related_days": [
+        "day042",
+        "day115"
+      ],
+      "comparison": "所有性能敏感代码都用 length_sq 避免开方。Quake III 的 trick 是历史传奇,现代 CPU 有 rsqrtss 指令更快。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "比较两个 entity 距离 < 50,应该用 length() 还是 length_sq()?",
+          "a": "用 length_sq() < 2500(50²)。跳过 sqrt 快 6 倍。规则:比较距离时永远用平方。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day048": {
+      "why": "实现线段相交——两条线段是否相交,在哪相交。用于光线投射、视线检查、攻击判定。",
+      "model": "<strong>算法</strong>:两条参数化线段 L1(t)=P1+t(P2-P1),L2(s)=P3+s(P4-P3)。相交 ⟺ 存在 t,s ∈ [0,1] 使 L1(t)=L2(s)。\n\n解方程组(2 个未知数 t,s):\n\n<pre><code>fn segments_intersect(p1: Vec2, p2: Vec2, p3: Vec2, p4: Vec2) -> bool {\n    let d1 = p2.sub(p1);  // L1 方向\n    let d2 = p4.sub(p3);  // L2 方向\n    let denom = d1.x * d2.y - d1.y * d2.x;  // 2D 叉积\n    if denom.abs() < 1e-6 { return false; }  // 平行\n    let diff = p3.sub(p1);\n    let t = (diff.x * d2.y - diff.y * d2.x) / denom;\n    let s = (diff.x * d1.y - diff.y * d1.x) / denom;\n    t >= 0.0 && t <= 1.0 && s >= 0.0 && s <= 1.0\n}</code></pre>\n\n<strong>2D 叉积</strong>:a×b = ax*by - ay*bx(标量)。几何意义:平行四边形面积(带符号)。正值=a 在 b 顺时针方向。\n\n判断「跨过」:如果 P3 和 P4 在 L1 两侧(叉积符号不同),且 P1 和 P2 在 L2 两侧,则跨过 → 相交。",
+      "map_parents": [
+        "Computational geometry",
+        "Line intersection"
+      ],
+      "map_siblings": [
+        {
+          "name": "Ray-AABB",
+          "note": "Day 422 raycast 用"
+        },
+        {
+          "name": "GJK",
+          "note": "通用凸体碰撞"
+        }
+      ],
+      "map_children": [
+        "参数方程 L(t)=P+t*D",
+        "2D 叉积",
+        "t,s∈[0,1] 判断"
+      ],
+      "related_days": [
+        "day042",
+        "day422",
+        "day431"
+      ],
+      "comparison": "线段相交是计算几何基础。后面 raycast(Day 422-433)本质是「射线 vs AABB」相交,数学类似。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "2D 叉积 ax*by-ay*bx 的几何意义是什么?",
+          "a": "平行四边形面积(带符号)。正值=a 在 b 顺时针方向,负值=逆时针,0=平行。判断两线段跨过:P3 和 P4 在 L1 两侧 = 叉积符号不同。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day049": {
+      "why": "调试 Day 032 的 WorldPos——offset 没正确 normalize,导致位置跳跃。教学价值在调试方法论。",
+      "model": "<strong>Bug</strong>:Day 032 的 WorldPos { tile_x, tile_y, offset }。offset 应该在 [0, TILE_SIZE)。但代码没 normalize,offset 可能负或 >TILE_SIZE。玩家位置突然跳到错误坐标。\n\n<strong>调试流程</strong>:\n1. <strong>可视化</strong>:屏幕画玩家 tile 坐标 + offset 实时值,看到 offset 超过 TILE_SIZE\n2. <strong>假设</strong>:offset 跨 tile 边界时没正确进位\n3. <strong>修复</strong>:每次写 WorldPos 时 normalize\n\n<pre><code>impl WorldPos {\n    fn normalize(&mut self) {\n        while self.offset.x < 0.0 {\n            self.offset.x += TILE_SIZE as f32;\n            self.tile_x -= 1;\n        }\n        while self.offset.x >= TILE_SIZE as f32 {\n            self.offset.x -= TILE_SIZE as f32;\n            self.tile_x += 1;\n        }\n        // 同样处理 y\n    }\n}</code></pre>\n\n<strong>防 bug 再发生</strong>:把 offset 设为 private,只通过方法访问。方法保证 invariant。Rust 类型系统帮你抓 bug——外部不能构造非 normalize 的 WorldPos。\n\n<strong>调试方法论</strong>:现象 → 可视化(把不可见变可见)→ 假设 → 实验 → 定位 → 修复。后面 Day 308/419/568 反复用这套。",
+      "map_parents": [
+        "Debugging methodology",
+        "Invariant enforcement"
+      ],
+      "map_siblings": [
+        {
+          "name": "printf debugging",
+          "note": "最简单也最有效"
+        }
+      ],
+      "map_children": [
+        "可视化内部状态",
+        "假设-验证循环",
+        "Rust 类型系统防 bug"
+      ],
+      "related_days": [
+        "day032",
+        "day020",
+        "day308"
+      ],
+      "comparison": "调试方法论通用:可视化(把不可见变可见)、假设验证(科学方法)、二分(git bisect)。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "怎么防止 WorldPos 的 offset invariant violation 再发生?",
+          "a": "Rust 类型系统:offset 字段 private,只通过方法访问。方法保证 invariant(add/sub 后自动 normalize)。外部不能构造非 normalize 状态。bug 在编译期消除——这是 Rust 比 C 的优势。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day050": {
+      "why": "Phase 2 碰撞算法的高潮——Minkowski 碰撞检测。把「两个矩形碰撞」化为「一个点是否在扩大的矩形内」。极简且高效。",
+      "model": "<strong>核心思想:Minkowski 差</strong>\n\n两个矩形 A(中心 ax,ay,半宽 hwa,半高 hha)和 B(bx,by,hwb,hhb)。碰撞条件:\n\n|ax-bx| < hwa+hwb 且 |ay-by| < hha+hhb\n\n这就是「点 (ax-bx, ay-by) 在矩形 (hwa+hwb, hha+hhb) 内」——一个点 vs 一个矩形的测试。\n\n<strong>推导</strong>:A 和 B 相交 ⟺ x 方向重叠(|ax-bx| < hwa+hwb)且 y 方向重叠(|ay-by| < hha+hhb)。两个条件同时成立。\n\n<strong>代码</strong>:\n\n<pre><code>fn aabb_collide(a_c: Vec2, a_half: Vec2, b_c: Vec2, b_half: Vec2) -> bool {\n    let dx = (a_c.x - b_c.x).abs();\n    let dy = (a_c.y - b_c.y).abs();\n    dx < a_half.x + b_half.x && dy < a_half.y + b_half.y\n}</code></pre>\n\n4 个减法 + 2 个 abs + 2 个比较。没有循环,没有分支。极快。\n\n<strong>Minkowski 差的一般定义</strong>:A⊖B = {a-b | a∈A, b∈B}。A 和 B 相交 ⟺ 原点 ∈ A⊖B。对矩形,A⊖B 还是矩形——这就是为什么能化为点测试。对其他凸形状(圆、多边形),A⊖B 是更复杂的凸形状,GJK 算法用迭代构造。\n\n<strong>手推例子</strong>:A(中心(0,0), 半(10,10)),B(中心(15,0), 半(8,8))。\ndx=|0-15|=15,sum=10+8=18。15<18 ✓\ndy=0<18 ✓\n相交!A(0,0)和 B(15,0)重叠(x 方向重叠 3 像素)。",
+      "map_parents": [
+        "Minkowski sum/difference",
+        "Convex geometry"
+      ],
+      "map_siblings": [
+        {
+          "name": "GJK",
+          "note": "通用凸体碰撞,基于 Minkowski 差"
+        },
+        {
+          "name": "SAT",
+          "note": "分离轴定理"
+        }
+      ],
+      "map_children": [
+        "Minkowski 差公式",
+        "AABB 简化",
+        "点-矩形测试"
+      ],
+      "related_days": [
+        "day029",
+        "day045",
+        "day631"
+      ],
+      "comparison": "所有凸体碰撞都基于 Minkowski 思想——化为点测试。AABB 最简单。圆碰撞=距离<r1+r2。任意凸多边形用 GJK。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Minkowski 差的核心洞察是什么?",
+          "a": "两体碰撞 ⟺ 一个点(A中心-B中心)在 Minkowski 差 M 内。M=A⊕(-B)。对矩形,M 还是矩形,测试=2 次 abs+2 次比较。极简。"
+        },
+        {
+          "level": 2,
+          "type": "practice",
+          "q": "A(中心(0,0),半(10,10)),B(中心(25,0),半(5,5))。碰撞吗?",
+          "a": "dx=|0-25|=25,sum=10+5=15。25>15 → 不碰撞(间距太大)。如果 B 在 (14,0):dx=14<15 → 碰撞。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        }
+      ]
+    },
+    "day051": {
+      "why": "按更新频率分离 entity——不同 entity 需要不同更新频率,减少 CPU 开销。",
+      "model": "<strong>问题</strong>:10000 个 entity 每帧 60Hz update = 60 万次/秒。大部分 entity(静态门、远处 NPC)不需要 60Hz。\n\n<strong>分层</strong>:\n- 高频(60Hz):玩家、投射物、玩家附近的怪。需要即时反应。\n- 中频(30Hz):远处 NPC、动画特效。可以接受 1 帧延迟。\n- 低频(5Hz):静态门、宝箱、装饰。基本不动。\n\n每帧只 update 高频;每两帧加 update 中频;每 12 帧加 update 低频。总 update 次数从 60 万降到 ~10 万。\n\n<strong>实现</strong>:entity 加 <code>update_frequency</code> 字段。主循环维护一个帧计数器,根据频率决定是否 update。\n<pre><code>for e in &mut entities {\n    if frame_counter % e.update_period == 0 {\n        e.update(dt * e.update_period as f32);  // 补偿 dt\n    }\n}</code></pre>\n\n注意 dt 补偿:低频 entity 的 dt 要乘以 period——否则它们运动速度只有高频的 1/12。Casey 后面 Day 54 发现这个抽象不必要,用 sim region(Day 63)替代——只模拟相机附近的 entity,频率统一但范围受限。",
+      "map_parents": [
+        "Time-slice scheduling"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "update_frequency",
+        "frame_counter"
+      ],
+      "related_days": [
+        "day054",
+        "day063"
+      ],
+      "comparison": "Casey 后来(Day 54)发现频率分层不必要,sim region 更简单。这是探索式开发——做了发现不需要,推翻。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "低频 update 的 entity 怎么保证运动速度和高频一样?",
+          "a": "dt 乘以 update_period。比如 period=12 的 entity 每 12 帧 update 一次,dt 改成 dt*12。这样总位移 = speed*dt*12,和高频 entity 12 帧的总位移一样。否则低频 entity 运动只有高频的 1/12。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day052": {
+      "why": "entity 在相机空间动——Day 63 sim region 的前奏。",
+      "model": "之前:entity 存世界坐标(world_x, world_y)。渲染时 screen = world - camera。\n\nDay 52 试反向:相机移动时,把所有 entity 平移——减去相机移动量。entity 的「位置」变成相对相机的。\n\n好处:sim region 自然出现——离相机远的 entity 在相机空间坐标也远,可以剔除。\n坏处:多 entity 时平移成本大(每帧改所有 entity 位置)。10000 个 entity × 2 个 f32 = 80KB 写入/帧。\n\nCasey 最终(Day 63)用混合:保留世界坐标,但每帧只模拟相机周围的 entity。entity 不移动,只是选择性地 update。\n\n<strong>这集的技术要点</strong>:相机空间中的实体运动。\n\n这集是 Phase 2(2D 游戏)的一部分。Phase 2 的核心是:tile map 碰撞(Day 029 分轴碰撞/Minkowski 差)、entity 系统(Day 051-058 频率分层/空间网格/sparse 存储)、战斗(Day 059-062 HP/攻击/投射物)、sim region(Day 063 只模拟相机附近)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Camera space vs world space"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Relative coordinates",
+        "Entity panning"
+      ],
+      "related_days": [
+        "day051",
+        "day063"
+      ],
+      "comparison": "Casey 最终不用相机空间存 entity,用世界坐标 + sim region 选择性模拟。两种方案解决同一问题(远处 entity 不模拟),sim region 更简单。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "为什么 Casey 最终不用相机空间存 entity?",
+          "a": "多 entity 时平移成本大(10000 entity × 2 f32 = 80KB/帧写入)。世界坐标 + sim region 更简单——entity 不移动,只是选择性地 update 相机附近的。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day053": {
+      "why": "把环境元素(门、宝箱)统一成 entity——之前只有「活物」是 entity,环境是 tile。",
+      "model": "之前:Tile(墙/地)+ Entity(玩家/怪)。Day 53:全是 Entity。\n\n为什么?门、宝箱需要状态(打开/关闭、捡过/没捡),tile 不存状态(墙永远墙)。把有状态的对象统一成 entity,代码一致——所有游戏对象一个接口(update + render)。\n\n代价:entity 数量从 100(玩家+怪)暴涨到 1000+(加上门、宝箱、装饰)。需要 sim region(Day 63)+ 空间划分(Day 57)优化。\n\n数据结构变化:entity 加 <code>kind: EntityKind</code>(Player / Monster / Door / Chest / Decoration...)。碰撞规则(Day 069)按 kind 匹配。\n\n<strong>这集的技术要点</strong>:环境元素作为实体。\n\n这集是 Phase 2(2D 游戏)的一部分。Phase 2 的核心是:tile map 碰撞(Day 029 分轴碰撞/Minkowski 差)、entity 系统(Day 051-058 频率分层/空间网格/sparse 存储)、战斗(Day 059-062 HP/攻击/投射物)、sim region(Day 063 只模拟相机附近)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Unified abstraction"
+      ],
+      "map_siblings": [
+        {
+          "name": "ECS",
+          "note": "更极端的数据驱动"
+        }
+      ],
+      "map_children": [
+        "EntityKind enum",
+        "Stateful tiles → entities"
+      ],
+      "related_days": [
+        "day056",
+        "day069"
+      ],
+      "comparison": "Unity 和 Unreal 也用 entity(或 actor)为中心。Casey 在 HH 演示从 tile-based 到 entity-based 的演化过程。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "为什么把门从 tile 改成 entity?",
+          "a": "门需要状态(打开/关闭),tile 不存状态。改成 entity 后可以用统一的 update/render 接口,碰撞规则按 entity kind 匹配。代价是 entity 数量增加,需要优化。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day054": {
+      "why": "删除 Day 051 的 dormant(休眠)概念——发现不必要,增加复杂度但收益小。",
+      "model": "Day 051 让低频 entity 标记 dormant,跳过 update。Day 054 发现:\n1. 管理 dormant/active 状态切换复杂(什么时候醒?什么时候睡?)\n2. 性能差异不明显(大部分 entity update 很轻)\n3. sim region(Day 63)更简单——不管 dormant,只限制模拟范围\n\nCasey 的教训:YAGNI(You Aren't Gonna Need It)。等真的需要再优化。Day 051 的频率分层是「预先想象需求」——实际不需要。\n\n这是 Casey 工作流的典型:做了 → 发现不需要 → 推翻。不固执于自己的设计。Day 27 讨论过这种「探索式架构」。\n\n<strong>这集的技术要点</strong>:移除休眠实体概念。\n\n这集是 Phase 2(2D 游戏)的一部分。Phase 2 的核心是:tile map 碰撞(Day 029 分轴碰撞/Minkowski 差)、entity 系统(Day 051-058 频率分层/空间网格/sparse 存储)、战斗(Day 059-062 HP/攻击/投射物)、sim region(Day 063 只模拟相机附近)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "YAGNI principle",
+        "Exploratory refactoring"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Removing unnecessary abstraction"
+      ],
+      "related_days": [
+        "day027",
+        "day051"
+      ],
+      "comparison": "Day 051 做了频率分层,Day 054 推翻。这是 Casey 的「探索式开发」——不预先设计,做了发现不需要就推翻。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Casey 为什么推翻自己 Day 051 的设计?",
+          "a": "YAGNI。频率分层增加复杂度(dormant/active 状态管理)但性能收益不明显。sim region(Day 63)更简单——不管频率,只限制模拟范围。教训:等真的需要再优化。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day055": {
+      "why": "手写 hash table 用于稀疏世界存储。理解 HashMap 内部原理。",
+      "model": "<strong>HashMap 基础</strong>:hash function 把 key 映射到 bucket。bucket 数组,collision 用 chaining(链表)。\n\n<strong>Casey 的设计</strong>:key = (i32, i32)(世界 tile 坐标)。hash function:\n<pre><code>fn hash(x: i32, y: i32) -> usize {\n    let h = (x.wrapping_mul(0x9e3779b9) as u64) ^ (y as u64);\n    (h as usize) % BUCKET_COUNT\n}</code></pre>\n\n0x9e3779b9 是黄金分割常数(2^32 / φ),经验证分布均匀。\n\nbucket 数组固定大小(比如 4096)。每个 bucket 是 Vec<((i32,i32), TileMap)>。collision 时遍历 bucket 内链表。\n\n<strong>好的 hash function 让 key 均匀分布</strong>。差的让所有 key 挤在一个 bucket(退化成链表,O(n))。\n\n<strong>load factor</strong> = 元素数 / bucket 数。0.7 以上要 rehash(扩大 bucket 数组)。Casey 用固定大小,不 rehash——简单但可能退化。\n\nRust std::HashMap 自动 rehash,更安全。但 Casey 手写为了教学——理解原理后用 std 的更放心。",
+      "map_parents": [
+        "Hash table fundamentals"
+      ],
+      "map_siblings": [
+        {
+          "name": "std::HashMap",
+          "note": "自动 rehash,安全"
+        },
+        {
+          "name": "Open addressing",
+          "note": "不用链表,空槽探查"
+        }
+      ],
+      "map_children": [
+        "hash function(0x9e3779b9)",
+        "bucket array",
+        "chaining collision"
+      ],
+      "related_days": [
+        "day034",
+        "day035"
+      ],
+      "comparison": "Casey 手写 HashMap 教学用。生产代码用 std::HashMap(自动 rehash)或 hashbrown(更快)。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "0x9e3779b9 这个 magic number 是什么?",
+          "a": "黄金分割常数(2^32 / φ ≈ 0x9e3779b9)。乘法 hash 用它做因子,经验证能让 key 均匀分布到 bucket。好的 hash = 均匀分布 = 少 collision = 快。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day056": {
+      "why": "架构转折——游戏从 tile-based 改成 entity-based。世界由 entity 组成,tile 只用于渲染背景。",
+      "model": "之前:World = TileMap + Entities。碰撞用 tile 查询(Day 029)。Day 056 后:World = Entities。tile 只画背景,不参与碰撞。\n\n变化:墙之前是 tile(Wall),现在是 entity(EntityKind::Wall,有 AABB)。碰撞用 Day 050 的 Minkowski 检测,不用 tile 查询。\n\n好处:统一——所有碰撞用同一套 AABB 算法。tile 的特殊性消失。\n坏处:entity 数量从几十暴涨到几千。需要空间划分(Day 57)加速碰撞查询。\n\n这个架构决策让后面 Day 63 sim region 自然——只 unpack 相机附近的 entity,不管世界多大。\n\n<strong>这集的技术要点</strong>:从瓦片切换到实体。\n\n这集是 Phase 2(2D 游戏)的一部分。Phase 2 的核心是:tile map 碰撞(Day 029 分轴碰撞/Minkowski 差)、entity 系统(Day 051-058 频率分层/空间网格/sparse 存储)、战斗(Day 059-062 HP/攻击/投射物)、sim region(Day 063 只模拟相机附近)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Architecture evolution"
+      ],
+      "map_siblings": [
+        {
+          "name": "ECS",
+          "note": "更数据驱动的实体设计"
+        }
+      ],
+      "map_children": [
+        "Entity-as-wall",
+        "Unified AABB collision"
+      ],
+      "related_days": [
+        "day050",
+        "day057",
+        "day063"
+      ],
+      "comparison": "从 tile-based 到 entity-based 是游戏行业普遍趋势。Unity 和 Unreal 都用 entity/actor 为中心。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "把墙从 tile 改成 entity 后,碰撞怎么查?",
+          "a": "之前用 tile.get(tx,ty)==Wall 查(Day 029)。改成 entity 后,用空间划分(Day 57)查玩家附近的 entity,逐个 AABB 碰撞检测(Day 050)。entity 多了所以需要空间划分加速。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day057": {
+      "why": "空间划分——把世界分成网格,entity 按位置放到格子。查询只查附近格子,把 O(n²) 降到 O(n)。",
+      "model": "<strong>问题</strong>:N 个 entity 两两碰撞检测 = N² 次。1000 entity = 100 万次/帧。\n\n<strong>解法:空间网格</strong>。世界分成 CELL_SIZE 大小的格子(比如 256×256 像素)。每个 entity 注册到所在格子。碰撞查询时只查目标所在格子 + 8 邻居。\n\n<pre><code>struct SpatialGrid {\n    cells: HashMap&lt;(i32, i32), Vec&lt;EntityId&gt;&gt;,\n    cell_size: f32,\n}\n\nfn insert(&mut self, pos: Vec2, id: EntityId) {\n    let cx = (pos.x / self.cell_size) as i32;\n    let cy = (pos.y / self.cell_size) as i32;\n    self.cells.entry((cx, cy)).or_default().push(id);\n}\n\nfn query_nearby(&self, pos: Vec2) -> Vec&lt;EntityId&gt; {\n    let cx = (pos.x / self.cell_size) as i32;\n    let cy = (pos.y / self.cell_size) as i32;\n    let mut result = Vec::new();\n    for dx in -1..=1 {\n        for dy in -1..=1 {\n            if let Some(ids) = self.cells.get(&(cx+dx, cy+dy)) {\n                result.extend(ids);\n            }\n        }\n    }\n    result\n}</code></pre>\n\n<strong>cell_size 选择</strong>:太小→空 cell 多,管理开销大;太大→每 cell entity 多,查询退化。理想:cell_size ≈ 典型查询半径。\n\n<strong>性能</strong>:10000 entity,之前 10000² = 1 亿次碰撞检测/帧(不可能)。空间划分后每个 entity 只查 ~10 个邻居(9 cell × ~1 entity/cell)= 10 万次。1000× 加速。",
+      "map_parents": [
+        "Spatial partitioning",
+        "O(n²) → O(n) optimization"
+      ],
+      "map_siblings": [
+        {
+          "name": "Quad-tree",
+          "note": "递归四分,2D 空间"
+        },
+        {
+          "name": "BVH",
+          "note": "3D raycast 加速"
+        }
+      ],
+      "map_children": [
+        "CELL_SIZE 网格",
+        "9-邻居查询",
+        "cell_size 选择"
+      ],
+      "related_days": [
+        "day056",
+        "day058",
+        "day423"
+      ],
+      "comparison": "空间划分方案:Uniform grid(Casey,简单)/ Quad-tree(递归,分布不均时好)/ BVH(3D 用)。游戏选 uniform grid 因为简单够用。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "10000 entity 两两碰撞检测多少次?空间划分后多少?",
+          "a": "两两:10000² = 1 亿次。空间划分后每个 entity 只查 9 个 cell(约 10 个邻居)= 10 万次。1000× 加速。cell_size ≈ 查询半径时最优。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day058": {
+      "why": "把空间划分用到碰撞、AI 视线、渲染剔除。验证 Day 057 抽象的实战价值。",
+      "model": "<strong>三个用例</strong>:\n\n1. <strong>碰撞</strong>:玩家查附近怪——之前 O(n) 扫所有怪,现在 query_nearby 查 9 个 cell,O(1)。\n\n2. <strong>AI 视线</strong>:怪看玩家——用 Day 048 线段相交检查中间有没有墙挡。墙也用空间划分查,不用扫所有墙。\n\n3. <strong>渲染剔除</strong>:只画屏幕内 entity——算屏幕 4 角覆盖哪些 cell,只查这些 cell。\n\n<strong>重建策略</strong>:entity 移动时要更新所在 cell。两种方案:\n- 每帧全量重建 grid(简单,entity 少时 OK)\n- 增量更新(entity 移出 cell 时删除,移入新 cell 时插入)\n\nCasey 用全量重建——简单且 entity 数在 sim region 内可控(几百个)。\n\n<strong>这集的技术要点</strong>:使用空间划分。\n\n这集是 Phase 2(2D 游戏)的一部分。Phase 2 的核心是:tile map 碰撞(Day 029 分轴碰撞/Minkowski 差)、entity 系统(Day 051-058 频率分层/空间网格/sparse 存储)、战斗(Day 059-062 HP/攻击/投射物)、sim region(Day 063 只模拟相机附近)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Applied optimization"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "碰撞/AI/渲染三个用例",
+        "全量 vs 增量重建"
+      ],
+      "related_days": [
+        "day057"
+      ],
+      "comparison": "空间划分让 3 个 O(n) 操作变 O(1):碰撞、视线、渲染剔除。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "entity 移动后空间网格怎么更新?",
+          "a": "全量重建(简单,每帧清空+重新 insert)或增量更新(移出旧 cell 删除,移入新 cell 插入)。Casey 用全量重建——entity 在 sim region 内(几百个),重建成本低。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day059": {
+      "why": "加随从(familiar)——自动跟玩家的宠物。所有 NPC AI 的基础。",
+      "model": "<strong>AI 本质:每帧根据状态决定动作</strong>。\n\nFamiliar 的 AI 极简:朝玩家方向移动。\n\n<pre><code>fn update_familiar(familiar: &mut Entity, player_pos: Vec2, dt: f32) {\n    let to_player = player_pos.sub(familiar.pos);\n    let dist = to_player.length();\n    if dist > 30.0 {  // 太远了才追\n        let dir = to_player.normalize();\n        familiar.pos = familiar.pos.add(dir.mul(SPEED * dt));\n    }\n}</code></pre>\n\n逻辑:算 familiar 到玩家的向量 → 如果距离 > 30 → normalize 成方向 → 乘速度 × dt 移动。\n\n这是 AI 的最简形态——「Seek」行为(朝目标移动)。后面 Day 287 加 brain(大脑)系统,AI 更复杂(巡逻、追击、逃跑、协作)。但核心都是「根据状态决定动作」。",
+      "map_parents": [
+        "NPC AI basics",
+        "Steering behaviors"
+      ],
+      "map_siblings": [
+        {
+          "name": "Flee",
+          "note": "反方向(逃跑)"
+        },
+        {
+          "name": "Wander",
+          "note": "随机游走"
+        }
+      ],
+      "map_children": [
+        "Seek behavior",
+        "Distance check",
+        "Direction normalize"
+      ],
+      "related_days": [
+        "day060",
+        "day287"
+      ],
+      "comparison": "Seek 是 AI steering 的最简行为。更复杂:Flee(逃跑)、Wander(游走)、Path-following(路径跟随)、Flocking(群集)。游戏 AI 框架都有这些。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "familiar AI 的核心逻辑是什么?",
+          "a": "算到玩家的向量 → normalize 成方向 → 乘速度×dt 移动。这是 Seek 行为——AI steering 的最简形态。后面 Day 287 brain 系统让 AI 更复杂(巡逻/追击/逃跑),但核心都是「根据状态决定动作」。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day060": {
+      "why": "加生命值(HP)——RPG 战斗的基础。",
+      "model": "Entity 加 hp 字段。被攻击时 hp -= damage。hp <= 0 标记死亡。\n\n<pre><code>struct Entity {\n    // ...\n    hp: i32,\n    max_hp: i32,\n}\n\nimpl Entity {\n    fn take_damage(&mut self, dmg: i32) {\n        self.hp = (self.hp - dmg).max(0);\n        if self.hp == 0 {\n            self.state = EntityState::Dying;\n        }\n    }\n    fn heal(&mut self, amount: i32) {\n        self.hp = (self.hp + amount).min(self.max_hp);\n    }\n}</code></pre>\n\n死亡流程:hp=0 → 标记 Dying → 播死亡动画 → 动画结束从世界移除。\n\n扩展:max_hp(升级时增加)、regen(每秒回血)、defense(减伤)、critical hit(暴击)。这些在 Casey 后面 Day 180+ debug UI 里可以实时调。\n\n<strong>这集的技术要点</strong>:加生命值。\n\n这集是 Phase 2(2D 游戏)的一部分。Phase 2 的核心是:tile map 碰撞(Day 029 分轴碰撞/Minkowski 差)、entity 系统(Day 051-058 频率分层/空间网格/sparse 存储)、战斗(Day 059-062 HP/攻击/投射物)、sim region(Day 063 只模拟相机附近)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "RPG combat system"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "hp/max_hp fields",
+        "take_damage/heal methods",
+        "Dying state"
+      ],
+      "related_days": [
+        "day061",
+        "day062"
+      ],
+      "comparison": "HP 系统所有 RPG 都有。简单但关键——是「战斗」的基础。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Entity 死亡后怎么处理?",
+          "a": "hp=0 → 标记 Dying 状态 → 播死亡动画 → 动画结束从世界移除。不能 hp=0 就立即删除——动画还没播完。用状态机管(Dying → 移除)。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day061": {
+      "why": "加近战攻击——玩家按攻击键 → 检测前方范围内敌人 → 扣血。",
+      "model": "<strong>Melee 攻击流程</strong>:\n1. 玩家按攻击键\n2. 用空间划分(Day 057)查玩家前方矩形内的 entity\n3. 对每个 Enemy 类型 entity 调 take_damage\n4. 播放攻击动画 + 音效\n\n<strong>攻击范围</strong>:玩家前方一个矩形(比如宽 40 高 60)。用 Day 050 的 AABB 检测。或者用玩家朝向 + 扇形(更自然但复杂)。\n\n<strong>攻击间隔</strong>:防连按。两次攻击之间至少 0.3 秒。用 timer:\n<pre><code>if input.attack_just_pressed() && attack_timer <= 0.0 {\n    // 执行攻击\n    attack_timer = 0.3;  // 冷却 0.3 秒\n}\nattack_timer -= dt;</code></pre>\n\n<strong>视觉反馈</strong>:攻击时画一个挥砍效果(白色弧线,0.1 秒消失)。没有视觉反馈,玩家不知道攻击了。\n\n<strong>这集的技术要点</strong>:加简单攻击。\n\n这集是 Phase 2(2D 游戏)的一部分。Phase 2 的核心是:tile map 碰撞(Day 029 分轴碰撞/Minkowski 差)、entity 系统(Day 051-058 频率分层/空间网格/sparse 存储)、战斗(Day 059-062 HP/攻击/投射物)、sim region(Day 063 只模拟相机附近)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Melee combat"
+      ],
+      "map_siblings": [
+        {
+          "name": "Ranged",
+          "note": "Day 062 投射物"
+        }
+      ],
+      "map_children": [
+        "攻击范围 AABB",
+        "攻击间隔 timer",
+        "视觉反馈"
+      ],
+      "related_days": [
+        "day060",
+        "day062"
+      ],
+      "comparison": "Melee(近战)= 范围内即时伤害。Ranged(远程)= 投射物延迟伤害。后面 Day 062 加投射物。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "为什么需要攻击间隔(attack_timer)?",
+          "a": "防连按。玩家按住攻击键,60Hz 下每帧都检测到 pressed,不加间隔会每帧攻击=1 秒 60 次攻击=秒杀一切。间隔 0.3 秒=1 秒 3 次攻击=合理节奏。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day062": {
+      "why": "加投射物(projectile)——自己移动的伤害源。火球、箭、子弹。",
+      "model": "投射物是特殊 entity:有方向 + 速度 + 寿命 + 伤害。\n\n<pre><code>struct Projectile {\n    pos: Vec2,\n    vel: Vec2,     // 方向 × 速度\n    damage: i32,\n    lifetime: f32, // 剩余存活时间(秒)\n    owner: EntityId, // 谁发的(防止自伤)\n}</code></pre>\n\n<strong>每帧 update</strong>:\n1. pos += vel * dt(移动)\n2. lifetime -= dt(寿命减少)\n3. 用空间划分查附近 entity\n4. 碰到敌人(owner 以外)→ take_damage → 投射物消失\n5. 碰到墙 → 投射物消失\n6. lifetime <= 0 → 投射物消失\n\n<strong>发射</strong>:玩家按射击键 → spawn 一个 projectile,vel = player_facing_dir × PROJECTILE_SPEED。\n\n<strong>扩展</strong>:弧线(重力影响 vel.y += GRAVITY * dt)、追踪(target_dir = normalize(target.pos - projectile.pos))、AoE(碰撞时不消失,对所有附近敌人造成伤害)。",
+      "map_parents": [
+        "Ranged combat",
+        "Projectile physics"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Projectile entity",
+        "Lifetime timer",
+        "Collision → damage → destroy"
+      ],
+      "related_days": [
+        "day061",
+        "day063"
+      ],
+      "comparison": "投射物是 FPS、弹幕游戏的基础。物理引擎(Box2D/PhysX)也用类似结构——bullet entity 有速度、碰撞、销毁。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "投射物碰到敌人后为什么要消失?不消失会怎样?",
+          "a": "不消失=穿透=同一颗火球打一路的怪=不合理(除非是 piercing arrow 特殊设计)。正常火球碰到第一个敌人就爆炸消失。追踪导弹同理——命中目标后自毁。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day063": {
+      "why": "Phase 2 架构高潮——Simulation Region(模拟区域)。不管世界多大,每帧只模拟相机周围的 entity。O(1) 模拟成本。",
+      "model": "<strong>问题</strong>:世界 100 万 entity,每帧 update 100 万次?太慢。\n\n<strong>Sim region 解法</strong>:\n1. 定义模拟区域(玩家周围 200×200 像素)\n2. 每帧开始时从世界存储「unpack」sim region 内 entity 到一个紧凑 Vec\n3. 模拟只对 sim region Vec 做\n4. 模拟完后「pack」回世界存储\n\n<strong>unpack/pack 的本质</strong>:世界存储是稀疏的(HashMap),不 cache-friendly。Sim region Vec 是连续的,cache-friendly。每帧 unpack 一次(稀疏→连续),模拟(连续),pack 回去(连续→稀疏)。\n\n<pre><code>// 每帧\nlet mut sim = Vec::new();\n// unpack: 从世界存储找出 sim region 内的 entity\nfor (id, e) in &world.entities {\n    if in_sim_region(e.pos, camera_pos, REGION_SIZE) {\n        sim.push((*id, e.clone()));\n    }\n}\n// simulate: 只对 sim Vec 做 update/collision/AI\nfor (_, e) in &mut sim {\n    e.update(dt);\n}\n// pack: 写回世界存储\nfor (id, e) in &sim {\n    world.entities.insert(*id, e.clone());\n}</code></pre>\n\n<strong>关键洞察:让 hot loop 在连续内存上跑</strong>。这是 HH 性能优化的核心模式——Day 121 tiled marathon、Day 350 多线程都基于这个。",
+      "map_parents": [
+        "Spatial simulation culling",
+        "Cache-friendly data layout"
+      ],
+      "map_siblings": [
+        {
+          "name": "Level streaming",
+          "note": "开放世界用"
+        },
+        {
+          "name": "Chunk simulation",
+          "note": "Minecraft 用"
+        }
+      ],
+      "map_children": [
+        "Sim region rectangle",
+        "unpack/pack (sparse↔dense)",
+        "Hot loop on contiguous Vec"
+      ],
+      "related_days": [
+        "day056",
+        "day121",
+        "day350"
+      ],
+      "comparison": "所有大世界游戏都用某种 sim region——只模拟附近的。Minecraft chunk(16³)就是 sim region 的 3D 版。GTA 用 LOD(distance-based detail)。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "为什么 sim region 要 unpack 到 Vec 而不直接在 HashMap 上模拟?",
+          "a": "Vec 是连续内存,cache-friendly(L1 命中)。HashMap 是稀疏的,每次访问可能 cache miss(L2/L3/RAM)。差 10-25×。把 hot loop 放在连续 Vec 上跑,是 HH 性能优化的核心模式。Day 112 讨论过 cache 层级。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day064": {
+      "why": "sim region 内 entity 怎么引用世界中的 entity?两套 index 需要映射。",
+      "model": "Sim region unpack 时,每个 entity 在 sim Vec 里有 local index(0,1,2...)。但 entity 需要引用世界存储中别的 entity(玩家攻击的目标)。两套 index 怎么对应?\n\nCasey 维护映射表:\n<pre><code>struct SimRegion {\n    entities: Vec&lt;Entity&gt;,  // 紧凑数组\n    world_to_sim: HashMap&lt;WorldEntityId, usize&gt;, // 世界ID → sim数组下标\n}</code></pre>\n\nunpack 时建表,pack 时丢弃。sim 内代码用 sim index 引用其他 entity,需要时通过 world_to_sim 查对应。\n\n这是 Day 011 状态外置 + Day 063 sim region 的必然结果——状态有多份「视图」(world 视图、sim 视图),需要双向映射。\n\n<strong>这集的技术要点</strong>:实体索引到指针的映射。\n\n这集是 Phase 2(2D 游戏)的一部分。Phase 2 的核心是:tile map 碰撞(Day 029 分轴碰撞/Minkowski 差)、entity 系统(Day 051-058 频率分层/空间网格/sparse 存储)、战斗(Day 059-062 HP/攻击/投射物)、sim region(Day 063 只模拟相机附近)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Reference mapping",
+        "Multi-view state"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "world_to_sim HashMap",
+        "Local sim index"
+      ],
+      "related_days": [
+        "day011",
+        "day063",
+        "day065"
+      ],
+      "comparison": "这种「双 index 映射」在数据库(物理 ID ↔ 逻辑 ID)、ORM(对象 ↔ 行)、网络(客户端 ID ↔ 服务端 ID)都有。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "sim 内 entity 引用其他 entity 时用哪个 index?",
+          "a": "用 sim local index(紧凑 Vec 的下标)。如果只有世界 index,通过 world_to_sim HashMap 查对应。pack 时丢弃映射——下一帧重新 build。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day065": {
+      "why": "Day 063-64 sim region 的收尾——把所有代码迁移到新结构,清理旧路径。",
+      "model": "重构=不改行为,改结构。把 Day 063 的 sim region 应用到所有相关代码:\n- 碰撞:在 sim Vec 内做(Day 050 AABB + Day 057 空间划分)\n- AI:在 sim Vec 内做(Day 059 seek)\n- 渲染:读 sim Vec 生成 push buffer\n\n统一接口,消除 Day 051-58 的散乱代码。sim region 成为一个清晰的抽象——模拟只在这里发生,渲染/加载在 sim 外。\n\n<strong>这集的技术要点</strong>:完成模拟区域改造。\n\n这集是 Phase 2(2D 游戏)的一部分。Phase 2 的核心是:tile map 碰撞(Day 029 分轴碰撞/Minkowski 差)、entity 系统(Day 051-058 频率分层/空间网格/sparse 存储)、战斗(Day 059-062 HP/攻击/投射物)、sim region(Day 063 只模拟相机附近)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Refactoring"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Sim region as universal abstraction"
+      ],
+      "related_days": [
+        "day063",
+        "day064"
+      ],
+      "comparison": " Casey 每引入大改动后花一集清理(Day 24/39/65/105 同模式)。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "sim region 统一了什么?",
+          "a": "统一了碰撞/AI/渲染的入口——都在 sim Vec 内做。之前碰撞在 tile 层、AI 在 entity 层、渲染在 push buffer 层,代码散乱。sim region 后,模拟统一在连续 Vec 上,其他系统从 sim 读取。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day066": {
+      "why": "区分空间 entity 和非空间 entity(UI、debug overlay)。两种走不同 update/render 路径。",
+      "model": "之前所有 entity 都有 pos 字段(世界位置)。Day 066 分两类:\n\n<strong>Spatial entity</strong>:有世界位置(玩家、怪、投射物、门)。走 sim region → spatial grid → 渲染剔除。\n\n<strong>Non-spatial entity</strong>:无世界位置(UI 元素、debug overlay、cutscene controller)。全局 update,不走 sim region。\n\n实现:entity 加 <code>is_spatial: bool</code> 字段。或者更 Rust 的方式——用 enum:\n<pre><code>enum Entity {\n    Spatial { pos: Vec2, /* ... */ },\n    NonSpatial { /* UI-specific fields */ },\n}</code></pre>\n\n两种走不同 update/render 路径。Spatial 走 sim region(Day 063),non-spatial 全局。\n\n<strong>这集的技术要点</strong>:加非空间实体支持。\n\n这集是 Phase 2(2D 游戏)的一部分。Phase 2 的核心是:tile map 碰撞(Day 029 分轴碰撞/Minkowski 差)、entity 系统(Day 051-058 频率分层/空间网格/sparse 存储)、战斗(Day 059-062 HP/攻击/投射物)、sim region(Day 063 只模拟相机附近)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Entity categorization"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Spatial vs non-spatial",
+        "Different update paths"
+      ],
+      "related_days": [
+        "day063"
+      ],
+      "comparison": "所有游戏引擎都区分空间/非空间对象。Unity 有 UI Canvas(非空间)vs GameObject(空间)。Casey 在 entity 层面区分。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "UI 元素为什么要和世界 entity 区分开?",
+          "a": "UI 没有世界位置,不参与碰撞/AI/sim region。如果混在一起,每帧要判断「这个 entity 是不是 spatial」——分散注意力。分开后各自走最优路径。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day067": {
+      "why": "让 update 条件化——静止 entity 不 update 速度,死亡 entity 不 update AI。",
+      "model": "Entity 有多种状态(alive / dead / dormant)。每帧 update 时根据状态决定 update 什么。\n\n<pre><code>fn update(&mut self, dt: f32) {\n    match self.state {\n        EntityState::Alive => {\n            self.update_ai(dt);\n            self.update_physics(dt);\n            self.update_animation(dt);\n        }\n        EntityState::Dying => {\n            // 不 update AI 和物理,只播动画\n            self.update_animation(dt);\n            if self.anim_finished { self.state = EntityState::Dead; }\n        }\n        EntityState::Dead => {\n            // 什么都不做,等被清理\n        }\n    }\n}</code></pre>\n\n死亡 entity 不 update AI 和移动(已死),但 update 渲染(渐隐动画)。静止 entity 不 update 位置,但 update 计时器(可能定时激活)。\n\n这种「条件 update」减少 CPU 浪费——10000 个 entity 中可能 8000 个是 Dead,不用 update AI/物理。",
+      "map_parents": [
+        "State machine optimization"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "EntityState enum",
+        "Per-state update logic"
+      ],
+      "related_days": [
+        "day060",
+        "day066"
+      ],
+      "comparison": "状态机驱动的 update 是游戏 AI 的基础。Unity 的 Animator + StateMachine 是可视化版本。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "死亡 entity 为什么要 update 渲染但不 update AI?",
+          "a": "死亡时有渐隐/翻倒动画要播(需要 update_animation)。但 AI 已经停了(不思考、不移动)。等动画结束才真正移除。这是状态机驱动 update 的典型——不同状态做不同事。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day068": {
+      "why": "限制每帧最大移动距离——防止高速 entity 穿墙/物理爆炸。",
+      "model": "高速 entity 速度 × dt 可能很大(> tile size)。Day 068 clamp:每帧移动距离不超过 max。\n\n<pre><code>fn update(&mut self, dt: f32) {\n    let dx = self.vel.x * dt;\n    let dy = self.vel.y * dt;\n    let dist = (dx*dx + dy*dy).sqrt();\n    let max_dist = TILE_SIZE as f32 * 0.5;  // 每帧最多半个 tile\n    if dist > max_dist {\n        let scale = max_dist / dist;\n        self.vel.x *= scale;\n        self.vel.y *= scale;\n    }\n    self.pos.x += self.vel.x * dt;\n    self.pos.y += self.vel.y * dt;\n}</code></pre>\n\n和 Day 045 temporal search 配合:先 clamp 速度限制每帧移动量,再用 temporal search 检查路径。双保险防穿墙。",
+      "map_parents": [
+        "Movement clamping"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "max_dist = TILE_SIZE/2",
+        "Velocity clamp"
+      ],
+      "related_days": [
+        "day045",
+        "day029"
+      ],
+      "comparison": "速度 clamp + temporal search = 双保险防穿墙。物理引擎(Box2D)用 sub-stepping(把一帧拆成多个物理步)达到同样效果。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "速度 clamp 和 temporal search 什么关系?",
+          "a": "互补。速度 clamp 限制每帧移动量(防止太大),temporal search 检查路径(防止跳过墙)。两个一起用=双保险。只用 clamp 不够(dt 很大时仍可能穿墙);只用 temporal search 够但慢(clamp 减少步数)。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day069": {
+      "why": "设计成对碰撞规则——不同 entity 类型碰撞行为不同。数据驱动设计。",
+      "model": "碰撞规则用 match 表:\n\n<pre><code>fn collision_rule(a: EntityKind, b: EntityKind) -> CollisionRule {\n    match (a, b) {\n        (Player, Monster)  => CollisionRule::Damage(10),   // 玩家受伤\n        (Projectile, Monster) => CollisionRule::Damage(20), // 怪受伤\n        (Projectile, Wall)  => CollisionRule::Destroy,      // 投射物消失\n        (Player, Wall)      => CollisionRule::Block,        // 玩家停下\n        (Monster, Monster)  => CollisionRule::None,         // 怪互相穿过\n        _ => CollisionRule::None,\n    }\n}</code></pre>\n\n<strong>数据驱动</strong>的好处:加新 entity 类型只改 match 表,不改碰撞代码。比如加 <code>(Fire, Player) => Damage(5)</code> 就让火伤害玩家——碰撞逻辑零改动。\n\n扩展:碰撞力度(impact force 影响击退)、碰撞材质(金属撞金属 vs 木质)、碰撞事件触发(开门/爆炸)。",
+      "map_parents": [
+        "Collision rules",
+        "Data-driven design"
+      ],
+      "map_siblings": [
+        {
+          "name": "Physics material",
+          "note": "物理引擎用材质定义碰撞行为"
+        }
+      ],
+      "map_children": [
+        "CollisionRule enum",
+        "match (a_kind, b_kind)",
+        "Data-driven rules"
+      ],
+      "related_days": [
+        "day050",
+        "day062"
+      ],
+      "comparison": "数据驱动的碰撞规则让加新类型容易。Unity 用 Physics Material,Unreal 用 Collision Profile。本质都是「类型对 → 行为」表。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "数据驱动碰撞规则的好处是什么?",
+          "a": "加新 entity 类型只改 match 表,不改碰撞代码。比如加 Fire 类型:(Fire, Player) => Damage(5) 一行就让火伤害玩家。如果碰撞逻辑写死在代码里(大量 if/else),加新类型要改多处。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    },
+    "day070": {
+      "why": "Phase 2 收官——Casey 列出后续功能清单。里程碑 M2:可玩 2D 游戏。",
+      "model": "经过 Day 26-70 你有了一个完整 2D 游戏:\n- 三明治分层架构(Day 26)\n- Tile map + 渲染(Day 28-39)\n- 坐标系 + WorldPos(Day 31-32)\n- 虚拟化大世界(Day 33-35)\n- BMP 加载 + blit + alpha(Day 36-38)\n- 全屏(Day 40)\n- 2D 向量 + 运动方程(Day 41-43)\n- Minkowski 碰撞(Day 50)\n- Entity 系统 + 空间划分(Day 51-58)\n- 战斗 + 投射物(Day 59-62)\n- Sim region(Day 63-65)\n- 碰撞规则(Day 69)\n\n<strong>Phase 2 出口标准</strong>:游戏能走来走去、撞墙不穿、打怪、被打、扔火球、捡道具。全部 yes = 毕业。\n\n<strong>这集的技术要点</strong>:探索待办清单。\n\n这集是 Phase 2(2D 游戏)的一部分。Phase 2 的核心是:tile map 碰撞(Day 029 分轴碰撞/Minkowski 差)、entity 系统(Day 051-058 频率分层/空间网格/sparse 存储)、战斗(Day 059-062 HP/攻击/投射物)、sim region(Day 063 只模拟相机附近)。\n\n<strong>跟做要点</strong>:Casey 在 C/C++ + Win32 实现,你用 Rust + 跨平台库(winit/cpal/gilrs/libloading/glutin/glow)翻译。关注<strong>设计模式</strong>而不是语法——LoadLibrary→libloading、DirectSound→cpal、wglCreateContext→glutin,但底层架构(平台/游戏分离、push buffer、sim region、状态外置)完全一样。看完视频→读源码 diff→在 Rust 项目实现→运行验证→git commit。",
+      "map_parents": [
+        "Project milestone"
+      ],
+      "map_siblings": [],
+      "map_children": [
+        "Complete 2D game"
+      ],
+      "related_days": [
+        "day026",
+        "day121"
+      ],
+      "comparison": "Phase 2 完成后 HH 从「能跑的程序」变成「能玩的游戏」。Phase 3 加 3D,Phase 4 加性能,Phase 5+ 加 OpenGL 和光照。",
+      "exercises": [
+        {
+          "level": 1,
+          "type": "concept",
+          "q": "Phase 2 完成后你的游戏能做什么?",
+          "a": "走、撞墙不穿(wall sliding)、打怪(近战+投射物)、被打(HP系统)、捡道具、多楼层(z轴)、虚拟化大世界(无限世界固定内存)。这是所有 2D 游戏的核心机制。"
+        },
+        {
+          "level": 2,
+          "type": "concept",
+          "q": "这集的碰撞/移动/碰撞/AI 算法时间复杂度是多少?有没有更优方案?",
+          "a": "看 Day 029/050/057 的分析。碰撞检测用 Minkowski O(1)/空间网格 O(n)。"
+        },
+        {
+          "level": 3,
+          "type": "concept",
+          "q": "如果把玩家从 32×32 改成 16×16,碰撞逻辑需要改什么?",
+          "a": "AABB 半宽减半。Minkowski 差公式中 half_a 变化。碰撞更精确但可能卡在窄缝。"
+        }
+      ]
+    }
+  }
+}

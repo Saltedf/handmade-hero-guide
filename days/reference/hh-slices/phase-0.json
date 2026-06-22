@@ -1,0 +1,57 @@
+{
+  "phase_num": 0,
+  "phase_meta": {
+    "id": "phase-0",
+    "title": "Phase 0 — 地基准备",
+    "range": "(穿插,2-4 周)",
+    "intro": "这一阶段不直接对应 Handmade Hero 的任何一集,但它是你能在后面 667 集里\"看懂\"而不是\"抄懂\"的前提。Casey 默认你懂 C、懂指针、懂基本的 Win32 概念,我们用 Rust 学就要把对应的 Rust 知识和 CS 基础先打牢。建议这一阶段与 Phase 1 并行推进——遇到不懂的概念就回这里查。",
+    "goal": "把 Rust 的所有权、生命周期、unsafe、FFI 基础扫清,补齐线性代数和计算机体系结构的关键概念,准备好跨平台开发环境。",
+    "exit": "能在 30 分钟内写出一个用 winit 创建窗口、用 softbuffer 显示渐变色的小程序;能解释 Rust 里 `&mut` 为什么排他;能说清楚什么是 cache line。",
+    "rust_topics": [
+      "所有权 / 借用 / 生命周期(The Rust Book ch.4, 10)",
+      "Trait 与泛型(ch.10)",
+      "unsafe 与 FFI 基础(ch.19)",
+      "Cargo workspace 与 features(ch.14)",
+      "`std::arch::x86_64` SIMD intrinsics 入门",
+      "`std::sync::atomic` 与 `std::thread` 概览"
+    ],
+    "cs_supplement": [
+      "SICP 前 2 章 — 抽象与复合数据",
+      "GAMES101 第 1-5 讲(闫令琪)— 线性代数与向量",
+      "CS:APP 第 5 章 — CPU 优化与流水线(为 Day 112+ 准备)",
+      "3D Math Primer(gamemath.com 免费版)— 与 Day 41 起的向量数学对照"
+    ],
+    "resources": [
+      {
+        "name": "The Rust Book",
+        "url": "https://doc.rust-lang.org/book/"
+      },
+      {
+        "name": "rustlings",
+        "url": "https://github.com/rust-lang/rustlings"
+      },
+      {
+        "name": "Comprehensive Rust (Google)",
+        "url": "https://google.github.io/comprehensive-rust/"
+      },
+      {
+        "name": "Rust FFI Omnibus",
+        "url": "http://jakegoulding.com/rust-ffi-omnibus/"
+      },
+      {
+        "name": "Rust Atomics and Locks (Mara Bos)",
+        "url": "https://marabos.nl/atomics/"
+      },
+      {
+        "name": "GAMES101(闫令琪,B站)",
+        "url": "https://www.bilibili.com/video/BV1X7411F744/"
+      },
+      {
+        "name": "3D Math Primer",
+        "url": "https://gamemath.com/book/intro.html"
+      }
+    ]
+  },
+  "episodes": [],
+  "lessons": {}
+}
