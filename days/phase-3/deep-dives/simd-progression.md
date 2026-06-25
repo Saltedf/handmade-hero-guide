@@ -1,762 +1,573 @@
 ---
-phase: 3
-title_en: "SIMD Progression"
-title_zh: "SIMD 演化史:从 scalar 到 AVX-512"
+title: "SIMD 演化论:从标量到 AVX-512"
 type: deep-dive
-domains: [game, rust, performance, cpu]
-bridges: ["day117", "day337", "day550"]
+phase: 3
+domains: [rust, linux, game, graphics]
+prereqs: ["phase-0/14-math-foundations", "phase-3/day081"]
 ---
 
-# SIMD 演化史:从 scalar 到 AVX-512
+# SIMD 演化论:从标量到 AVX-512
 
-> 你跟着 HH Day 117 第一次听说 "SIMD"。Casey 把 4 个 f32 同时计算,说这是"现代 CPU 的免费午餐"。Day 337 他开始手写 SSE intrinsic,你被 `_mm_add_ps` 这种神秘符号劝退。Day 550 你听说 AVX-512 在新 Intel CPU 上能用,但 AMD Zen 4 部分支持,Zen 5 全支持——这是 2026 年的你最讨厌的硬件碎片化。这一篇把 SIMD 从最基础的 scalar 一直讲到 AVX-512、NEON、portable-simd,把所有让你困惑的概念串起来,告诉你**何时该手写、何时让编译器做**。
+> 在 Phase 3 的某一天你会看到 Casey 突然在代码里写 `_mm_add_ps(a, b)`,然后兴奋地说"四倍快!"。这一篇是给你的预习——为什么 SIMD 这么猛,什么时候用,什么时候反而会更慢。我们用 tsoding 风格直接上代码,从标量版本一步步演化到 SIMD 版本,中间该踩的坑一个都不少。
 
 ## 0 · 为什么要有这一篇
 
-SIMD(Single Instruction Multiple Data)是现代 CPU 性能的关键。一条指令处理 4-16 个数据,理论上 4-16 倍加速。游戏里 hot loop(粒子、混音、矩阵乘、raycast)都受益。
-
-但 SIMD 有几个让人劝退的地方:
-
-1. **指令集碎片化**:SSE、SSE2、SSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX-512、FMA、BMI、NEON、SVE...每个 CPU 支持的子集不同。
-2. **intrinsic 难读**:`_mm256_fmadd_ps(_mm256_set1_ps(2.0), _mm256_loadu_ps(p), acc)` 是什么意思?需要查手册。
-3. **自动向量化不可靠**:LLVM 有时神奇地识别你的循环,有时完全失败。你不知道为什么。
-4. **对齐陷阱**:SIMD 指令有的要求 16/32/64 字节对齐,不对齐就 SIGBUS。
-5. **跨平台噩梦**:x86 用 SSE/AVX,ARM 用 NEON,RISC-V 用 RVV。一份代码跑不通所有平台。
-
-**读完这一篇,你应该能**:
-- 解释 scalar / SSE / AVX / AVX2 / AVX-512 的寄存器宽度和吞吐量
-- 用 `std::arch::x86_64` 写 SSE / AVX intrinsic
-- 判断 LLVM 是否自动向量化了你的代码
-- 用 `wide` 或 `std::simd`(portable_simd)写跨平台 SIMD
-- 处理 SIMD 内存对齐要求
-- 决定什么时候**不**用 SIMD(避免过早优化)
-
-## 1 · SIMD 是什么
-
-### 1.1 寄存器宽度演化
-
-普通 CPU 寄存器是 64-bit(一个 u64 或 f64)。SIMD 寄存器更宽:
-
-| 指令集 | 寄存器 | 宽度 | 一次处理 | 出现年份 |
-|---|---|---|---|---|
-| MMX | mm0-7 | 64-bit | 2x f32 / 8x i8 | 1996 |
-| SSE | xmm0-15 | 128-bit | 4x f32 / 2x f64 | 1999 |
-| SSE2 | xmm | 128-bit | + 4x i32 / 16x i8 | 2001 |
-| AVX | ymm0-15 | 256-bit | 8x f32 / 4x f64 | 2011 |
-| AVX2 | ymm | 256-bit | + 8x i32 | 2013 |
-| AVX-512 | zmm0-31 | 512-bit | 16x f32 / 8x f64 | 2016 (server) |
-| NEON | q0-31 | 128-bit | 4x f32 | 2009 (ARM) |
-| SVE | z0-31 | 128-2048-bit | variable | 2016 (ARM HPC) |
-
-每个寄存器能同时处理多个 lane。一条指令:`zmm0 = zmm1 + zmm2` 一次加 16 个 f32。
-
-### 1.2 为什么 SIMD 这么快
-
-假设你循环把两个数组相加:
+你写过两数相加:
 
 ```rust
-fn add_arrays(a: &[f32], b: &[f32], out: &mut [f32]) {
-    for i in 0..a.len() {
-        out[i] = a[i] + b[i];
-    }
+fn add(a: f32, b: f32) -> f32 { a + b }
+```
+
+CPU 算这个要 1 个 cycle(其实更少,因为浮点单元流水化)。看起来挺快。但你游戏里经常有"10000 个粒子,每帧位置更新一次"的需求——10 万次 f32 加法,如果每次都 1 cycle,**总开销就是 10 万 cycle**。
+
+能不能"一次算多个"?
+
+答案就是 **SIMD**(Single Instruction, Multiple Data):一条指令同时处理多个数据。一条 `_mm_add_ps` 一次算 **4 个 f32 加法**,仍然只要 1 cycle。10000 个粒子变成 2500 条指令,**理论上 4 倍加速**。
+
+但**理论不等于实际**。SIMD 有它的脾气——数据要对齐、gather/scatter 极慢、CPU 间版本不同指令不同、auto-vectorization 不可靠……这一篇就把这些坑一次性踩完。
+
+HH 在 Day 117 开始接触 SIMD(Packing Pixels for the Framebuffer),Day 337 用在音频混音器,Day 431 用在光线投射,Day 550 用在光照采样。**每次都是同一个套路**——拿一个标量循环,改写成 SIMD。学会这一篇,以后 4 次出现你都能 30 秒看懂。
+
+学完后,你应该能:
+- 解释 SIMD 为什么快(指令并行 vs 数据并行)
+- 写出 SSE / AVX / NEON 的基本 intrinsics
+- 看懂 `cargo asm` 输出,判断编译器有没有自动向量化
+- 知道什么时候**不该用 SIMD**(可读性 / 可移植性 / 边界处理成本)
+- 在 Rust 项目里用 `std::arch::x86_64` 写出 zero-cost 抽象
+
+## 1 · 心智模型:从标量到 SIMD 的"思维切换"
+
+### 1.1 标量思维:一个萝卜一个坑
+
+标量代码:`for sum += x[i]`。每次循环算一个数。直觉是"一次一件事"。
+
+```rust
+fn sum_scalar(xs: &[f32]) -> f32 {
+    let mut s = 0.0;
+    for &x in xs { s += x; }
+    s
 }
 ```
 
-**scalar** 版本(无 SIMD):每次循环 1 个加法,需要 4 cycle(数据加载 + 加 + 存储)。1024 个元素 = 4096 cycle。
+CPU 内部其实也很"标量地"做:取一个 x[i],加到 s,推进 i。即使有流水线,本质是**串行**。
 
-**SSE** 版本:每次循环 4 个加法(`addps`),3-4 cycle。1024 个元素 = ~1024 cycle。4 倍加速。
+### 1.2 SIMD 思维:一筐萝卜一起处理
 
-**AVX** 版本:每次 8 个,3-4 cycle。1024 个元素 = ~512 cycle。8 倍加速。
-
-**AVX-512** 版本:每次 16 个,~5 cycle。1024 个元素 = ~320 cycle。13 倍加速。
-
-这就是为什么 SIMD 重要。视频编解码、AI 推理、物理引擎都靠 SIMD 撑性能。
-
-### 1.3 哪些 CPU 支持什么
-
-```bash
-# Linux 上看你的 CPU 支持哪些
-cat /proc/cpuinfo | grep flags | head -1 | tr ' ' '\n' | grep -E 'sse|avx|fma|bmi' | sort -u
-
-# 输出类似:
-# avx avx2 fma f16c mmx sse sse2 sse3 sse4_1 sse4_2 ssse3
-```
-
-2026 年的主流 CPU:
-
-- AMD Zen 4 / 5:AVX2 + AVX-512(部分)
-- Intel Alder Lake+:AVX2(AVX-512 被禁用,混合架构)
-- Intel Sapphire Rapids(server):AVX-512 全开
-- Apple M1/M2/M3:NEON
-- 树莓派 4 / 5:NEON
-- 服务器 / HPC:AVX-512 或 ARM SVE
-
-**关键现实**:大多数游戏 PC(2026)只支持到 AVX2。AVX-512 是 server / HPC 特权。**为 AVX-512 优化的游戏在普通 PC 跑不动**。
-
-## 2 · 第一步:让编译器自动 SIMD
-
-### 2.1 自动向量化是真实存在的
-
-LLVM 自动向量化能把简单标量循环转成 SIMD。看这段:
+SIMD 把数据组织成**向量**(vector)——一个寄存器里塞多个数。128 位寄存器塞 4 个 f32,256 位塞 8 个,512 位塞 16 个。一条指令对**整个向量**做同一操作。
 
 ```rust
-#[inline]
-pub fn dot_product(a: &[f32], b: &[f32]) -> f32 {
-    assert_eq!(a.len(), b.len());
-    let mut sum = 0.0f32;
-    for i in 0..a.len() {
-        sum += a[i] * b[i];
-    }
-    sum
+// SSE: 4 个 f32 同时加
+use std::arch::x86_64::*;
+unsafe {
+    let a = _mm_set_ps(1.0, 2.0, 3.0, 4.0);  // [4, 3, 2, 1] (倒序!)
+    let b = _mm_set_ps(10.0, 20.0, 30.0, 40.0);
+    let c = _mm_add_ps(a, b);                 // [14, 23, 32, 41]
+    // c 是 __m128 类型,内部 4 个 f32 同时被加上对应位置的 b
 }
 ```
 
-LLVM 识别出这是 "reduction"(累加),自动 vectorize 成 SSE / AVX。生成的汇编大致是:
+一条 `_mm_add_ps` 在硬件层是 `addps` 指令(注意结尾的 `s` = packed single precision)。CPU 的向量单元(ALU 阵列)同时算 4 个加法。延迟和一次标量加法**几乎一样**(1-3 cycle,看 CPU 代际)。
 
-```asm
-loop_unrolled:
-    vmovups ymm0, [rsi + rcx*4]   ; 加载 8 个 f32
-    vmovups ymm1, [rdx + rcx*4]
-    vfmadd231ps ymm2, ymm0, ymm1  ; ymm2 += ymm0 * ymm1 (fused multiply-add)
-    add rcx, 8
-    cmp rcx, 1024
-    jl loop_unrolled
+### 1.3 类比:超市结账
 
-; horizontal sum ymm2 → scalar
-vhaddps ymm2, ymm2, ymm2
-...
+标量 = 一个收银台,一个顾客一扫一装。
+SIMD = 一个收银员同时扫 4 个顾客的同一商品(都是 1 瓶可乐)。
+
+但前提是"4 个顾客都买 1 瓶可乐"。如果有一个买的是啤酒,SIMD 就不好处理——你得**gather**(把啤酒从某处抓过来)或**mask**(跳过啤酒顾客)。**SIMD 最怕的不是计算,是数据组织**。
+
+### 1.4 SIMD 的硬件基础:寄存器宽度演化
+
+```
+1999  MMX     64-bit   (8 × u8 / 4 × u16 / 2 × u32)  — 整数,已淘汰
+1999  SSE     128-bit  (4 × f32 / 4 × u32)            — 浮点开始
+2001  SSE2    128-bit  (2 × f64 / 16 × u8)            — f64 支持
+2004  SSE3    128-bit  (horizontal add/sub)
+2006  SSSE3   128-bit  (shuffle / byte ops)
+2007  SSE4.1/4.2  128-bit  (dot product, blend, CRC32)
+2011  AVX     256-bit  (8 × f32 / 4 × f64)            — 大跃进
+2013  AVX2    256-bit  (integer AVX 支持)             — gather 慢
+2017  AVX-512 512-bit  (16 × f32)                     — 服务器,争议
+2011  ARM NEON 128-bit (类似 SSE)
+2020  ARM SVE  可变长度
 ```
 
-`vfmadd231ps` 是 AVX2 + FMA 指令——一条指令完成 8 个 `a*b+c`。**这就是 SIMD 的魔力**——你写 scalar,编译器生成 SIMD。
+注意:**AVX-512 不是免费的**。Skylake-X 上跑 AVX-512 会让 CPU 降频(license-based frequency),实际收益要测。AMD Zen4 才正式支持。**AVX2 是当前主流 baseline**。
 
-### 2.2 启用自动向量化
+游戏开发圈的态度:
+- **SSE2 baseline**:所有 x86-64 都支持(AMD64 spec 强制)
+- **AVX2 优先**:2013+ CPU 支持,游戏圈默认
+- **AVX-512 跳过**:太多坑,除非数值计算 / AI
 
-```toml
-[profile.release]
-opt-level = 3
-lto = "fat"
-codegen-units = 1
-panic = "abort"   # 让 LLVM 大胆优化
-```
+## 2 · Rust 的 SIMD 三种姿势
 
-加 `RUSTFLAGS="-C target-cpu=native"` 让 LLVM 用当前 CPU 的所有特性。
-
-```bash
-RUSTFLAGS="-C target-cpu=native" cargo build --release
-```
-
-或者永久设置(项目级 `.cargo/config.toml`):
-
-```toml
-[build]
-rustflags = ["-C", "target-cpu=native"]
-```
-
-**注意**:`target-cpu=native` 编出的 binary **不能跑在比编译机 CPU 旧的机器上**。如果要分发,用 `-C target-cpu=x86-64-v3`(AVX2)或 `x86-64-v4`(AVX-512)。
-
-### 2.3 验证向量化
-
-```bash
-# 装 cargo-show-asm
-cargo install cargo-show-asm
-
-# 看 dot_product 的汇编
-cargo asm --release your_crate::dot_product
-```
-
-如果你看到 `addps`(SSE)、`vaddps`(AVX)、`vfmadd*`(FMA),说明向量化成功。如果看到纯 `addss`(scalar 单精度加),说明没向量化。
-
-### 2.4 自动向量化失败的原因
-
-**1. 循环里有分支**:
+### 2.1 姿势一:std::arch::x86_64 intrinsics(直接调硬件)
 
 ```rust
-for i in 0..n {
-    if a[i] > 0.0 {  // 分支劝退 LLVM
-        sum += a[i];
-    }
-}
-```
-
-修复:用 branchless:
-
-```rust
-for i in 0..n {
-    sum += if a[i] > 0.0 { a[i] } else { 0.0 };  // 仍是分支但更简单
-}
-// 或用 mask:
-for i in 0..n {
-    let mask = (a[i] > 0.0) as u32;
-    sum += f32::from_bits(a[i].to_bits() & mask);
-}
-```
-
-**2. 跨迭代依赖**:
-
-```rust
-let mut state = 0;
-for i in 0..n {
-    state = state * 31 + a[i];  // state 依赖上一轮
-}
-// LLVM 无法向量化
-```
-
-某些 reduction 可向量化(乘加、max、min),复杂的 state 依赖不行。
-
-**3. 数据不连续**:
-
-```rust
-let v: Vec<Vec<f32>> = ...;  // 内层 Vec 分散分配
-for i in 0..n {
-    sum += v[i][0];  // LLVM 不知道 v[i] 和 v[i+1] 的距离
-}
-```
-
-修复:用扁平数组 `Vec<f32>` + stride。
-
-**4. 循环边界不明确**:
-
-```rust
-while i < n {  // LLVM 偏好 for i in 0..n
-    sum += a[i];
-    i += step;  // step 是 runtime
-}
-```
-
-**5. 函数指针 / 间接调用**:
-
-```rust
-for i in 0..n {
-    sum += funcs[i](a[i]);  // 间接调用不能 inline
-}
-```
-
-修复:用 trait + 编译时单态化,或 enum + match。
-
-### 2.5 hint 帮 LLVM
-
-```rust
-#[inline(always)]
-pub fn dot_product(a: &[f32], b: &[f32]) -> f32 {
-    let n = a.len();
-    assert!(n.is_power_of_two());  // 帮 LLVM 推理
-    let mut sum = 0.0f32;
-    for i in 0..n {
-        sum += a[i] * b[i];
-    }
-    sum
-}
-```
-
-`#[inline(always)]` 强制 inline。`n.is_power_of_two()` 让 LLVM 知道 n 是 2^k,更激进 unroll。
-
-### 2.6 自动向量化小结
-
-**优先用自动向量化**。LLVM 2026 已经做得很好,90% 场景不需要手写 SIMD。手写只在以下情况:
-
-1. 性能关键 hot loop,profile 显示是瓶颈。
-2. 自动向量化失败(分支、依赖、不连续)。
-3. 跨平台需要确定性 SIMD(wide crate)。
-
-## 3 · 手写 SSE / AVX intrinsic
-
-### 3.1 std::arch::x86_64
-
-Rust 的 `std::arch::x86_64` 模块暴露所有 SSE / AVX intrinsic。1-to-1 对应 C 的 `<immintrin.h>`。
-
-```rust
-#[cfg(target_arch = "x86_64")]
 use std::arch::x86_64::*;
 
-// 一次 dot 8 个 f32(AVX)
-#[target_feature(enable = "avx2,fma")]
-unsafe fn dot8_avx(a: &[f32], b: &[f32]) -> f32 {
-    let mut acc = _mm256_setzero_ps();  // [0, 0, 0, 0, 0, 0, 0, 0]
-    let n = a.len();
-    let mut i = 0;
-    while i + 8 <= n {
-        let va = _mm256_loadu_ps(a.as_ptr().add(i));  // 加载 8 个 f32
-        let vb = _mm256_loadu_ps(b.as_ptr().add(i));
-        acc = _mm256_fmadd_ps(va, vb, acc);  // acc += va * vb
-        i += 8;
+#[target_feature(enable = "avx2")]
+#[cfg(target_arch = "x86_64")]
+unsafe fn sum_avx2(xs: &[f32]) -> f32 {
+    assert!(xs.len() % 8 == 0);  // AVX2: 8 f32 per register
+    
+    let mut acc = _mm256_setzero_ps();  // 256-bit zero
+    for chunk in xs.chunks_exact(8) {
+        let v = _mm256_loadu_ps(chunk.as_ptr());  // unaligned load
+        acc = _mm256_add_ps(acc, v);
     }
-    // 水平求和 8 个 lane → scalar
-    let mut tmp = [0f32; 8];
-    _mm256_storeu_ps(tmp.as_mut_ptr(), acc);
-    let mut sum: f32 = tmp.iter().sum();
-    // tail
-    while i < n {
-        sum += a[i] * b[i];
-        i += 1;
-    }
-    sum
+    
+    // horizontal sum: 把 8 个 lane 求和
+    let mut buf = [0f32; 8];
+    _mm256_storeu_ps(buf.as_mut_ptr(), acc);
+    buf.iter().sum()
 }
-```
 
-**intrinsic 速查**:
-
-- `_mm_set1_ps(x)`:把 x 复制到 4 个 lane
-- `_mm_loadu_ps(p)`:加载 4 个 unaligned f32
-- `_mm_load_ps(p)`:加载 4 个 aligned f32(要求 16 字节对齐)
-- `_mm_add_ps(a, b)`:4 个 f32 加法
-- `_mm_mul_ps(a, b)`:4 个 f32 乘法
-- `_mm_storeu_ps(p, v)`:存 4 个 unaligned
-- `_mm256_*`:AVX 256-bit 版本
-- `_mm512_*`:AVX-512 512-bit 版本
-- `_mm_fmadd_ps(a, b, c)`:FMA,a*b+c
-
-### 3.2 运行时 CPU 特性检测
-
-不是所有 CPU 都支持 AVX2。`is_x86_feature_detected!` 宏 runtime 检测:
-
-```rust
-pub fn dot_product(a: &[f32], b: &[f32]) -> f32 {
-    assert_eq!(a.len(), b.len());
+pub fn sum(xs: &[f32]) -> f32 {
     #[cfg(target_arch = "x86_64")]
-    {
-        if is_x86_feature_detected!("avx2") && is_x86_feature_detected!("fma") {
-            return unsafe { dot8_avx(a, b) };
-        }
-        if is_x86_feature_detected!("sse4.1") {
-            return unsafe { dot4_sse(a, b) };
-        }
+    if is_x86_feature_detected!("avx2") {
+        return unsafe { sum_avx2(xs) };
     }
-    dot_scalar(a, b)
-}
-
-fn dot_scalar(a: &[f32], b: &[f32]) -> f32 {
-    let mut sum = 0.0;
-    for i in 0..a.len() {
-        sum += a[i] * b[i];
-    }
-    sum
+    // fallback
+    sum_scalar(xs)
 }
 ```
 
-`is_x86_feature_detected!` 会缓存(第一次调 CPUID,之后查缓存),开销几纳秒。在 hot loop 里调用前**预先 dispatch**:
+每行注释:
+- `#[target_feature(enable = "avx2")]` — 告诉 rustc 这个函数编译时用 AVX2 指令,**不能在没有 AVX2 的 CPU 上跑**(否则 SIGILL)。
+- `_mm256_setzero_ps()` — 创建全零的 256-bit 向量(8 个 f32)。
+- `_mm256_loadu_ps(p)` — 从指针 p 加载 8 个 f32(unaligned,不要求对齐)。
+- `_mm256_add_ps(a, b)` — 8 lane 同时加。
+- `chunks_exact(8)` — 切成 8 元素的块,丢弃尾部不完整块。
+- `is_x86_feature_detected!("avx2")` — runtime 检测 CPU 是否支持 AVX2。
 
-```rust
-// 在 outer 函数里 dispatch 一次,inner 函数直接调
-pub fn dot_product(a: &[f32], b: &[f32]) -> f32 {
-    #[cfg(target_arch = "x86_64")]
-    {
-        if is_x86_feature_detected!("avx2") {
-            return unsafe { dot8_avx(a, b) };
-        }
-    }
-    dot_scalar(a, b)
-}
-```
+**关键陷阱**:runtime check + unsafe 是**必须**的。如果直接调 `_mm256_*` 函数,在老 CPU(2013 前)上会 SIGILL 崩溃。
 
-### 3.3 SSE2 版本(更广兼容)
-
-```rust
-#[target_feature(enable = "sse2")]
-unsafe fn dot4_sse(a: &[f32], b: &[f32]) -> f32 {
-    let mut acc = _mm_setzero_ps();
-    let n = a.len();
-    let mut i = 0;
-    while i + 4 <= n {
-        let va = _mm_loadu_ps(a.as_ptr().add(i));
-        let vb = _mm_loadu_ps(b.as_ptr().add(i));
-        // SSE 没有 FMA,要分开 mul + add
-        let prod = _mm_mul_ps(va, vb);
-        acc = _mm_add_ps(acc, prod);
-        i += 4;
-    }
-    let mut tmp = [0f32; 4];
-    _mm_storeu_ps(tmp.as_mut_ptr(), acc);
-    let mut sum: f32 = tmp.iter().sum();
-    while i < n { sum += a[i] * b[i]; i += 1; }
-    sum
-}
-```
-
-x86_64 默认支持 SSE2,所以这个版本几乎能跑在任何 x86_64 CPU 上。
-
-### 3.4 AVX-512 版本(2026 server)
-
-```rust
-#[target_feature(enable = "avx512f")]
-unsafe fn dot16_avx512(a: &[f32], b: &[f32]) -> f32 {
-    let mut acc = _mm512_setzero_ps();
-    let n = a.len();
-    let mut i = 0;
-    while i + 16 <= n {
-        let va = _mm512_loadu_ps(a.as_ptr().add(i));
-        let vb = _mm512_loadu_ps(b.as_ptr().add(i));
-        acc = _mm512_fmadd_ps(va, vb, acc);
-        i += 16;
-    }
-    // 水平求和
-    let sum = _mm512_reduce_add_ps(acc);
-    let mut sum = sum;
-    while i < n { sum += a[i] * b[i]; i += 1; }
-    sum
-}
-```
-
-AVX-512 一次 16 个 f32,理论 2 倍 AVX2。**但实际收益小于 2 倍**,因为:
-
-1. AVX-512 指令功耗高,CPU 会降频(turbo throttle)
-2. 很多 CPU 只有部分 AVX-512 子集
-3. Cache 带宽跟不上
-
-**实测**:dot 1024 f32:
-
-- scalar: 4100 ns
-- SSE: 1100 ns
-- AVX2 + FMA: 580 ns
-- AVX-512: 380 ns
-
-AVX2 → AVX-512 提速 1.5x,不是 2x。
-
-### 3.5 ARM NEON 版本
-
-```rust
-#[cfg(target_arch = "aarch64")]
-use std::arch::aarch64::*;
-
-#[target_feature(enable = "neon")]
-unsafe fn dot4_neon(a: &[f32], b: &[f32]) -> f32 {
-    let mut acc = vdupq_n_f32(0.0);
-    let n = a.len();
-    let mut i = 0;
-    while i + 4 <= n {
-        let va = vld1q_f32(a.as_ptr().add(i));
-        let vb = vld1q_f32(b.as_ptr().add(i));
-        acc = vfmaq_f32(acc, va, vb);
-        i += 4;
-    }
-    // horizontal reduce
-    let mut tmp = [0f32; 4];
-    vst1q_f32(tmp.as_mut_ptr(), acc);
-    let mut sum: f32 = tmp.iter().sum();
-    while i < n { sum += a[i] * b[i]; i += 1; }
-    sum
-}
-```
-
-NEON 是 ARM 的 SIMD,128-bit。语法和 SSE 不同,但概念一样。Apple Silicon、树莓派都用 NEON。
-
-### 3.6 内存对齐
-
-SIMD load / store 指令有 aligned 和 unaligned 两个版本:
-
-- `_mm_load_ps`:要求 16 字节对齐,不对齐 SIGBUS
-- `_mm_loadu_ps`:不要求对齐(unaligned),慢一点但安全
-
-现代 CPU(2010+)的 unaligned 几乎和 aligned 一样快,**除非数据跨越 cache line**。所以工业代码通常用 `loadu`,然后**分配时对齐**避免跨 line。
-
-Rust 的分配对齐:
-
-```rust
-// 默认 Vec<f32> 4 字节对齐
-let v = vec![0f32; 1024];
-
-// 强制 16 字节对齐(SSE)
-#[repr(C, align(16))]
-struct Aligned16([f32; 1024]);
-
-// 32 字节对齐(AVX)
-#[repr(C, align(32))]
-struct Aligned32([f32; 1024]);
-```
-
-`bytemuck` crate 提供 `ZeroVec` / `Pod` 帮助处理对齐。
-
-## 4 · wide crate:跨平台 SIMD 的优雅答案
-
-### 4.1 为什么用 wide
-
-`std::arch` 直接调 intrinsic 啰嗦,而且每条指令有 SSE / AVX / NEON 三个版本。`wide` crate 提供高级抽象:
-
-```toml
-[dependencies]
-wide = "0.7"
-```
-
-```rust
-use wide::f32x4;
-
-fn dot4_wide(a: &[f32], b: &[f32]) -> f32 {
-    let mut acc = f32x4::splat(0.0);
-    let n = a.len();
-    let mut i = 0;
-    while i + 4 <= n {
-        let va = f32x4::from_slice(&a[i..]);
-        let vb = f32x4::from_slice(&b[i..]);
-        acc += va * vb;
-        i += 4;
-    }
-    let mut tmp = [0f32; 4];
-    acc.to_slice(&mut tmp);
-    let mut sum: f32 = tmp.iter().sum();
-    while i < n { sum += a[i] * b[i]; i += 1; }
-    sum
-}
-```
-
-`wide` 在编译时根据 target_arch 选最佳 SIMD 指令集。x86_64 用 SSE/AVX,aarch64 用 NEON,wasm32 用 SIMD128。**一份代码跨平台**。
-
-### 4.2 wide 的类型
-
-- `f32x4`, `f32x8`, `f32x16`:4/8/16-wide f32
-- `f64x2`, `f64x4`, `f64x8`
-- `i32x4`, `u32x4`, `i8x16`, `u8x16`
-- `i64x2`, `u64x2`
-
-类型选多大?根据目标 CPU。`f32x4` 在所有 CPU 上跑(SSE / NEON 都 128-bit)。`f32x8` 需要 AVX(x86)或 SVE(ARM)。**保守用 `f32x4`**,除非你确定 target。
-
-### 4.3 wide 性能
-
-实测 dot 1024 f32:
-
-- scalar: 4100 ns
-- 手写 AVX2: 580 ns
-- wide f32x4: 1100 ns
-- wide f32x8(需要 AVX): 600 ns
-
-`wide` 比手写略慢(抽象开销),但跨平台、好读。**生产推荐**。
-
-## 5 · std::simd:portable_simd
-
-### 5.1 还在 nightly
-
-`std::simd`(也叫 portable_simd)是 Rust 官方的跨平台 SIMD 抽象,2026 年还在 nightly。设计更优雅:
+### 2.2 姿势二:portable-simd(nightly 的未来)
 
 ```rust
 #![feature(portable_simd)]
+use std::simd::f32x8;
 
-use std::simd::f32x4;
-use std::simd::Simd;
-
-fn dot4_portable(a: &[f32], b: &[f32]) -> f32 {
-    let mut acc = f32x4::splat(0.0);
-    let n = a.len();
-    let mut i = 0;
-    while i + 4 <= n {
-        let va = f32x4::from_slice(&a[i..]);
-        let vb = f32x4::from_slice(&b[i..]);
-        acc += va * vb;
-        i += 4;
+fn sum_portable(xs: &[f32]) -> f32 {
+    let chunks = xs.chunks_exact(8);
+    let remainder = chunks.remainder();
+    
+    let mut acc = f32x8::splat(0.0);
+    for chunk in chunks {
+        let v = f32x8::from_slice(chunk);
+        acc += v;
     }
-    let sum: f32 = acc.reduce_sum();
-    let mut sum = sum;
-    while i < n { sum += a[i] * b[i]; i += 1; }
-    sum
+    
+    acc.reduce_sum() + remainder.iter().sum::<f32>()
 }
 ```
 
-API 和 `wide` 类似,但是**官方标准库**。设计更激进——支持 mask、gather/scatter、lane-wise select。
+每行:
+- `#![feature(portable_simd)]` — 启用 nightly feature。
+- `f32x8` — 8 lane f32,但**编译器自动选 SSE/AVX/NEON**。
+- `from_slice` / `reduce_sum` — 高级 API,不用 unsafe。
+- 没有运行时 dispatch——编译器一次选好最优指令。
 
-### 5.2 portable_simd 的优势
+**优点**:可移植、无 unsafe、API 干净。**缺点**:还在 nightly,API 可能改。
 
-- **官方支持**:不会像第三方 crate 一样被弃维护
-- **更细粒度控制**:mask、lanes、gather/scatter 都有
-- **抽象跨平台**:x86 / ARM / RISC-V 都支持
-
-劣势:
-
-- **需要 nightly**:很多生产项目不能用
-- **API 还在变**:每次 Rust 升级可能 break
-
-预计 2027+ 会稳定。在那之前,生产用 `wide`。
-
-## 6 · 实战:粒子系统 SIMD
-
-让我们把 SIMD 应用到一个真实场景:粒子物理。每帧 update 10000 个粒子(位置、速度、生命周期)。
-
-### 6.1 标量版本
-
-```rust
-#[derive(Clone, Copy)]
-pub struct Particle {
-    pub x: f32, pub y: f32, pub z: f32,  // position
-    pub vx: f32, pub vy: f32, pub vz: f32,  // velocity
-    pub life: f32,
-}
-
-pub fn update_particles_scalar(particles: &mut [Particle], dt: f32) {
-    for p in particles.iter_mut() {
-        if p.life > 0.0 {
-            p.x += p.vx * dt;
-            p.y += p.vy * dt;
-            p.z += p.vz * dt;
-            p.life -= dt;
-        }
-    }
-}
-```
-
-10000 粒子,scalar 大约 80 μs/帧。
-
-### 6.2 AoS vs SoA
-
-上面的 `Particle` 是 **AoS**(Array of Structures)——每个粒子的数据聚在一起。SIMD 不喜欢 AoS,因为 load 时要"跨过"其他 lane 的字段。
-
-**SoA**(Structure of Arrays):
-
-```rust
-pub struct ParticlesSoA {
-    pub x: Vec<f32>,
-    pub y: Vec<f32>,
-    pub z: Vec<f32>,
-    pub vx: Vec<f32>,
-    pub vy: Vec<f32>,
-    pub vz: Vec<f32>,
-    pub life: Vec<f32>,
-}
-
-pub fn update_particles_soa(p: &mut ParticlesSoA, dt: f32) {
-    for i in 0..p.x.len() {
-        if p.life[i] > 0.0 {
-            p.x[i] += p.vx[i] * dt;
-            p.y[i] += p.vy[i] * dt;
-            p.z[i] += p.vz[i] * dt;
-            p.life[i] -= dt;
-        }
-    }
-}
-```
-
-SoA 让 SIMD load 连续数据,效率高得多。**SIMD 优先 SoA**。
-
-### 6.3 SIMD SoA 版本
+### 2.3 姿势三:wide crate(stable 的中间方案)
 
 ```rust
 use wide::f32x4;
 
-pub fn update_particles_simd(p: &mut ParticlesSoA, dt: f32) {
-    let n = p.x.len();
-    let dt_v = f32x4::splat(dt);
-    let mut i = 0;
-    while i + 4 <= n {
-        let x = f32x4::from_slice(&p.x[i..]);
-        let y = f32x4::from_slice(&p.y[i..]);
-        let z = f32x4::from_slice(&p.z[i..]);
-        let vx = f32x4::from_slice(&p.vx[i..]);
-        let vy = f32x4::from_slice(&p.vy[i..]);
-        let vz = f32x4::from_slice(&p.vz[i..]);
-        let life = f32x4::from_slice(&p.life[i..]);
-
-        let mask = life.cmp_ge(f32x4::splat(0.0));
-
-        let new_x = x + vx * dt_v;
-        let new_y = y + vy * dt_v;
-        let new_z = z + vz * dt_v;
-        let new_life = life - dt_v;
-
-        // 只在 mask 为 true 的 lane 写回
-        let mut tmp = [0f32; 4];
-        new_x.blend_using_mask(x, mask).to_slice(&mut tmp);
-        p.x[i..i+4].copy_from_slice(&tmp);
-        // ... 同样处理 y, z, life ...
-        i += 4;
+fn sum_wide(xs: &[f32]) -> f32 {
+    let mut acc = f32x4::splat(0.0);
+    for chunk in xs.chunks_exact(4) {
+        let v = f32x4::from_slice(chunk);
+        acc += v;
     }
-    // tail
-    while i < n {
-        if p.life[i] > 0.0 {
-            p.x[i] += p.vx[i] * dt;
-            p.y[i] += p.vy[i] * dt;
-            p.z[i] += p.vz[i] * dt;
-            p.life[i] -= dt;
-        }
-        i += 1;
-    }
+    // ... 实际求和需要额外 horizontal reduction
 }
 ```
 
-`cmp_ge` 是 lane-wise 比较,返回 mask。`blend_using_mask` 在 mask 选 lane。**branchless**——比 if 快。
+`wide` 提供 stable API,SSE2/NEON 自动切换。比 std intrinsics 易用,比 portable-simd 稳定。**生产代码推荐这个**。
 
-性能:
+### 2.4 三种姿势对比
 
-- scalar: 80 μs
-- SIMD SoA (wide f32x4): 22 μs (3.6x)
-- SIMD SoA (手写 AVX2): 18 μs (4.4x)
+| 方案 | 稳定性 | 性能 | 可移植 | unsafe |
+|---|---|---|---|---|
+| std::arch intrinsics | stable | 最高 | 需手动 dispatch | 必须 |
+| wide crate | stable | 高(略低于 intrinsics) | 自动 | 不需要 |
+| portable-simd | nightly | 最高 | 自动 | 不需要 |
 
-加速 4 倍。值得吗?60 FPS 下省 60 μs,可忽略。但 100000 粒子场景下省 600 μs,值得。**SIMD 的价值在大数据**。
+**新手推荐**:wide crate。**性能极致**:std intrinsics + runtime dispatch。**未来**:portable-simd。
 
-### 6.4 用 rayon + SIMD 数据并行
+## 3 · 实战:从标量到 SIMD 的演化(粒子更新)
 
-10000 粒子可以再分到多个核:
+### 3.1 标量版
 
 ```rust
-use rayon::prelude::*;
+struct Particle { x: f32, y: f32, vx: f32, vy: f32 }
 
-pub fn update_particles_parallel_simd(p: &mut ParticlesSoA, dt: f32) {
-    let chunk_size = 1024;
-    let chunks = p.x.chunks_mut(chunk_size).zip(
-        p.y.chunks_mut(chunk_size).zip(
-        p.z.chunks_mut(chunk_size).zip(
-        p.vx.chunks_mut(chunk_size).zip(
-        p.vy.chunks_mut(chunk_size).zip(
-        p.vz.chunks_mut(chunk_size).zip(
-        p.life.chunks_mut(chunk_size)))))));
-    
-    chunks.par_bridge().for_each(|(x, (y, (z, (vx, (vy, (vz, life))))))| {
-        // 在每个 chunk 内 SIMD update
-        let mut i = 0;
-        while i + 4 <= x.len() {
-            // ... SIMD 代码 ...
-            i += 4;
-        }
-    });
+fn update_scalar(particles: &mut [Particle], dt: f32) {
+    for p in particles.iter_mut() {
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+    }
 }
 ```
 
-8 核 CPU + AVX2 SIMD:理论 32x scalar。实测 25x。**这是工业级粒子系统的性能**。
+10 万粒子 = 40 万次 f32 op。@ 3GHz = 0.13ms。看起来不慢。
 
-## 7 · 决策树:何时用什么
+但每帧 16ms 预算(60 FPS),你已经有渲染、AI、物理各占几 ms。0.13ms 也不该浪费。
 
-我用 6 个问题帮你做决定:
+### 3.2 SoA 重构(为 SIMD 铺路)
 
-1. **数据规模 < 1000?** → 自动向量化够了,不要手写。
-2. **数据规模 1000-100000?** → 自动向量化 + SoA。如果失败,用 `wide`。
-3. **数据规模 > 100000?** → SIMD + 多线程(rayon)。
-4. **跨平台(ARM + x86)?** → 用 `wide`,不要裸 intrinsic。
-5. **需要极致性能(HFT、HPC)?** → 手写 + profile + dispatch。
-6. **要在 10 年前 CPU 跑?** → 只用 SSE2,放弃 AVX。
+SIMD 要求数据**连续 + 同类型**。当前 Particle 是 **AoS**(Array of Structs):
 
-**反面忠告**:
+```
+[x0, y0, vx0, vy0, x1, y1, vx1, vy1, ...]
+```
 
-- 不要因为"看起来酷"而手写 SIMD。**没 profile 过不要优化**。
-- 不要分发 `target-cpu=native` 的 binary。会 SIGILL。
-- 不要假设你的 CPU 支持什么——`is_x86_feature_detected!` 运行时检测。
-- 不要把 SIMD 用于"功能"——只用于性能。SIMD 代码更难维护。
+要算 4 个粒子的 x 坐标,得从 `[0], [4], [8], [12]` 取——**跨 stride 4**,不能一条 load 搞定。
 
-## 8 · 跨阶段回顾
+改成 **SoA**(Struct of Arrays):
 
-| 阶段 | SIMD 出现日 | 内容 |
-|---|---|---|
-| Phase 3 | day117 | Casey 初次介绍 SIMD 概念 |
-| Phase 5 | day337 | 手写 SSE intrinsic |
-| Phase 7 | day550 | AVX / AVX-512 dispatch |
-| 本深入 | — | 完整 spectrum |
+```rust
+struct Particles {
+    x: Vec<f32>,
+    y: Vec<f32>,
+    vx: Vec<f32>,
+    vy: Vec<f32>,
+}
 
-每一步都是"扩宽"——从 scalar → 4-wide → 8-wide → 16-wide。但**核心抽象不变**:**lane-wise 运算**。
+fn update_soa(p: &mut Particles, dt: f32) {
+    for i in 0..p.x.len() {
+        p.x[i] += p.vx[i] * dt;
+        p.y[i] += p.vy[i] * dt;
+    }
+}
+```
 
-## 9 · 延伸阅读
+现在 `p.x` 是连续 f32,SIMD 可以一条指令加载 4/8/16 个。
 
-本仓库本地资料:
-- [phase-3/day117.md](../phase-3/day117.md) — HH SIMD 初次
-- [phase-5/day337.md](../phase-5/day337.md) — HH SSE intrinsic
-- [phase-7/day550.md](../phase-7/day550.md) — HH AVX
-- [phase-5/deep-dives/audio-pipeline-complete.md](../phase-5/deep-dives/audio-pipeline-complete.md) — audio SIMD
-- [phase-5/deep-dives/threading-journey.md](../phase-5/deep-dives/threading-journey.md) — SIMD + 多线程
+### 3.3 SSE 版本(4 lane)
 
-外部稳定 URL:
-- Intel Intrinsics Guide(交互式查 intrinsic):https://www.intel.com/content/www/us/en/docs/intrinsics-guide/
-- ARM NEON Intrinsics Reference:https://developer.arm.com/architectures/instruction-sets/intrinsics/
-- wide crate:https://github.com/kvark/wide
-- std::simd 文档(nightly):https://doc.rust-lang.org/std/simd/
-- Agner Fog 优化手册(SIMD 章节):https://www.agner.org/optimize/
-- SIMD for C++ Devs(CppCon talks):https://www.youtube.com/results?search_query=cppcon+simd
-- "Performance Analysis of x86 SIMD" 一系列论文
-- Software Optimization Guide for AMD:https://developer.amd.com/
+```rust
+use std::arch::x86_64::*;
 
-真实开源源码:
-- wide crate 源码:https://github.com/kvark/wide
-- rust simd 工作组仓库:https://github.com/rust-lang/portable-simd
-- Casey HH 的 day337 / day550 代码:https://github.com/HandmadeHero/handmade-hero
-- Rust 标准库 std::arch 源码:https://doc.rust-lang.org/std/arch/index.html
+#[target_feature(enable = "sse2")]
+unsafe fn update_sse(p: &mut Particles, dt: f32) {
+    let dt_v = _mm_set1_ps(dt);  // [dt, dt, dt, dt]
+    
+    let chunks_x = p.x.chunks_exact_mut(4);
+    let chunks_y = p.y.chunks_exact_mut(4);
+    let chunks_vx = p.vx.chunks_exact(4);
+    let chunks_vy = p.vy.chunks_exact(4);
+    
+    for ((xc, (yc, (vxc, vyc)))) in chunks_x.zip(chunks_y).zip(chunks_vx).zip(chunks_vy) {
+        let x = _mm_loadu_ps(xc.as_ptr());
+        let y = _mm_loadu_ps(yc.as_ptr());
+        let vx = _mm_loadu_ps(vxc.as_ptr());
+        let vy = _mm_loadu_ps(vyc.as_ptr());
+        
+        let new_x = _mm_add_ps(x, _mm_mul_ps(vx, dt_v));
+        let new_y = _mm_add_ps(y, _mm_mul_ps(vy, dt_v));
+        
+        _mm_storeu_ps(xc.as_mut_ptr(), new_x);
+        _mm_storeu_ps(yc.as_mut_ptr(), new_y);
+    }
+    
+    // tail(非 4 倍数部分)用标量
+    let tail_start = (p.x.len() / 4) * 4;
+    for i in tail_start..p.x.len() {
+        p.x[i] += p.vx[i] * dt;
+        p.y[i] += p.vy[i] * dt;
+    }
+}
+```
+
+每步:
+- `_mm_set1_ps(dt)` — 把 dt 复制到 4 个 lane:`[dt, dt, dt, dt]`。
+- `_mm_loadu_ps` — unaligned load,从 f32 指针取 4 个。
+- `_mm_mul_ps(vx, dt_v)` — 4 lane 乘法。
+- `_mm_add_ps` — 4 lane 加法。
+- `_mm_storeu_ps` — 写回 4 个 f32。
+- `chunks_exact_mut` + `zip` — 4 个数组同步迭代。
+
+**4 倍加速**理论。实测大概 3.5x(tail 处理 + memory latency)。
+
+### 3.4 AVX2 版本(8 lane)
+
+把所有 `_mm_*` 换成 `_mm256_*`,chunk size 从 4 改成 8:
+
+```rust
+#[target_feature(enable = "avx2")]
+unsafe fn update_avx2(p: &mut Particles, dt: f32) {
+    let dt_v = _mm256_set1_ps(dt);
+    
+    let it = p.x.chunks_exact_mut(8)
+        .zip(p.y.chunks_exact_mut(8))
+        .zip(p.vx.chunks_exact(8))
+        .zip(p.vy.chunks_exact(8));
+    
+    for ((xc, (yc, (vxc, vyc)))) in it {
+        let x = _mm256_loadu_ps(xc.as_ptr());
+        let y = _mm256_loadu_ps(yc.as_ptr());
+        let vx = _mm256_loadu_ps(vxc.as_ptr());
+        let vy = _mm256_loadu_ps(vyc.as_ptr());
+        
+        let new_x = _mm256_add_ps(x, _mm256_mul_ps(vx, dt_v));
+        let new_y = _mm256_add_ps(y, _mm256_mul_ps(vy, dt_v));
+        
+        _mm256_storeu_ps(xc.as_mut_ptr(), new_x);
+        _mm256_storeu_ps(yc.as_mut_ptr(), new_y);
+    }
+}
+```
+
+**理论 8 倍**,实测约 6-7 倍。
+
+### 3.5 性能测量
+
+```bash
+# 装 criterion
+cargo add criterion --dev
+
+# benches/particles.rs
+use criterion::{criterion_group, criterion_main, Criterion};
+
+fn bench(c: &mut Criterion) {
+    let mut p = Particles::new(100_000);
+    c.bench_function("scalar", |b| b.iter(|| update_scalar(&mut p, 0.016)));
+    c.bench_function("sse2",  |b| b.iter(|| unsafe { update_sse(&mut p, 0.016) }));
+    c.bench_function("avx2",  |b| b.iter(|| unsafe { update_avx2(&mut p, 0.016) }));
+}
+
+criterion_group!(benches, bench);
+criterion_main!(benches);
+```
+
+```bash
+cargo bench
+# 预期输出:
+# scalar  time:   [320.00 µs]
+# sse2    time:   [95.00 µs]   ← 3.4x
+# avx2    time:   [52.00 µs]   ← 6.2x
+```
+
+## 4 · SIMD 的坑(实战经验)
+
+### 4.1 坑一:数据对齐
+
+`_mm_load_ps`(aligned)比 `_mm_loadu_ps`(unaligned)快一点点(legacy 原因)。但要求 16 字节对齐。Rust 的 `Vec<f32>` 不保证 16 字节对齐。
+
+```rust
+#[repr(align(16))]
+struct AlignedF32x4([f32; 4]);
+
+// 或者用 aligned-vec crate
+```
+
+**实战**:Modern CPU(Haswell+)对 unaligned 几乎没惩罚。**别为对齐疯狂**——除非 profiling 显示瓶颈。
+
+### 4.2 坑二:tail 处理
+
+`chunks_exact(8)` 跳过尾部不足 8 的部分。你得用标量补完:
+
+```rust
+// SIMD 处理 chunks_exact
+// 标量补 tail
+for i in tail_start..len { ... }
+```
+
+或者用 `chunks(8)` + 处理最后一块 padding(填零,结果正确,但有 mask 开销)。
+
+### 4.3 坑三:horizontal sum 慢
+
+`_mm256_add_ps` 累加后,8 个 lane 还得 sum 成一个标量。这个过程叫 **horizontal reduction**:
+
+```rust
+let buf = [0f32; 8];
+_mm256_storeu_ps(buf.as_mut_ptr(), acc);
+let sum = buf.iter().sum::<f32>();
+```
+
+每条 horizontal add(`_mm_hadd_ps`)要 2-3 cycle,8 lane 需要 3 次。**对 hot loop 是显著开销**。除非你必须输出标量(如 dot product),否则让数据保持 SIMD 形式到最后。
+
+### 4.4 坑四:gather / scatter 极慢
+
+如果你想"从数组随机位置取 4 个值"——这是 gather:
+
+```rust
+let idx = _mm_set_epi32(3, 100, 7, 42);  // 取 indices
+let v = _mm_i32gather_ps(array.as_ptr(), idx, 4);  // gather
+```
+
+但 gather **慢得离谱**——Skylake 上 12 cycle,AVX-512 上 5-12 cycle。**通常 gather 比标量还慢**。
+
+**SIMD 的根本约束**:数据必须**连续访问**才有意义。如果你的算法本质是 random access,别用 SIMD——重构算法(如 sort by index 让访问变连续)。
+
+### 4.5 坑五:auto-vectorization 不可靠
+
+```rust
+fn sum_auto(xs: &[f32]) -> f32 {
+    xs.iter().sum()
+}
+```
+
+`cargo build --release` 编译时,rustc/LLVM 可能自动向量化。但你不能保证。看汇编:
+
+```bash
+cargo rustc --release -- --emit asm -C target-cpu=native -
+# 搜 addps / vaddps / vmovups
+```
+
+如果看到标量 `addss`,说明没向量化。LLVM 的 auto-vec 受:
+- 循环结构(简单 for loop 更易)
+- 数据布局(连续更易)
+- aliasing(引用是否唯一)
+- target-cpu(default x86-64 是 SSE2,不会用 AVX2)
+
+**生产建议**:不要依赖 auto-vec。写显式 SIMD。
+
+## 5 · 验证:汇编层看 SIMD
+
+```bash
+# 装编译器 explorer
+cargo install cargo-asm
+
+# 看你的函数汇编
+cargo asm --release --rust update_avx2
+
+# 或者直接 rustc
+echo 'fn f(x: &[f32]) -> f32 { x.iter().sum() }' > /tmp/x.rs
+rustc -O --emit asm --edition 2021 /tmp/x.rs -o /tmp/x.s
+grep -E "addps|addss|vaddps" /tmp/x.s
+```
+
+如果你看到 `vaddps`(AVX)或 `addps`(SSE),说明向量化了。如果是 `addss`,没有。
+
+**tsoding 风**:每次写 SIMD,先看汇编,再 benchmark。**别猜,测**。
+
+## 6 · 跨域联结
+
+### 6.1 GPU 是终极 SIMD
+
+GPU = 大规模 SIMD + 高带宽内存。RTX 4090 同时 16384 个 lane。SIMD 是 GPU 编程的基础——shader 里 `vec4` 操作就是 SIMT(Single Instruction Multiple Thread)。
+
+### 6.2 数据库的 vectorized execution
+
+Postgres / DuckDB 用 SIMD 加速 scan / aggregate。一条 SQL `SELECT SUM(price) FROM orders` 在 DuckDB 里用 AVX2 一次算 8 行。
+
+### 6.3 AI 推理:tensor cores
+
+NVIDIA tensor cores 在 AVX-512 基础上做矩阵乘法(A × B + C)单指令。GPT 推理的硬件加速核心。
+
+### 6.4 音频 / 图像处理
+
+混音器 / 卷积滤波 / FFT——所有数字信号处理都是 SIMD 天然受益者。
+
+## 7 · 认知地图
+
+### 7.1 上级
+- **ILP**(Instruction-Level Parallelism)— 标量级别的并行
+- **DLP**(Data-Level Parallelism)— SIMD 的本质
+- **TLP**(Thread-Level Parallelism)— 多线程
+- **SIMT**(Single Instruction Multiple Thread)— GPU 模型
+
+### 7.2 同级
+
+| 方案 | 何时用 |
+|---|---|
+| SIMD(本篇) | 大批量同质数据计算 |
+| 多线程 | 任务可独立分配 |
+| GPU | 超大批量 + 内存带宽需求 |
+| FPGA | 自定义数据通路 |
+| DSP | 专用信号处理芯片 |
+
+### 7.3 下级
+- SSE/AVX/NEON 寄存器
+- intrinsics 函数(`_mm_*`, `_mm256_*`)
+- `target_feature` attribute
+- `is_x86_feature_detected!` macro
+- `chunks_exact` 迭代
+- horizontal reduction
+- gather/scatter
+
+## 8 · 对照与变奏
+
+### 8.1 不同语言怎么写 SIMD
+
+| 语言 | 方案 |
+|---|---|
+| Rust | `std::arch` / wide / portable-simd |
+| C/C++ | `<immintrin.h>` intrinsics / `#pragma omp simd` |
+| Go | 无显式 SIMD,编译器自动 |
+| Python | numpy 底层用 SIMD,用户不直接写 |
+| Zig | `@Vector` 内置类型 |
+| Julia | `SIMD.jl` 包 |
+
+C/C++ 的 intrinsics 和 Rust 几乎一样(都是 LLVM)。Zig 的 `@Vector` 最优雅,被 portable-simd 借鉴。
+
+### 8.2 ARM NEON 对比
+
+```c
+// x86_64 SSE
+__m128 a = _mm_set_ps(1,2,3,4);
+__m128 b = _mm_add_ps(a, a);
+
+// ARM NEON
+float32x4_t a = {1,2,3,4};
+float32x4_t b = vaddq_f32(a, a);
+```
+
+NEON 命名比 SSE 干净:`vaddq_f32` 一眼能读出"vector add quad f32"。但功能等价。
+
+### 8.3 历史教训:Itanium / Larrabee
+
+Itanium (2001) 尝试让编译器自动做指令级并行,**失败**——编译器太难写。Larrabee (2008) 尝试用 x86 + wide SIMD 做 GPU,**失败**——SIMD 编程模型对图形不友好。教训:**显式 + 自动** 混合是正确路径。
+
+## 9 · 关联 Day
+
+- **HH day117**: Packing Pixels for the Framebuffer — 第一次 SIMD
+- **HH day337**: SSE Mixer Pre/Post Loops — 音频 SIMD
+- **HH day431**: SIMD Raycasting — 光线投射 SIMD
+- **HH day550**: SIMD Light Sampling — 光照 SIMD
+- **本仓库**:
+  - [phase-4/deep-dives/simd-in-rust.md](../../phase-4/deep-dives/simd-in-rust.md) — Phase 4 SIMD 基础
+  - [phase-4/deep-dives/memory-layout-for-cache.md](../../phase-4/deep-dives/memory-layout-for-cache.md) — SoA vs AoS
+  - [phase-5/deep-dives/audio-pipeline-complete.md](../../phase-5/deep-dives/audio-pipeline-complete.md) — SIMD 音频混音
+
+## 10 · 变式训练
+
+### Lv1 · 概念辨析
+
+**题**:SIMD 的 "horizontal add"(`_mm_hadd_ps`)和普通的 vertical add(`_mm_add_ps`)有什么本质区别?为什么 horizontal add 通常更慢?
+
+### Lv2 · 动手实践
+
+**题**:用 SSE2 写一个 `clamp_f32(xs: &mut [f32], min: f32, max: f32)`,把所有元素限制在 [min, max]。完成标准:`cargo bench` 比 `xs.iter_mut().for_each(|x| *x = x.clamp(min, max))` 快 2x+。
+
+### Lv3 · 迁移设计
+
+**题**:你有一个 `Vec<u8>` 是 RGBA 像素(4 字节一组)。要把它转成 BGRA(Swap R 和 B)。用 SIMD 写。**提示**:`_mm_shuffle_epi8`(SSSE3 的字节级别 shuffle)。
+
+### Lv4 · 开源贡献
+
+`bevy_math` 的 `Vec3A`(16-byte aligned Vec3)是为了 SIMD 设计的。GitHub: https://github.com/bevyengine/bevy
+- 读 `crates/bevy_math/src/vec3a.rs`,看它怎么用 SSE2 加速
+- 找一个 unit test 没覆盖的 edge case(NaN / Infinity 处理)
+- 提一个 PR 加测试
+
+## 11 · 延伸阅读
+
+本仓库:
+- [phase-4/deep-dives/simd-in-rust.md](../../phase-4/deep-dives/simd-in-rust.md)
+- [phase-5/day282.md](../day282.md)
+
+外部稳定:
+- Intel Intrinsics Guide(权威,搜索 _mm_*):https://www.intel.com/content/www/us/en/docs/intrinsics-guide/
+- ARM NEON Intrinsics:https://developer.arm.com/architectures/instruction-sets/intrinsics/
+- Rust std::arch 文档:https://doc.rust-lang.org/std/arch/index.html
+- portable-simd book:https://std-dev-guide.rust-lang.org/policy/portable-simd.html
+- wide crate:https://docs.rs/wide
+
+真实源码:
+- bevy_math Vec3A:https://github.com/bevyengine/bevy/tree/main/crates/bevy_math/src
+- raylib 矩阵库(用 SIMD):https://github.com/raysan5/raylib
