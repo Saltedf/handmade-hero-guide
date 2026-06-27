@@ -982,12 +982,12 @@ fn test_api() {
 ## 14 · 延伸阅读
 
 本仓库:
-- [day026.md](day026.md) —— 第一次写 cdylib
-- [day029.md](day029.md) —— 完整接口层
+- [day026.md](../day026.md) —— 第一次写 cdylib
+- [day029.md](../day029.md) —— 完整接口层
 - [deep-dives/platform-game-separation.md](platform-game-separation.md) —— 平台/游戏分离
 - [deep-dives/hot-reload.md](hot-reload.md) —— 热重载完整链路
-- [phase-0/08-processes-and-signals.md](../phase-0/08-processes-and-signals.md) —— dlopen 的底层
-- [phase-0/15-c-and-assembly-reading.md](../phase-0/15-c-and-assembly-reading.md) —— 读汇编
+- [phase-0/08-processes-and-signals.md](../../phase-0/08-processes-and-signals.md) —— dlopen 的底层
+- [phase-0/15-c-and-assembly-reading.md](../../phase-0/15-c-and-assembly-reading.md) —— 读汇编
 
 外部:
 - Rust Book ch.19(Unsafe): https://doc.rust-lang.org/book/ch19-01-unsafe-rust.html

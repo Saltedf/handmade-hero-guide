@@ -1098,7 +1098,7 @@ Bevy 的 issue tracker 有 `good first issue` 标签的 issue。看一眼 https:
 
 ## 14 · 关联 Day
 
-- **铺垫**:Phase 4 的 entity system(Stage 0 → 1 的过渡);[day031.md](../phase-1/day031.md) — HH 第一个 entity 系统
+- **铺垫**:Phase 4 的 entity system(Stage 0 → 1 的过渡);[day031.md](../../phase-2/day031.md) — HH 第一个 entity 系统
 - **当天**:本 deep-dive 不绑定具体一天,但建议你 Day 543(Mass Entity / NPC LOD)读
 - **后续**:Phase 7 的多线程 ECS 调度(`threading-journey.md`);bevy_ecs 集成 in Phase 8
 

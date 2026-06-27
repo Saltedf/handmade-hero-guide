@@ -1695,7 +1695,7 @@ Bevy 的 mesh 子系统目前还在快速演化。GitHub: https://github.com/bev
 - **铺垫**:[day082.md](../day082.md) — 摄像机与 view matrix,理解 LOD 距离计算的基础
 - **铺垫**:[day094.md](../day094.md) — 顶点缓冲与索引缓冲,朴素 mesh 表示
 - **当天**:本篇(deep-dive)
-- **后续**:[day150](../day150.md) — shadow volume,convex hull 在 silhouette extraction 中的应用
+- **后续**:[day150](../../phase-4/day150.md) — shadow volume,convex hull 在 silhouette extraction 中的应用
 - **关联**:[skeletal-animation-fundamentals.md](skeletal-animation-fundamentals.md) — 骨骼动画对 mesh topology 敏感
 - **关联**:[particle-systems-cpu.md](particle-systems-cpu.md) — 粒子的"无 mesh"特性 vs mesh processing
 

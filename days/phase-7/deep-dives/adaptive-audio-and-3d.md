@@ -36,7 +36,7 @@ bridges: ["day138", "day201", "day526", "day575"]
 - 实现 voice chat 完整 pipeline:capture → encode → network → jitter buffer → decode → spatialize → mix → render
 - 用 Rust + `rodio` / `kira` / `bevy_audio` 实现一个 game-ready 3D audio engine
 
-假设你已掌握:**22-signals-foundation**(Nyquist、frequency、amplitude)、**dsp-fundamentals**(FIR/IIR/FFT/convolution)、**synthesis**(oscillator/envelope/LFO)、**audio-effects**(reverb/EQ/compressor,见 [audio-effects.md](../phase-5/deep-dives/audio-effects.md))。如果其中任何一项不熟,先回去补。
+假设你已掌握:**22-signals-foundation**(Nyquist、frequency、amplitude)、**dsp-fundamentals**(FIR/IIR/FFT/convolution)、**synthesis**(oscillator/envelope/LFO)、**audio-effects**(reverb/EQ/compressor,见 [audio-effects.md](../../phase-5/deep-dives/audio-effects.md))。如果其中任何一项不熟,先回去补。
 
 ## 1 · Adaptive Music 概念
 
@@ -918,7 +918,7 @@ pub fn render_early_reflections(source: Vec3, listener: Vec3, room: (Vec3, Vec3)
 
 完整 image source 算 2nd / 3rd order,reflection 越多越密。
 
-**Late reverb**:房间残响,用 FDN 或 convolution reverb(见 [audio-effects.md](../phase-5/deep-dives/audio-effects.md) §3)。
+**Late reverb**:房间残响,用 FDN 或 convolution reverb(见 [audio-effects.md](../../phase-5/deep-dives/audio-effects.md) §3)。
 
 **Spatialized reverb**:把 late reverb 也通过 HRTF 渲染。Reverb 来自"四面八方",所以用 diffuse field HRTF(平均 all directions)。
 
@@ -2003,10 +2003,10 @@ fn render_voice_chat(voice: &mut VoiceChatSystem, output_l: &mut [f32], output_r
 ## 11 · 延伸阅读
 
 本仓库相关:
-- [audio-effects.md](../phase-5/deep-dives/audio-effects.md) — 效果器全解(reverb、EQ、compressor),这一篇直接依赖
-- [audio-pipeline-complete.md](../phase-5/deep-dives/audio-pipeline-complete.md) — WAV/ALSA 流水线
-- [network-multiplayer-models.md](../phase-5/deep-dives/network-multiplayer-models.md) — 网络模型,voice chat 底层
-- [threading-journey.md](../phase-5/deep-dives/threading-journey.md) — audio thread 实时性
+- [audio-effects.md](../../phase-5/deep-dives/audio-effects.md) — 效果器全解(reverb、EQ、compressor),这一篇直接依赖
+- [audio-pipeline-complete.md](../../phase-5/deep-dives/audio-pipeline-complete.md) — WAV/ALSA 流水线
+- [network-multiplayer-models.md](../../phase-5/deep-dives/network-multiplayer-models.md) — 网络模型,voice chat 底层
+- [threading-journey.md](../../phase-5/deep-dives/threading-journey.md) — audio thread 实时性
 
 外部稳定 URL:
 - FMOD Docs:https://fmod.com/docs

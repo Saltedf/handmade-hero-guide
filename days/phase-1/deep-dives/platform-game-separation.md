@@ -682,9 +682,9 @@ Casey 在 HH Day 1-10 也是混合代码(实验),Day 11 开始分离。**先 wor
 ## 延伸阅读
 
 本仓库:
-- [day011](day011.md)——平台 / 游戏分离架构决策
-- [day014](day014.md)——GameMemory
-- [day021](day021.md)——热重载第一步
+- [day011](../day011.md)——平台 / 游戏分离架构决策
+- [day014](../day014.md)——GameMemory
+- [day021](../day021.md)——热重载第一步
 - [deep-dives/hot-reload-rust.md](hot-reload-rust.md)——热重载深入
 
 外部:

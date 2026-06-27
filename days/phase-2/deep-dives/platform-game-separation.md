@@ -858,8 +858,8 @@ Unreal 用 C++ 类 + Hot Reload(基于 Live Coding)。游戏代码是 dynamic li
 ## 8 · 延伸阅读
 
 本仓库:
-- [day026.md](day026.md) —— 三明治架构第一天
-- [day029.md](day029.md) —— 接口层完整
+- [day026.md](../day026.md) —— 三明治架构第一天
+- [day029.md](../day029.md) —— 接口层完整
 - [deep-dives/hot-reload.md](hot-reload.md) —— 热重载完整链路
 - [deep-dives/rust-cdylib-and-ffi.md](rust-cdylib-and-ffi.md) —— cdylib 的 unsafe / lifetime 完整指南
 

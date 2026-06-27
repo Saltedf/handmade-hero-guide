@@ -1402,9 +1402,9 @@ NPC 在对讲机里说话:BP 300-3400 Hz。两个 biquad 串联(HP 300 + LP 3400
 ## 13 · 延伸阅读
 
 本仓库本地资料:
-- [phase-5/day009.md](../phase-5/day009.md) — HH 第一次音频(WAV 加载)
-- [phase-5/day142.md](../phase-5/day142.md) — HH mixer 设计
-- [phase-5/day184.md](day184.md) — 后续 DSP 实战
+- [phase-5/day009.md](../../phase-1/day009.md) — HH 第一次音频(WAV 加载)
+- [phase-5/day142.md](../../phase-4/day142.md) — HH mixer 设计
+- [phase-5/day184.md](../day184.md) — 后续 DSP 实战
 - [phase-5/deep-dives/audio-pipeline-complete.md](audio-pipeline-complete.md) — 完整音频流水线
 - [phase-5/deep-dives/fft-and-spectral-analysis.md](fft-and-spectral-analysis.md) — FFT 和频谱分析(下一篇)
 

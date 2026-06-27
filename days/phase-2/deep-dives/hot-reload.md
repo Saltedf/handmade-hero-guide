@@ -812,8 +812,8 @@ Lua 解释器天然支持热重载:`require` 缓存可清空,模块重新加载�
 ## 11 · 延伸阅读
 
 本仓库:
-- [day026.md](day026.md) —— 热重载第一天
-- [day029.md](day029.md) —— 接口层完整
+- [day026.md](../day026.md) —— 热重载第一天
+- [day029.md](../day029.md) —— 接口层完整
 - [deep-dives/platform-game-separation.md](platform-game-separation.md) —— 平台/游戏分离
 - [deep-dives/rust-cdylib-and-ffi.md](rust-cdylib-and-ffi.md) —— cdylib + FFI 完整指南
 

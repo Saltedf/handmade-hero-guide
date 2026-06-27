@@ -2470,9 +2470,9 @@ loop {
 
 ## 16 · 关联 Day
 
-- **铺垫**:[day021.md](../phase-0/day021.md)(Phase 0 物理) — 牛顿三定律、力、动量;[day155.md](day155.md)、[day156.md](day156.md) — 粒子系统,Lagrangian vs Eulerian,本篇扩展到完整刚体物理
+- **铺垫**:[day021.md](../../phase-1/day021.md)(Phase 0 物理) — 牛顿三定律、力、动量;[day155.md](../day155.md)、[day156.md](../day156.md) — 粒子系统,Lagrangian vs Eulerian,本篇扩展到完整刚体物理
 - **当天**:本篇是 deep-dive,不对应具体一天
-- **后续**:[day176.md](../phase-5/day176.md) 起进入 Phase 5,OpenGL + debug 系统,本篇的物理引擎会和 OpenGL 渲染系统结合;Phase 7 网络部分会处理物理引擎的网络同步(快照插值、客户端预测)
+- **后续**:[day176.md](../../phase-5/day176.md) 起进入 Phase 5,OpenGL + debug 系统,本篇的物理引擎会和 OpenGL 渲染系统结合;Phase 7 网络部分会处理物理引擎的网络同步(快照插值、客户端预测)
 
 ## 17 · 变式训练
 
@@ -2766,9 +2766,9 @@ integration_parameters.restitution_velocity_threshold = 1.0;
 
 ### 19.5 内部链接
 
-- [day021.md](../phase-0/day021.md) — Phase 0 物理基础
-- [day155.md](day155.md) — 粒子系统开始
-- [day156.md](day156.md) — 粒子系统完成,Lagrangian vs Eulerian
+- [day021.md](../../phase-1/day021.md) — Phase 0 物理基础
+- [day155.md](../day155.md) — 粒子系统开始
+- [day156.md](../day156.md) — 粒子系统完成,Lagrangian vs Eulerian
 - [phase-4/deep-dives/lock-free-programming.md](lock-free-programming.md) — 多核并行(物理引擎 island solving 用得上)
 - [phase-4/deep-dives/simd-in-rust.md](simd-in-rust.md) — SIMD(物理引擎求解器内层循环用得上)
 

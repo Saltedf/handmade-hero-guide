@@ -275,8 +275,8 @@ Casey 的 voxel 碰撞重构是 HH 最重要的工程事件之一。它展示了
 
 本仓库本地:
 - [day636.md](../day636.md) - day645.md 的全部 10 集
-- [day050.md](../phase-2/day050.md) - 早期 Minkowski
-- [phase-0/14-math-foundations.md](../phase-0/14-math-foundations.md) - 数学基础
+- [day050.md](../../phase-2/day050.md) - 早期 Minkowski
+- [phase-0/14-math-foundations.md](../../phase-0/14-math-foundations.md) - 数学基础
 
 外部稳定 URL:
 - Box2D manual: https://box2d.org/documentation/

@@ -1693,7 +1693,7 @@ GitHub: https://github.com/google/filament/blob/main/filament/src/materials/Post
 ## 17 · 延伸阅读
 
 本仓库本地资料:
-- [days/phase-5/day235.md](../phase-5/day235.md) — OpenGL 集成,本文的 framebuffer 基础
+- [days/phase-5/day235.md](../../phase-5/day235.md) — OpenGL 集成,本文的 framebuffer 基础
 - [days/phase-6/deep-dives/pbr-complete.md](pbr-complete.md) — PBR 完整剖析,本文的 tone mapping 上游
 - [days/phase-6/deep-dives/lighting-models.md](lighting-models.md) — 光照模型
 - [days/phase-6/deep-dives/shadow-mapping.md](shadow-mapping.md) — 阴影(本文 pipeline 中常合并)
@@ -1717,9 +1717,9 @@ GitHub: https://github.com/google/filament/blob/main/filament/src/materials/Post
 
 ## 18 · 关联 Day
 
-- **铺垫**:[day235](../phase-5/day235.md) — OpenGL 基础,framebuffer 是本文 HDR buffer 的基础
+- **铺垫**:[day235](../../phase-5/day235.md) — OpenGL 基础,framebuffer 是本文 HDR buffer 的基础
 - **当天**:本文是 phase-6 的 deep-dive,不分具体 day
-- **后续**:[day362](../phase-6/day362.md) 之后的 anti-aliasing、[day262](../phase-6/day262.md) 的 lighting integration 都会用到本文 pipeline
+- **后续**:[day362](../day362.md) 之后的 anti-aliasing、[day262](../day262.md) 的 lighting integration 都会用到本文 pipeline
 
 ## 19 · 进阶专题:Karnis Bloom 完整实现
 

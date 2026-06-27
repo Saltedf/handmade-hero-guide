@@ -695,7 +695,7 @@ fn main() {
 | 本深入 | 完整 spectrum | — |
 
 **关联 Day**:
-- 铺垫:[phase-4](../phase-4/) — HH 第一次多线程;[phase-3/deep-dives/simd-progression.md](../phase-3/deep-dives/simd-progression.md) — 数据并行
+- 铺垫:[phase-4](../phase-4/) — HH 第一次多线程;[phase-3/deep-dives/simd-progression.md](../../phase-3/deep-dives/simd-progression.md) — 数据并行
 - 当天:本深入
 - 后续:[phase-6](../phase-6/) — ECS + system 调度;[deep-dives/audio-pipeline-complete.md](audio-pipeline-complete.md) — audio thread 实战;[deep-dives/collision-evolution.md](collision-evolution.md) — BVH 并行构建
 
@@ -703,7 +703,7 @@ fn main() {
 
 本仓库本地资料:
 - [phase-4](../phase-4/) — HH 多线程初探
-- [phase-5/day250.md](day250.md) — threading 基础
+- [phase-5/day250.md](../day250.md) — threading 基础
 - [phase-5/deep-dives/audio-pipeline-complete.md](audio-pipeline-complete.md) — audio callback 实战
 
 外部稳定 URL:

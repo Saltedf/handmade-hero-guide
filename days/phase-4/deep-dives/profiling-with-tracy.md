@@ -1758,9 +1758,9 @@ profiling 不是计算机专利。其他领域有类似"测量 + 分析"的工�
 
 ## 13 · 关联 Day
 
-- **铺垫**:[../phase-4/day138.md](../day138.md) — 第一次写简单 profiler overlay;[../phase-4/day158.md](../day158.md) — 粒子系统性能调优;[../phase-5/day176.md](../phase-5/day176.md) — debug overlay 完整版,本篇扩展到 Tracy
+- **铺垫**:[../phase-4/day138.md](../day138.md) — 第一次写简单 profiler overlay;[../phase-4/day158.md](../day158.md) — 粒子系统性能调优;[../phase-5/day176.md](../../phase-5/day176.md) — debug overlay 完整版,本篇扩展到 Tracy
 - **当天**:本 deep dive(无对应 HH day)
-- **后续**:[../phase-5/day184.md](../phase-5/day184.md) — frame time 图,本篇的 frame Mark 概念;[../phase-5/day201.md](../phase-5/day201.md) — feature 隔离 debug 代码,本篇用 `profile` feature 隔离 tracy_client;[../phase-8/deep-dives/performance-budget.md](../phase-8/deep-dives/performance-budget.md) — 性能预算,profiling 是设预算的前提
+- **后续**:[../phase-5/day184.md](../../phase-5/day184.md) — frame time 图,本篇的 frame Mark 概念;[../phase-5/day201.md](../../phase-5/day201.md) — feature 隔离 debug 代码,本篇用 `profile` feature 隔离 tracy_client;[../phase-8/deep-dives/performance-budget.md](../../phase-8/deep-dives/performance-budget.md) — 性能预算,profiling 是设预算的前提
 
 ## 14 · 变式训练
 
@@ -1814,9 +1814,9 @@ PR 草稿:
 本仓库本地资料:
 - [../phase-4/day138.md](../day138.md) — 第一次写简单 profiler overlay
 - [../phase-4/day158.md](../day158.md) — 粒子系统性能
-- [../phase-5/day176.md](../phase-5/day176.md) — debug overlay 完整版
-- [../phase-5/day201.md](../day201.md) — feature 隔离 debug 代码
-- [../phase-8/deep-dives/performance-budget.md](../phase-8/deep-dives/performance-budget.md) — 性能预算
+- [../phase-5/day176.md](../../phase-5/day176.md) — debug overlay 完整版
+- [../phase-5/day201.md](../../phase-5/day201.md) — feature 隔离 debug 代码
+- [../phase-8/deep-dives/performance-budget.md](../../phase-8/deep-dives/performance-budget.md) — 性能预算
 
 外部稳定 URL:
 - Tracy 官方:https://github.com/wolfpld/tracy

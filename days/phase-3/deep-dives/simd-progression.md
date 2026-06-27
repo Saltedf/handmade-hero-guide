@@ -559,7 +559,7 @@ Itanium (2001) 尝试让编译器自动做指令级并行,**失败**——编译
 
 本仓库:
 - [phase-4/deep-dives/simd-in-rust.md](../../phase-4/deep-dives/simd-in-rust.md)
-- [phase-5/day282.md](../day282.md)
+- [phase-5/day282.md](../../phase-6/day282.md)
 
 外部稳定:
 - Intel Intrinsics Guide(权威,搜索 _mm_*):https://www.intel.com/content/www/us/en/docs/intrinsics-guide/

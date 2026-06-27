@@ -1809,7 +1809,7 @@ if input.rewind_pressed {
 
 ## 14 · 关联 Day
 
-- **铺垫**:[../phase-3/day095.md](../phase-3/day095.md) — fixed timestep,本篇的固定 dt 是其扩展;[../phase-3/day099.md](../phase-3/day099.md) / [day100.md](../phase-3/day100.md) — 完整 fixed timestep,本篇假设你已经懂;[../phase-4/day138.md](../phase-4/day138.md) — RNG 用于粒子,本篇讲为什么必须用 seeded RNG;[../phase-7/day550.md](../phase-7/day550.md) — replay 系统 v1,本篇是其完整版
+- **铺垫**:[../phase-3/day095.md](../../phase-3/day095.md) — fixed timestep,本篇的固定 dt 是其扩展;[../phase-3/day099.md](../../phase-3/day099.md) / [day100.md](../../phase-3/day100.md) — 完整 fixed timestep,本篇假设你已经懂;[../phase-4/day138.md](../../phase-4/day138.md) — RNG 用于粒子,本篇讲为什么必须用 seeded RNG;[../phase-7/day550.md](../../phase-7/day550.md) — replay 系统 v1,本篇是其完整版
 - **当天**:本 deep dive(无对应 HH day)
 - **后续**:[../phase-8/deep-dives/performance-budget.md](performance-budget.md) — 性能预算,决定性有时牺牲性能;[shipping-checklist.md](shipping-checklist.md) — 发行检查表,Cargo.lock / rust-toolchain 提交是决定性前提
 
@@ -1862,10 +1862,10 @@ PR 草稿:
 ## 16 · 延伸阅读
 
 本仓库本地资料:
-- [../phase-3/day095.md](../phase-3/day095.md) — 固定 timestep 入门
-- [../phase-3/day099.md](../phase-3/day099.md) / [day100.md](../phase-3/day100.md) — 完整固定 timestep
-- [../phase-4/day138.md](../phase-4/day138.md) — 粒子用 RNG
-- [../phase-7/day550.md](../phase-7/day550.md) — replay v1
+- [../phase-3/day095.md](../../phase-3/day095.md) — 固定 timestep 入门
+- [../phase-3/day099.md](../../phase-3/day099.md) / [day100.md](../../phase-3/day100.md) — 完整固定 timestep
+- [../phase-4/day138.md](../../phase-4/day138.md) — 粒子用 RNG
+- [../phase-7/day550.md](../../phase-7/day550.md) — replay v1
 - [shipping-checklist.md](shipping-checklist.md) — 发行检查表
 
 外部稳定 URL:

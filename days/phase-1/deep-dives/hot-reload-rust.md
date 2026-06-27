@@ -1090,7 +1090,7 @@ Rust 热重载完整链路:
 ## 延伸阅读
 
 本仓库:
-- [day021](day021.md) / [day022](day022.md) / [day023](day023.md)——HH 热重载天数
+- [day021](../day021.md) / [day022](../day022.md) / [day023](../day023.md)——HH 热重载天数
 - [deep-dives/platform-game-separation.md](platform-game-separation.md)——平台 / 游戏分离
 
 外部:

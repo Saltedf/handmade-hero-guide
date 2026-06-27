@@ -791,12 +791,12 @@ fn update_with_collisions(
 ## 9 · 延伸阅读
 
 本仓库:
-- [day048.md](day048.md) —— 线段相交
-- [day050.md](day050.md) —— Minkowski 差
-- [day051.md](day051.md) —— 分离更新频率
-- [day055.md](day055.md) —— hash 世界存储
-- [day068.md](day068.md) —— vel clamp 防穿墙
-- [day069.md](day069.md) —— 碰撞规则表
+- [day048.md](../day048.md) —— 线段相交
+- [day050.md](../day050.md) —— Minkowski 差
+- [day051.md](../day051.md) —— 分离更新频率
+- [day055.md](../day055.md) —— hash 世界存储
+- [day068.md](../day068.md) —— vel clamp 防穿墙
+- [day069.md](../day069.md) —— 碰撞规则表
 
 外部:
 - Real-Time Collision Detection (Ericson): https://realtimecollisiondetection.net/

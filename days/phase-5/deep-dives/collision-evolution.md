@@ -618,16 +618,16 @@ fn main() {
 每一步演化都是为了**解决上一步在大数据下的瓶颈**。Casey 一集一集小步重构,你跟下来就是一部 collision detection 的工业史。
 
 **关联 Day**:
-- 铺垫:[day050](../phase-2/day050.md) — 2D AABB 初次接触;[day377](../phase-5/day377.md) — raycast 引入
+- 铺垫:[day050](../../phase-2/day050.md) — 2D AABB 初次接触;[day377](../../phase-6/day377.md) — raycast 引入
 - 当天:本深入
-- 后续:[day631](../phase-8/day631.md) — voxel raycast;[deep-dives/threading-journey.md](threading-journey.md) — BVH 并行构建
+- 后续:[day631](../../phase-8/day631.md) — voxel raycast;[deep-dives/threading-journey.md](threading-journey.md) — BVH 并行构建
 
 ## 10 · 延伸阅读
 
 本仓库本地资料:
-- [phase-2/day050.md](../phase-2/day050.md) — 2D AABB / Minkowski 差
-- [phase-5/day377.md](../phase-5/day377.md) — Raycast 引入
-- [phase-8/day631.md](../phase-8/day631.md) — Voxel raycast
+- [phase-2/day050.md](../../phase-2/day050.md) — 2D AABB / Minkowski 差
+- [phase-5/day377.md](../../phase-6/day377.md) — Raycast 引入
+- [phase-8/day631.md](../../phase-8/day631.md) — Voxel raycast
 
 外部稳定 URL:
 - Real-Time Collision Detection (Ericson) — 工业金标书

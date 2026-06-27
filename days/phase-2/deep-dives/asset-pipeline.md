@@ -707,10 +707,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ## 12 · 延伸阅读
 
 本仓库:
-- [day029.md](day029.md) —— 第一段代码读 BMP
-- [day036.md](day036.md) —— 完整 BMP 加载器
-- [day037.md](day037.md) —— TGA / alpha blending
-- [day055.md](day055.md) —— hash 表(资产缓存的底层数据结构)
+- [day029.md](../day029.md) —— 第一段代码读 BMP
+- [day036.md](../day036.md) —— 完整 BMP 加载器
+- [day037.md](../day037.md) —— TGA / alpha blending
+- [day055.md](../day055.md) —— hash 表(资产缓存的底层数据结构)
 - [deep-dives/platform-game-separation.md](platform-game-separation.md) —— GameMemory
 
 外部:

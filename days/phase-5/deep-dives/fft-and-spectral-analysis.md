@@ -1348,8 +1348,8 @@ fn draw_spectrum_panel(ctx: &mut DebugCtx, master_out: &[f32]) {
 ## 15 · 延伸阅读
 
 本仓库本地资料:
-- [phase-5/day009.md](../phase-5/day009.md) — HH 第一次音频
-- [phase-5/day142.md](../phase-5/day142.md) — HH mixer
+- [phase-5/day009.md](../../phase-1/day009.md) — HH 第一次音频
+- [phase-5/day142.md](../../phase-4/day142.md) — HH mixer
 - [phase-5/deep-dives/dsp-fundamentals.md](dsp-fundamentals.md) — DSP 基础(上一篇,前置)
 - [phase-5/deep-dives/audio-pipeline-complete.md](audio-pipeline-complete.md) — 完整音频流水线
 

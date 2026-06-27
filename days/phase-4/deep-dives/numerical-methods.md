@@ -1827,7 +1827,7 @@ GitHub: https://github.com/Jondolf/bevy_xpbd
 
 本仓库本地资料:
 
-- [../phase-4/day043.md](../day043.md) — Euler 角相机,Phase 4 入门
+- [../phase-4/day043.md](../../phase-2/day043.md) — Euler 角相机,Phase 4 入门
 - [physics-engine-complete.md](physics-engine-complete.md) — 物理引擎完整推导,Sequential Impulse 详解
 - [simd-in-rust.md](simd-in-rust.md) — SIMD 加速数值计算
 - [../phase-0/14-math-foundations.md](../../phase-0/14-math-foundations.md) — 数学基础

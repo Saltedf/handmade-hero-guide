@@ -777,14 +777,14 @@ Phase 1-3 学习时手写,理解每一行。Phase 5+ 切 glam。
 ## 11 · 延伸阅读
 
 本仓库:
-- [day041.md](day041.md) —— 游戏数学概览
-- [day042.md](day042.md) —— Vec2 详细
-- [day043.md](day043.md) —— 运动方程
-- [day044.md](day044.md) —— 反射
-- [day047.md](day047.md) —— 向量长度
-- [day048.md](day048.md) —— 线段相交
-- [day050.md](day050.md) —— Minkowski 碰撞
-- [phase-0/14-math-foundations.md](../phase-0/14-math-foundations.md) —— 线性代数基础
+- [day041.md](../day041.md) —— 游戏数学概览
+- [day042.md](../day042.md) —— Vec2 详细
+- [day043.md](../day043.md) —— 运动方程
+- [day044.md](../day044.md) —— 反射
+- [day047.md](../day047.md) —— 向量长度
+- [day048.md](../day048.md) —— 线段相交
+- [day050.md](../day050.md) —— Minkowski 碰撞
+- [phase-0/14-math-foundations.md](../../phase-0/14-math-foundations.md) —— 线性代数基础
 
 外部:
 - 3D Math Primer(免费在线): https://gamemath.com/

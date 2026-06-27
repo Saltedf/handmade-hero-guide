@@ -435,7 +435,7 @@ LLVM 的 auto-vectorizer 能识别简单循环自动生成 SSE / AVX。开启 `o
 - 手写 AVX2 + FMA: 35 μs
 - `wide` crate: 38 μs
 
-收益比想象的小,因为 LLVM 自动向量化已经做得很好。**不要过早手写 SIMD**——先 profile。详细 SIMD 演化见 [phase-3/deep-dives/simd-progression.md](../phase-3/deep-dives/simd-progression.md)。
+收益比想象的小,因为 LLVM 自动向量化已经做得很好。**不要过早手写 SIMD**——先 profile。详细 SIMD 演化见 [phase-3/deep-dives/simd-progression.md](../../phase-3/deep-dives/simd-progression.md)。
 
 ## 6 · 延迟测量
 
@@ -566,10 +566,10 @@ cargo run --release
 ## 10 · 延伸阅读
 
 本仓库本地资料:
-- [phase-1/day009.md](../phase-1/day009.md) — HH 第一次音频(原版 Win32 + DirectSound)
-- [phase-5/day138.md](../phase-5/day138.md) — HH mixer 设计
-- [phase-5/day526.md](../phase-5/day526.md) — HH streaming
-- [phase-3/deep-dives/simd-progression.md](../phase-3/deep-dives/simd-progression.md) — SIMD 进阶
+- [phase-1/day009.md](../../phase-1/day009.md) — HH 第一次音频(原版 Win32 + DirectSound)
+- [phase-5/day138.md](../../phase-4/day138.md) — HH mixer 设计
+- [phase-5/day526.md](../../phase-7/day526.md) — HH streaming
+- [phase-3/deep-dives/simd-progression.md](../../phase-3/deep-dives/simd-progression.md) — SIMD 进阶
 - [phase-5/deep-dives/threading-journey.md](threading-journey.md) — SPSC ring 的并发细节
 
 外部稳定 URL:

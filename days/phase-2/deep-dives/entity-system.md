@@ -682,12 +682,12 @@ fn main() {
 ## 9 · 延伸阅读
 
 本仓库:
-- [day030.md](day030.md) —— 第一个 entity
-- [day050.md](day050.md) —— entity 间碰撞
-- [day051.md](day051.md) —— 频率分层(条件 update 的雏形)
-- [day055.md](day055.md) —— hash 世界存储
-- [day066.md](day066.md) —— 非空间 entity
-- [day069.md](day069.md) —— 碰撞规则(类型对派发)
+- [day030.md](../day030.md) —— 第一个 entity
+- [day050.md](../day050.md) —— entity 间碰撞
+- [day051.md](../day051.md) —— 频率分层(条件 update 的雏形)
+- [day055.md](../day055.md) —— hash 世界存储
+- [day066.md](../day066.md) —— 非空间 entity
+- [day069.md](../day069.md) —— 碰撞规则(类型对派发)
 
 外部:
 - ECS Back and Forth — Sander Mertens: https://skypjack.github.io/2019-02-14-ecs-baf-part-1/

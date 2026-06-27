@@ -1669,9 +1669,9 @@ Repo 状态:成熟,社区维护,issue 多但响应慢。可贡献方向:
 
 ## 15 · 关联 HH Day
 
-- **铺垫**:[day275](../day275.md) 怪物 AI 框架,今天的寻路是其移动层;[day290](../day290.md) 碰撞检测,寻路依赖碰撞信息
+- **铺垫**:[day275](../../phase-6/day275.md) 怪物 AI 框架,今天的寻路是其移动层;[day290](../../phase-6/day290.md) 碰撞检测,寻路依赖碰撞信息
 - **当天**:deep-dive
-- **后续**:[day320](../day320.md) AI group behavior,crowd pathfinding 的应用;[day340](../day340.md) 动态世界,动态 NavMesh 重算
+- **后续**:[day320](../../phase-6/day320.md) AI group behavior,crowd pathfinding 的应用;[day340](../../phase-6/day340.md) 动态世界,动态 NavMesh 重算
 
 ## 16 · 延伸阅读
 

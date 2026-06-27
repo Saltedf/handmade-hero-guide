@@ -1465,7 +1465,7 @@ Rust 并发库分层:
 
 - **铺垫**:[08-processes-and-signals.md](08-processes-and-signals.md) — 进程、信号
 - **当天**:[25-concurrency-foundation.md](25-concurrency-foundation.md)(本篇)
-- **后续**:[day078-memory-arena.md](../phase-3/day078.md) — Casey 的多线程;[day240-threading.md](../phase-5/day240.md)(假设)— 游戏多线程架构;[day400-lock-free.md](../phase-4/day400.md)(假设)— 无锁编程深入
+- **后续**:[day078-memory-arena.md](../phase-3/day078.md) — Casey 的多线程;[day240-threading.md](../phase-5/day240.md)(假设)— 游戏多线程架构;[day400-lock-free.md](../phase-6/day400.md)(假设)— 无锁编程深入
 
 ---
 

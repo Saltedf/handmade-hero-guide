@@ -766,11 +766,11 @@ Casey 在 HH 用 Win32,理由:
 ## 延伸阅读
 
 本仓库:
-- [day002](day002.md)——窗口
-- [day003](day003.md)——后缓冲
-- [day006](day006.md)——输入
-- [day007](day007.md)——音频
-- [day021](day021.md)——动态加载
+- [day002](../day002.md)——窗口
+- [day003](../day003.md)——后缓冲
+- [day006](../day006.md)——输入
+- [day007](../day007.md)——音频
+- [day021](../day021.md)——动态加载
 
 外部:
 - winit 文档:https://docs.rs/winit/

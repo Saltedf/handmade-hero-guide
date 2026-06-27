@@ -1637,9 +1637,9 @@ let _conn = midi_in.connect(&in_port, "input", move |_, message, _| {
 ## 14 · 延伸阅读
 
 本仓库本地资料:
-- [phase-5/day009.md](../phase-5/day009.md) — HH 第一次音频
-- [phase-5/day142.md](../phase-5/day142.md) — HH mixer
-- [phase-5/day184.md](../phase-5/day184.md) — HH 实时音频效果
+- [phase-5/day009.md](../../phase-1/day009.md) — HH 第一次音频
+- [phase-5/day142.md](../../phase-4/day142.md) — HH mixer
+- [phase-5/day184.md](../day184.md) — HH 实时音频效果
 - [phase-5/deep-dives/dsp-fundamentals.md](dsp-fundamentals.md) — DSP 基础(filter 公式)
 - [phase-5/deep-dives/fft-and-spectral-analysis.md](fft-and-spectral-analysis.md) — FFT 和频谱(波形分析)
 - [phase-5/deep-dives/audio-pipeline-complete.md](audio-pipeline-complete.md) — 完整音频流水线
