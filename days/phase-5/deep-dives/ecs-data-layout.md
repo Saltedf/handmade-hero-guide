@@ -1,11 +1,3 @@
----
-phase: 5
-title_en: "ECS Data Layout"
-title_zh: "ECS 数据布局:archetype 内部存储深潜"
-type: deep-dive
-domains: [game, rust, system, architecture, performance]
-bridges: ["ecs-evolution", "day184", "day201"]
----
 
 # ECS 数据布局:archetype 内部存储深潜
 

@@ -1,14 +1,3 @@
----
-phase: 5
-title_en: "Event Systems & Gameplay Foundations"
-title_zh: "事件系统与游戏性根基:从硬编码调用到反射驱动的 gameplay"
-type: deep-dive
-difficulty: 4
-duration: "2-3 小时"
-domains: [game, rust, system, architecture]
-prereqs: ["ecs-evolution", "09B-2"]
-calibration: "Gregory《GEA》审计缺口 — 事件总线/发布订阅/延迟事件 + gameplay 对象模型 + 反射(RTTI)"
----
 
 # 事件系统与游戏性根基:从硬编码调用到反射驱动的 gameplay
 

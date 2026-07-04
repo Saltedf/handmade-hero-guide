@@ -1,13 +1,3 @@
----
-article: 01
-phase: 0
-title: "Arch Linux 配置:pacman / systemd / 用户权限"
-type: setup
-difficulty: 2
-duration: "2-3h"
-domains: [linux]
-prereqs: ["00-terminal-basics"]
----
 
 # 01 · Arch Linux 配置:pacman / systemd / 用户权限
 

@@ -1,13 +1,3 @@
----
-article: 00
-phase: 0
-title: "终端基础:shell 是怎么工作的"
-type: setup
-difficulty: 1
-duration: "1-2h"
-domains: [linux]
-prereqs: []
----
 
 # 00 · 终端基础:shell 是怎么工作的
 

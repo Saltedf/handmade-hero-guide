@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9C"
-module: 2
-title_en: "Instance, Device & Swapchain"
-title_zh: "实例、设备与交换链:Vulkan 接管你的第一个窗口"
-type: deep-dive
-difficulty: 5
-duration: "2-3 小时"
-domains: [graphics, gpu, rust]
-prereqs: ["09C-1-gpu-architecture-and-explicit-api"]
-calibration: "Vulkan spec + vulkan-tutorial/vkguide 实践 + wgpu 对照"
----
 
 # 09C-2 · 实例、设备与交换链
 

@@ -1,13 +1,3 @@
----
-article: 02
-phase: 0
-title: "Git 和 GitHub:fork → clone → branch → commit → PR 全流程"
-type: setup
-difficulty: 2
-duration: "2-3h"
-domains: [linux, rust]
-prereqs: ["00-terminal-basics", "01-arch-setup"]
----
 
 # 02 · Git 和 GitHub:fork → clone → branch → commit → PR 全流程
 

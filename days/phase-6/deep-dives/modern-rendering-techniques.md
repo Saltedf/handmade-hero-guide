@@ -1,14 +1,3 @@
----
-phase: 6
-title_en: "Modern Rendering Techniques"
-title_zh: "现代渲染技术:bindless、indirect draw 与 GPU-driven pipeline"
-type: deep-dive
-difficulty: 4
-duration: "4-5 小时"
-domains: [graphics, gpu, rust]
-prereqs: ["deferred-and-clustered", "09C-5-descriptors-and-uniforms"]
-calibration: "现代渲染技术(bindless/descriptor index/indirect draw/GPU-driven/mesh shader/VRS/visibility buffer)"
----
 
 # 现代渲染技术:bindless、indirect draw 与 GPU-driven pipeline
 

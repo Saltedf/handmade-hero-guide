@@ -1,11 +1,3 @@
----
-phase: 5
-title_en: "DSP Fundamentals"
-title_zh: "数字信号处理基础:卷积、Z 变换与数字滤波器"
-type: deep-dive
-domains: [game, audio, rust, linux, system, math]
-bridges: ["day009", "day142", "day184"]
----
 
 # 数字信号处理基础
 

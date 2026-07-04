@@ -1,13 +1,3 @@
----
-article: 21
-phase: 0
-title: "物理基础:牛顿力学 / 碰撞 / 转动 / 振动 / 数值积分稳定性"
-type: concept
-difficulty: 4
-duration: "5-6h"
-domains: [physics, game, rust, math]
-prereqs: ["20-math-foundation-extended"]
----
 
 # 21 · 物理基础:从牛顿定律到稳定积分器
 

@@ -1,17 +1,3 @@
----
-phase: 6
-title_en: "Real-Time Global Illumination: Light Probes, Irradiance Volumes, DDGI, VXGI, SH, ReSTIR — placed against HH's octahedral GI"
-title_zh: "实时全局光照全景:Light Probe / Irradiance Volume / DDGI / VXGI / SH / ReSTIR — 对照 HH 八面体 GI"
-type: deep-dive
-difficulty: 5
-duration: "3-4 小时"
-domains: [graphics, gpu, engineering]
-prereqs:
-  - "phase-6/deep-dives/lighting-models"
-  - "phase-6/deep-dives/pbr-complete"
-  - "phase-6/deep-dives/hardware-ray-tracing"
-calibration: "实时 GI 全景(light probe / irradiance volume / DDGI / VXGI / SH / ReSTIR)— 对照 HH 八面体 GI"
----
 
 # 实时全局光照全景:从光探针到路径追踪
 

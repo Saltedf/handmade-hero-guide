@@ -1,11 +1,3 @@
----
-phase: 5
-title_en: "Audio Effects Complete"
-title_zh: "音频效果器全解:从 Schroeder Reverb 到现代 FDN"
-type: deep-dive
-domains: [game, audio, rust, linux, math]
-bridges: ["day138", "day201", "day526"]
----
 
 # 音频效果器全解
 

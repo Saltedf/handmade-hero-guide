@@ -1,11 +1,3 @@
----
-phase: 8
-type: appendix
-title_en: "Shipping Appendix (Short)"
-title_zh: "发布附录(简版)"
-domains: [game, rust, shipping, platform]
-duration: "2h"
----
 
 # 发布附录:Steam / 主机 / 移动 / Web(简版)
 

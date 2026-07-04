@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9A"
-module: 3
-title_en: "Integration & Snapshot Testing"
-title_zh: "集成测试与快照测试:单元全绿,游戏还是坏的"
-type: deep-dive
-difficulty: 4
-duration: "2-3 小时"
-domains: [rust, engineering, graphics, game]
-prereqs: ["09A-2-unit-and-property-testing"]
-calibration: "软件工程集成测试 + 游戏渲染快照/视觉回归实践"
----
 
 # 9A-3 · 集成测试与快照测试
 

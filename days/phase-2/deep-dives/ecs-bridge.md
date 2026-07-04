@@ -1,11 +1,3 @@
----
-phase: 2
-type: deep-dive
-title: "ECS 渐进演化:从 HH 稀疏数组到工业 archetype"
-domains: [game, rust, data-structures]
-duration: "2-3h"
-prereqs: ["day046", "day055", "day176"]
----
 
 # ECS 渐进演化 · 从 HH 稀疏数组到工业 archetype
 

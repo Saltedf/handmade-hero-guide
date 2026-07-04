@@ -1,13 +1,3 @@
----
-article: 26
-phase: 0
-title: "图形学基础:颜色 / 三角形 / 投影 / 光栅化 / 着色 / 纹理 / GPU"
-type: concept
-difficulty: 5
-duration: "8-10h"
-domains: [graphics, game, rust, linux, math]
-prereqs: ["14-math-foundations", "20-math-foundation-extended"]
----
 
 # 26 · 图形学基础:从像素到 GPU 渲染管线
 

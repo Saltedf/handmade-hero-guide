@@ -1,18 +1,3 @@
----
-title: "读内核:下钻到 xv6 与 Linux 源码"
-title_en: "Reading the Kernel: Drilling into xv6 and Linux Source"
-subtitle: "fork / scheduler / syscall trap / page fault — 真实内核代码精读"
-type: deep-dive
-phase: 4
-difficulty: 4
-duration: "3-4h"
-domains: [rust, system, linux, c-reading, game]
-prereqs:
-  - "phase-0/08-processes-and-signals"
-  - "phase-0/15-c-and-assembly-reading"
-  - "virtual-memory-and-allocators"
-calibration: "读真实内核源码(xv6 + Linux 片段)— MIT 6.S081 '下钻到底' 的精神"
----
 
 # 读内核:下钻到 xv6 与 Linux 源码
 

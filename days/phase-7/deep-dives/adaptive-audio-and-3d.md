@@ -1,11 +1,3 @@
----
-phase: 7
-title_en: "Adaptive Audio and 3D Positional Sound"
-title_zh: "自适应音乐与 3D 空间音频全解"
-type: deep-dive
-domains: [game, audio, rust, linux, math, network]
-bridges: ["day138", "day201", "day526", "day575"]
----
 
 # 自适应音乐与 3D 空间音频全解
 

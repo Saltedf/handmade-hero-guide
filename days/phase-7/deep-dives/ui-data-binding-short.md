@@ -1,11 +1,3 @@
----
-phase: 7
-type: deep-dive
-title_en: "UI Data Binding & State Management (Short)"
-title_zh: "UI 数据绑定与状态管理(简版)"
-domains: [game, rust, ui]
-duration: "1.5h"
----
 
 # 深入:UI 数据绑定与状态管理(简版)
 

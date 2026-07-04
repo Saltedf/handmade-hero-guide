@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9A"
-module: 1
-title_en: "Testable Game Architecture"
-title_zh: "可测试的游戏架构:把 HH 的过程式代码改成测得动的"
-type: deep-dive
-difficulty: 4
-duration: "2-3 小时"
-domains: [rust, engineering, game]
-prereqs: ["phase-0/18-testing-mindset", "phase-8"]
-calibration: "软件工程测试实践 + 游戏可测性(Gregory《GEA》软件工程章 + 工业实践)"
----
 
 # 9A-1 · 可测试的游戏架构
 

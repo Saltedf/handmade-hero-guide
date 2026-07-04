@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9C"
-module: 5
-title_en: "Descriptors & Uniforms"
-title_zh: "描述符与统一缓冲:让 CPU 把数据吹进 shader"
-type: deep-dive
-difficulty: 4
-duration: "3-4 小时"
-domains: [graphics, gpu, rust]
-prereqs: ["09C-4-graphics-pipeline-first-triangle"]
-calibration: "Vulkan descriptor system spec + vulkan-tutorial 'Descriptor Sets'"
----
 
 # 09C-5 · 描述符与统一缓冲
 

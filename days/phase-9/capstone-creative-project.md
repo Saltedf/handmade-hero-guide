@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9G"
-module: 7
-title_en: "Capstone: Ship Your Own Original Game"
-title_zh: "毕业项目:做出并发布一款你自己的原创游戏"
-type: capstone
-difficulty: 5
-duration: "4-12 周(自定节奏,无上限)"
-domains: [rust, engineering, game, graphics, audio, production, art, release, open-source]
-prereqs: ["09G-6-professional-readiness-checklist"]
-calibration: "毕业项目:用所学一切,做一款原创游戏的垂直切片,打磨到可上架品质,开源发布"
----
 
 # Capstone · 毕业项目:做出并发布一款你自己的原创游戏
 

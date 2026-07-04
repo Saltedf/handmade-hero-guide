@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9E"
-module: 3
-title_en: "Interest Management & Replication"
-title_zh: "兴趣管理与按需复制:为什么 MMO 永远不会把整个世界发给一个玩家"
-type: deep-dive
-difficulty: 4
-duration: "3-4 小时"
-domains: [game, network, rust, linux, system, concurrency]
-prereqs: ["09E-2-authoritative-server-and-state-sync"]
-calibration: "游戏网络 replication/area-of-interest 实践 + priority accumulator"
----
 
 # 9E-3 · 兴趣管理与按需复制
 

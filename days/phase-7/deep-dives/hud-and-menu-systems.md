@@ -1,14 +1,3 @@
----
-phase: 7
-type: deep-dive
-title_en: "HUD, Menus, Settings & Focus Navigation"
-title_zh: "HUD、菜单、设置与焦点导航(T7 游戏 UI 深度 part 3/3 收官)"
-difficulty: 4
-duration: "5h"
-domains: [game, rust, ui, gameplay]
-prereqs: [ui-layout-engines, game-ui-architecture]
-calibration: "HUD/菜单/设置/背包屏 工程模式 + UI 动画/过渡 + 焦点导航"
----
 
 # 深入:HUD、菜单、设置与焦点导航(T7 游戏 UI 深度 part 3/3 收官)
 

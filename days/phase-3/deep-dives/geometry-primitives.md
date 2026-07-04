@@ -1,10 +1,3 @@
----
-phase: 3
-title_en: "Geometry Primitives Deep Dive"
-title_zh: "几何图元深度专题"
-type: deep-dive
-domains: [game, graphics, math, rust]
----
 
 # 几何图元深度专题
 

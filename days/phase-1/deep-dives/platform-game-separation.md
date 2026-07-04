@@ -1,9 +1,3 @@
----
-title: "平台 / 游戏分离:从 naive main 到 cdylib 热重载的演化"
-phase: 1
-type: deep-dive
-domains: [game, rust, software-engineering]
----
 
 # 平台 / 游戏分离:从 naive main 到 cdylib 热重载的演化
 

@@ -1,13 +1,3 @@
----
-article: 24
-phase: 0
-title: "内存基础:虚拟内存 / 分页 / cache / 分配器 / NUMA"
-type: concept
-difficulty: 4
-duration: "6-8h"
-domains: [memory, system, game, rust, linux]
-prereqs: ["07-linux-filesystem", "16-rust-toolchain-deep", "23-network-foundation"]
----
 
 # 24 · 内存基础:从 DRAM cell 到你的 `let x = 5;`
 

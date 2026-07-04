@@ -1,10 +1,3 @@
----
-phase: 4
-type: bridge
-title: "从 Phase 4 走到 Phase 5:CPU 跑满了,该上 GPU 了"
-domains: [game, graphics, performance, gpu, rust]
-prereqs: ["day112", "day175"]
----
 
 # Bridge · 从 Phase 4 到 Phase 5
 

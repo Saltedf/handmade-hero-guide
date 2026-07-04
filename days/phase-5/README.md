@@ -1,12 +1,3 @@
----
-phase: 5
-range: day176-260
-days: 85
-title: "Debug 系统 + OpenGL 迁移:让游戏能调自己,让渲染上 GPU"
-estimated: "10-12 周"
-prereqs: ["phase-0", "phase-1", "phase-2", "phase-3", "phase-4"]
-domains: [game, graphics, linux, rust, debug]
----
 
 # Phase 5 · Debug 系统 + OpenGL 迁移
 

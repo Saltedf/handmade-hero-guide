@@ -1,16 +1,3 @@
----
-phase: 2
-title_en: "Game Feel Part 4 — Audio Feedback and the Polish Pass"
-title_zh: "游戏手感序列(四):音频手感与综合打磨"
-type: deep-dive
-difficulty: 3
-duration: "3h"
-domains: [game, audio, rust, graphics]
-calibration: "Steve Swink《Game Feel》— 音频手感 + 综合打磨(audio feedback + the polish pass)"
-prereqs:
-  - adaptive-audio-and-3d
-  - game-feel-03
----
 
 # 深入:游戏手感序列(四)—— 音频手感与综合打磨
 

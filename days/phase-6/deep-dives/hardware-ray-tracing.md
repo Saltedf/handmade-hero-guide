@@ -1,18 +1,3 @@
----
-phase: 6
-title_en: "Hardware Ray Tracing: BVH, the RT Pipeline, Ray Query & Real-Time Denoising"
-title_zh: "硬件光线追踪:BVH、RT 管线、Ray Query 与实时降噪"
-type: deep-dive
-difficulty: 5
-duration: "3-4 小时"
-domains: [graphics, gpu, engineering]
-prereqs:
-  - "phase-6/deep-dives/pbr-complete"
-  - "phase-6/deep-dives/deferred-and-clustered"
-  - "phase-6/deep-dives/spatial-acceleration"
-  - "phase-9/09C-1-gpu-architecture-and-explicit-api"
-calibration: "DXR / Vulkan RT / Ray Query + 实时降噪(SVGF) + 混合渲染管线"
----
 
 # 硬件光线追踪:BVH、RT 管线、Ray Query 与实时降噪
 

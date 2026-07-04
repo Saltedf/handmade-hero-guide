@@ -1,11 +1,3 @@
----
-title: "Arena Allocator"
-subtitle: "bumpalo, typed-arena, when arenas win, generational arenas"
-type: deep-dive
-phase: 4
-domains: [rust, game]
-duration: "2-3h"
----
 
 # Arena Allocator
 

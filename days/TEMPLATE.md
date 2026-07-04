@@ -1,15 +1,3 @@
----
-day: NNN
-phase: N
-title_en: "..."
-title_zh: "..."
-type: concept          # concept / coding / milestone / refactor / debug / qa
-difficulty: 2          # 1-5
-duration: "1h"
-hh_url: "https://guide.handmadehero.org/code/dayNNN/"
-domains: [game, graphics, linux, rust]  # 从中选当天真正涉及的
-prereqs: []            # 形如 ["phase-0/14-math-foundations", "day027"]
----
 
 <!--
   本文件是 days/phase-{0..8}/dayNNN.md 的撰写模板。

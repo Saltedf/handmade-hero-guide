@@ -1,15 +1,3 @@
----
-episode: 00
-series: handmade-ray
-title_en: "Making a Simple Raycaster"
-title_zh: "制作简单光线投射器"
-type: concept
-difficulty: 2
-duration: "2-3h"
-hh_url: "https://guide.handmadehero.org/ray/ray00/"
-domains: [graphics, math, rust]
-prereqs: ["phase-0/14-math-foundations", "phase-2/day041"]
----
 
 # ray00 · 光线追踪入门
 

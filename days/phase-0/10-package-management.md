@@ -1,13 +1,3 @@
----
-article: 10
-phase: 0
-title: "包管理:pacman / cargo / rustup / AUR / asdf"
-type: setup
-difficulty: 2
-duration: "2h"
-domains: [linux, rust]
-prereqs: ["00-terminal-basics", "01-arch-setup", "09-editor-toolchain"]
----
 
 # 10 · 包管理:pacman / cargo / rustup / AUR / asdf
 

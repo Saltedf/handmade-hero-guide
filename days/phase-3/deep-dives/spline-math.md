@@ -1,16 +1,3 @@
----
-phase: 3
-title_en: "Spline Math Deep Dive"
-title_zh: "样条数学深度专题"
-type: deep-dive
-difficulty: hard
-duration: 3-4h
-domains: [game, graphics, math, rust]
-prereqs:
-  - projection-matrices
-  - phase-0/20-math-foundation-extended
-calibration: "样条数学(bézier/b-spline/catmull-rom/hermite)— 服务相机/动画曲线/UI 缓动"
----
 
 # 样条数学深度专题
 

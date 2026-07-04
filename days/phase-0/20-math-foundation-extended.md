@@ -1,13 +1,3 @@
----
-article: 20
-phase: 0
-title: "数学基础扩展:线性代数 / 微积分 / 概率统计(从公理到代码)"
-type: concept
-difficulty: 4
-duration: "5-7h"
-domains: [math, graphics, game, rust]
-prereqs: ["14-math-foundations"]
----
 
 # 20 · 数学基础扩展:线性代数 / 微积分 / 概率统计
 

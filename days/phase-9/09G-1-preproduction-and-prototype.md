@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9G"
-module: 1
-title_en: "Preproduction & Prototype"
-title_zh: "预制作与可玩原型:在烧钱之前先找到那个'好玩'"
-type: deep-dive
-difficulty: 3
-duration: "2-3 小时"
-domains: [game, design, engineering, process]
-prereqs: ["09F-3-cross-platform-and-portability"]
-calibration: "游戏制作预制作 + 可玩原型(find the fun)+ 风险消除"
----
 
 # 9G-1 · 预制作与可玩原型
 

@@ -1,10 +1,3 @@
----
-phase: 0
-title_en: "CI/CD for Rust Projects"
-title_zh: "Rust 项目持续集成与持续交付"
-type: article
-domains: [rust, linux, devops]
----
 
 # Rust 项目持续集成与持续交付
 

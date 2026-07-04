@@ -1,13 +1,3 @@
----
-article: 23
-phase: 0
-title: "网络基础:OSI / TCP / UDP / Socket / TLS / HTTP / WebSocket"
-type: concept
-difficulty: 4
-duration: "6-8h"
-domains: [network, game, rust, linux]
-prereqs: ["08-processes-and-signals", "16-rust-toolchain-deep"]
----
 
 # 23 · 网络基础:从一根网线到多人游戏
 

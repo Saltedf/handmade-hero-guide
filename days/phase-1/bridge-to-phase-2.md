@@ -1,10 +1,3 @@
----
-phase: 1
-type: bridge
-title: "从 Phase 1 走到 Phase 2:基础设施已成,该做游戏了"
-domains: [game, rust, linux]
-prereqs: ["day001", "day025"]
----
 
 # Bridge · 从 Phase 1 到 Phase 2
 

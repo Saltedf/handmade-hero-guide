@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9C"
-module: 8
-title_en: "Migrate an HH Render Pass to Vulkan"
-title_zh: "把 HH 的一个真实 pass 迁到 Vulkan:9C 的毕业"
-type: deep-dive
-difficulty: 4
-duration: "3-5 小时"
-domains: [graphics, gpu, rust, engineering]
-prereqs: ["09C-7-depth-and-meshes"]
-calibration: "Vulkan 实战迁移 + frame-graph 驱动多 pass + 引擎后端可替换架构"
----
 
 # 09C-8 · 把 HH 的一个真实 pass 迁到 Vulkan
 

@@ -1,11 +1,3 @@
----
-phase: 2
-type: deep-dive
-title: "Rust cdylib + FFI 完整指南:所有权 / 生命周期 / unsafe 边界"
-domains: [rust, linux]
-duration: "3h"
-prereqs: ["day026", "day029", "phase-0/08-processes-and-signals", "phase-0/15-c-and-assembly-reading"]
----
 
 # Rust cdylib + FFI 完整指南 · 所有权 / 生命周期 / unsafe 边界
 

@@ -1,11 +1,3 @@
----
-title: "Threading Models"
-subtitle: "Thread pool, work stealing, rayon, scheduled vs immediate"
-type: deep-dive
-phase: 4
-domains: [rust, game, linux]
-duration: "2-3h"
----
 
 # Threading Models
 

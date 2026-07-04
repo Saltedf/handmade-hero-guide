@@ -1,16 +1,3 @@
----
-phase: 2
-sequence: "T5"
-module: 2
-title_en: "Input Handling for Games — Actions, Rebinding, Multi-device, Deadzones, Events vs Polling"
-title_zh: "游戏输入工程:动作抽象、重绑定、多设备、死区、事件 vs 轮询"
-type: deep-dive
-difficulty: 3
-duration: "2-3 小时"
-domains: [game, rust, engineering]
-prereqs: ["game-feel-01-input-and-timing-feel"]
-calibration: "游戏输入工程(动作抽象/重绑定/多设备/死区/事件 vs 轮询)"
----
 
 # T5-2 · 游戏输入工程:把按键抽象成动作
 

@@ -1,14 +1,3 @@
----
-phase: 2
-title_en: "Game Feel Part 2 — Camera Feel"
-title_zh: "游戏手感(二):相机手感"
-type: deep-dive
-difficulty: intermediate
-duration: "3h"
-domains: [game, graphics, rust, math]
-prereqs: ["camera-systems", "game-feel-01-input-and-timing-feel"]
-calibration: "Steve Swink《Game Feel》— 相机手感(跟随/look-ahead/震屏/阻尼)"
----
 
 # 游戏手感(二):相机手感
 

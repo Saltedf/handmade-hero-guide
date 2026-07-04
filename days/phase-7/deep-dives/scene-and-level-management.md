@@ -1,15 +1,3 @@
----
-phase: 7
-title_en: "Scene and Level Management"
-title_zh: "场景与关卡管理:加载、切换、加载界面、流式加载"
-type: deep-dive
-difficulty: 4
-duration: "5-7h"
-domains: [game, rust, architecture, system]
-prereqs: ["asset-pipeline-architecture", "async-io-and-streaming"]
-calibration: "场景/关卡管理(切换/加载界面/流式加载)"
-bridges: ["phase-7", "phase-8"]
----
 
 # 场景与关卡管理:加载、切换、加载界面、流式加载
 

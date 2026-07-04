@@ -1,11 +1,3 @@
----
-phase: 8
-type: deep-dive
-title_en: "Scripting & Modding Systems"
-title_zh: "脚本与 Mod 系统"
-domains: [game, rust, lua, wasm]
-duration: "8h"
----
 
 # 深入:脚本与 Mod 系统
 

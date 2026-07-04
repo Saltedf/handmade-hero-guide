@@ -1,11 +1,3 @@
----
-phase: 2
-type: deep-dive
-title: "实体系统演化:从朴素 struct 到 sparse array 到 ECS"
-domains: [game, rust]
-duration: "2h"
-prereqs: ["day030", "day050", "day053", "day055"]
----
 
 # 实体系统演化 · 从朴素 struct 到 sparse array 到 ECS
 

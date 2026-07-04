@@ -1,13 +1,3 @@
----
-article: 12
-phase: 0
-title: "开源 PR 全流程:fork → branch → commit → PR → review → merge"
-type: setup
-difficulty: 3
-duration: "2-3h"
-domains: [rust]
-prereqs: ["02-git-and-github", "10-package-management"]
----
 
 # 12 · 开源 PR 全流程:fork → branch → commit → PR → review → merge
 

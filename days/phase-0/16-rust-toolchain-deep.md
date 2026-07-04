@@ -1,10 +1,3 @@
----
-phase: 0
-title_en: "Rust Toolchain Deep Dive"
-title_zh: "Rust 工具链深度专题"
-type: article
-domains: [rust, linux, tooling]
----
 
 # Rust 工具链深度专题
 

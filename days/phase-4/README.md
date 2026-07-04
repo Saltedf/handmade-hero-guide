@@ -1,12 +1,3 @@
----
-phase: 4
-range: day112-175
-days: 64
-title: "性能优化 + 多线程 + 资产:让游戏跑满多核,资产自给自足"
-estimated: "10-12 周"
-prereqs: ["phase-0", "phase-1", "phase-2", "phase-3"]
-domains: [game, graphics, linux, rust, math]
----
 
 # Phase 4 · 性能 / 线程 / 资产(Day 112-175)
 

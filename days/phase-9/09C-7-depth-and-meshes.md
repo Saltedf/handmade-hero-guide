@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9C"
-module: 7
-title_en: "Depth Buffer & Meshes"
-title_zh: "深度缓冲与真实网格:从一张贴图三角形,到一只能转的立方体"
-type: deep-dive
-difficulty: 4
-duration: "3-4 小时"
-domains: [graphics, gpu, rust]
-prereqs: ["09C-6-textures-and-samplers"]
-calibration: "Vulkan depth attachment + vertex/index buffers + vulkan-tutorial 'Depth Buffering' & 'Vertex/Index buffer'"
----
 
 # 09C-7 · 深度缓冲与真实网格
 

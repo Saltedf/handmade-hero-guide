@@ -1,10 +1,3 @@
----
-phase: 8
-type: bridge
-title: "从 Handmade Hero 走到职业世界:毕业了,然后呢"
-domains: [game, graphics, systems, rust, opensource, career]
-prereqs: ["day001", "day667"]
----
 
 # Bridge · 从 Handmade Hero 到职业世界
 

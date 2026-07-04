@@ -1,11 +1,3 @@
----
-title: "Savegame & Serialization Deep Dive"
-subtitle: "Binary vs Text → serde 生态 → Schema 演化 → 云存档 → 防作弊 → HH 项目落地"
-type: deep-dive
-phase: 8
-domains: [game, rust, linux, network]
-duration: "6-8h"
----
 
 # 存档与序列化完整深度专题
 

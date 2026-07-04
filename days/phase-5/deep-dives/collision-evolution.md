@@ -1,11 +1,3 @@
----
-phase: 5
-title_en: "Collision Detection Evolution"
-title_zh: "碰撞检测演化史:从 2D AABB 到 voxel"
-type: deep-dive
-domains: [game, physics, math, rust]
-bridges: ["day050", "day631"]
----
 
 # 碰撞检测演化史
 

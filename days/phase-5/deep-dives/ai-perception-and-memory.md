@@ -1,14 +1,3 @@
----
-phase: 5
-title_en: "AI Perception & Memory Deep Dive"
-title_zh: "AI 感知与记忆深度专题:从全知 AI 到会看会听会忘的生灵"
-type: deep-dive
-difficulty: 4
-duration: "2-3 小时"
-domains: [game, rust, cs, ai]
-prereqs: ["ai-patterns", "navmesh-and-pathfinding"]
-calibration: "Millington《AI for Games》— AI 感知系统(视线/听觉/范围)+ 记忆/黑板/兴趣衰减"
----
 
 # AI 感知与记忆深度专题
 

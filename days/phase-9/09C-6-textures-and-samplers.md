@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9C"
-module: 6
-title_en: "Textures & Samplers"
-title_zh: "纹理与采样器:给三角形一张皮肤"
-type: deep-dive
-difficulty: 4
-duration: "3-4 小时"
-domains: [graphics, gpu, rust]
-prereqs: ["09C-5-descriptors-and-uniforms"]
-calibration: "Vulkan image/sampler spec + vulkan-tutorial 'Texture Mapping' 实践"
----
 
 # 09C-6 · 纹理与采样器
 

@@ -1,10 +1,3 @@
----
-phase: 6
-type: bridge
-title: "从 Phase 6 走到 Phase 7:算法会了,该工程化"
-domains: [game, graphics, rust, engineering]
-prereqs: ["day236", "day435"]
----
 
 # Bridge · 从 Phase 6 到 Phase 7
 

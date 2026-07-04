@@ -1,11 +1,3 @@
----
-phase: 5
-title_en: "Synthesis and Instruments"
-title_zh: "声音合成与乐器:从 Moog 到 FM、Karplus-Strong 与现代 Wavetable"
-type: deep-dive
-domains: [game, audio, rust, linux, system, math]
-bridges: ["day009", "day142", "day184"]
----
 
 # 声音合成与乐器
 

@@ -1,15 +1,3 @@
----
-phase: 5
-title_en: "Convolution Reverb and HRTF"
-title_zh: "卷积混响与 HRTF:从脉冲响应到三维双耳音频"
-type: deep-dive
-difficulty: advanced
-duration: 90
-domains: [game, audio, rust, linux, math]
-prereqs: [audio-effects, adaptive-audio-and-3d, dsp-fundamentals, fft-and-spectral-analysis, phase-0/22-signals-foundation]
-calibration: "卷积混响(convolution reverb)+ 脉冲响应(IR)+ HRTF 空间音频深做"
-bridges: ["day138", "day201", "day526"]
----
 
 # 卷积混响与 HRTF
 

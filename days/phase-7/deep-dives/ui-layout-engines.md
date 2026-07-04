@@ -1,15 +1,3 @@
----
-phase: 7
-type: deep-dive
-title_en: "UI Layout Engines (flexbox / anchor / constraint / responsive / HIDPI)"
-title_zh: "UI 布局引擎(flexbox / anchor / constraint / responsive / HIDPI)"
-difficulty: hard
-duration: "3h"
-domains: [game, rust, ui]
-prereqs:
-  - game-ui-architecture
-calibration: "UI 布局引擎(flexbox/anchor/constraint/responsive/HIDPI)"
----
 
 # 深入:UI 布局引擎(flexbox / anchor / constraint / responsive / HIDPI)
 

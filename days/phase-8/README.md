@@ -1,12 +1,3 @@
----
-phase: 8
-range: day576-667
-days: 92
-title: "Phase 8:光照优化 + 碰撞重构 + 收官(最终阶段)"
-estimated: "4-5 个月"
-prereqs: ["phase-7"]
-domains: [game, graphics, math, linux, rust]
----
 
 # Phase 8 · 光照优化 + 碰撞重构 + 收官(最终阶段)
 

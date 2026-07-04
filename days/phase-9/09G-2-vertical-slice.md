@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9G"
-module: 2
-title_en: "The Vertical Slice"
-title_zh: "垂直切片:用一段最终品质的游戏,证明整条管线跑得通"
-type: deep-dive
-difficulty: 4
-duration: "2-3 小时"
-domains: [game, engineering, rust]
-prereqs: ["09G-1-preproduction-and-prototype"]
-calibration: "垂直切片(vertical slice)行业定义 + 'one of each thing at final fidelity'"
----
 
 # 09G-2 · 垂直切片:用一段最终品质的游戏,证明整条管线跑得通
 

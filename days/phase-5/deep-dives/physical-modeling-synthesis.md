@@ -1,15 +1,3 @@
----
-phase: 5
-title_en: "Physical Modeling Synthesis"
-title_zh: "物理建模合成:从 Karplus-Strong 到 Digital Waveguide 与 Modal Synthesis"
-type: deep-dive
-difficulty: advanced
-duration: 90
-domains: [game, audio, rust, linux, system, math]
-prereqs: ["phase-0/22-signals-foundation", "phase-5/deep-dives/dsp-fundamentals", "phase-5/deep-dives/synthesis-and-instruments", "phase-5/deep-dives/fft-and-spectral-analysis"]
-calibration: "Stanford CCRMA / Julius Smith 物理建模合成(physical modeling)"
-bridges: ["day009", "day142", "day184"]
----
 
 # 物理建模合成
 

@@ -1,15 +1,3 @@
----
-episode: 02
-series: handmade-ray
-title_en: "More Primitives and Shading Basics"
-title_zh: "更多原始体与着色基础"
-type: coding
-difficulty: 3
-duration: "2-3h"
-hh_url: "https://guide.handmadehero.org/ray/ray00/"
-domains: [graphics, math, rust]
-prereqs: ["ray01"]
----
 
 # ray02 · 更多原始体与着色基础
 

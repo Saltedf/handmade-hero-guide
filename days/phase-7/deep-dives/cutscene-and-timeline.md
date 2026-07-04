@@ -1,17 +1,3 @@
----
-phase: 7
-title_en: "Cutscene and Timeline: Sequencer Systems"
-title_zh: "过场与时间轴:Sequencer 系统"
-type: deep-dive
-difficulty: hard
-duration: 3-4h
-domains: [rust, game, graphics, audio]
-prereqs:
-  - animation-blending-and-state-machine
-  - spline-math
-  - adaptive-audio-and-3d
-calibration: "cinematic/timeline 系统 — 相机轨/动画轨/音频轨/事件轨"
----
 
 # 过场与时间轴:Sequencer 系统
 

@@ -1,13 +1,3 @@
----
-article: 04
-phase: 0
-title: "Rust 从零(2):所有权、借用、切片"
-type: setup
-difficulty: 4
-duration: "3-4h"
-domains: [rust]
-prereqs: ["03-rust-from-scratch-1"]
----
 
 # 04 · Rust 从零(2):所有权、借用、切片
 

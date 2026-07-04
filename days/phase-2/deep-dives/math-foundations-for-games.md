@@ -1,11 +1,3 @@
----
-phase: 2
-type: deep-dive
-title: "游戏数学基础:向量、矩阵、积分、几何"
-domains: [game, graphics, math]
-duration: "3h"
-prereqs: ["day041", "day042", "day043", "day047", "day050", "phase-0/14-math-foundations"]
----
 
 # 游戏数学基础 · 向量、矩阵、积分、几何
 

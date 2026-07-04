@@ -1,12 +1,3 @@
----
-phase: 3
-range: day071-110
-days: 40
-title: "3D 基础与软件渲染:从 2.5D 到带光照的立体世界"
-estimated: "6-8 周"
-prereqs: ["phase-0", "phase-1", "phase-2"]
-domains: [game, graphics, math, linux, rust]
----
 
 # Phase 3 · 3D 基础与软件渲染:从 2.5D 到带光照的立体世界
 

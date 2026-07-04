@@ -1,15 +1,3 @@
----
-episode: 03
-series: handmade-ray
-title_en: "Materials — Diffuse, Specular, Metal, Glass"
-title_zh: "材质系统 — 漫反射、镜面、金属、玻璃"
-type: coding
-difficulty: 3
-duration: "2-3h"
-hh_url: "https://guide.handmadehero.org/ray/ray04/"
-domains: [graphics, math, rust]
-prereqs: ["ray02"]
----
 
 # ray03 · 材质系统:漫反射、镜面、金属、玻璃
 

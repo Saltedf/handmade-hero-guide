@@ -1,15 +1,3 @@
----
-episode: 04
-series: handmade-ray
-title_en: "Reflections, Recursion Depth, and Antialiasing"
-title_zh: "反射、递归深度与抗锯齿"
-type: coding
-difficulty: 4
-duration: "2-3h"
-hh_url: "https://guide.handmadehero.org/ray/ray04/"
-domains: [graphics, math, rust]
-prereqs: ["ray03"]
----
 
 # ray04 · 反射、递归深度与抗锯齿
 

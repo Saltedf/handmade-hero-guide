@@ -1,13 +1,3 @@
----
-article: 14
-phase: 0
-title: "数学基础:向量 / 点积 / 叉积 / 矩阵 / 数值积分(从零讲)"
-type: concept
-difficulty: 3
-duration: "3-4h"
-domains: [math, graphics, game, rust]
-prereqs: ["03-rust-from-scratch-1"]
----
 
 # 14 · 数学基础:向量 / 点积 / 叉积 / 矩阵 / 数值积分(从零讲)
 

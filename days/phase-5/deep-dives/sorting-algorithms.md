@@ -1,10 +1,3 @@
----
-phase: 5
-title_en: "Sorting Algorithms Deep Dive"
-title_zh: "排序算法深度专题"
-type: deep-dive
-domains: [game, rust, linux, cs]
----
 
 # 排序算法深度专题
 

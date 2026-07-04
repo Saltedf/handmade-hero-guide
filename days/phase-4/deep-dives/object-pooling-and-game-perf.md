@@ -1,14 +1,3 @@
----
-phase: 4
-title_en: "Object Pooling & Game Performance Patterns"
-title_zh: "对象池与游戏性能模式"
-type: deep-dive
-difficulty: 4
-duration: "3-4h"
-domains: [game, rust, memory, system, performance]
-prereqs: [memory-layout-for-cache, particle-systems-cpu, virtual-memory-and-allocators]
-calibration: "对象池(object pooling)+ slot map(稳定句柄)+ 游戏性能模式"
----
 
 # 对象池与游戏性能模式
 

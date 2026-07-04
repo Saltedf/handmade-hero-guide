@@ -1,13 +1,3 @@
----
-article: 05
-phase: 0
-title: "Rust 从零(3):struct / enum / pattern / 错误处理 / 集合"
-type: setup
-difficulty: 4
-duration: "3-4h"
-domains: [rust]
-prereqs: ["04-rust-from-scratch-2"]
----
 
 # 05 · Rust 从零(3):struct / enum / pattern / 错误处理 / 集合
 

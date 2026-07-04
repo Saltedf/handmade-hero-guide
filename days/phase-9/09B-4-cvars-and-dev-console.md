@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9B"
-module: 4
-title_en: "CVars & Dev Console"
-title_zh: "控制台变量与开发控制台:不重编译就能调一切"
-type: deep-dive
-difficulty: 3
-duration: "1.5-2.5 小时"
-domains: [game, rust, engineering]
-prereqs: ["09B-2-subsystems-modules-plugins"]
-calibration: "职业引擎通用实践(Quake/Source CVar 系统 + Gregory《GEA》调试章)"
----
 
 # 09B-4 · 控制台变量与开发控制台
 

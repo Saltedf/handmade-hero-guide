@@ -1,10 +1,3 @@
----
-title: "程序化生成:从 Perlin noise 到 Wave Function Collapse,完整推导 PCG 算法"
-type: deep-dive
-phase: 3
-domains: [rust, graphics, game, math]
-prereqs: ["phase-0/14-math-foundations", "phase-0/20-math-extended", "phase-0/26-graphics-foundations"]
----
 
 # 程序化生成:从 Perlin noise 到 Wave Function Collapse,完整推导 PCG 算法
 

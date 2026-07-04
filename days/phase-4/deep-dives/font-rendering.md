@@ -1,10 +1,3 @@
----
-phase: 4
-title_en: "Font Rendering Deep Dive"
-title_zh: "字体渲染深度专题"
-type: deep-dive
-domains: [game, graphics, rust, linux]
----
 
 # 字体渲染深度专题
 

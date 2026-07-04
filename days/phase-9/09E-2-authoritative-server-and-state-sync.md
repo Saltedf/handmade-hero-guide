@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9E"
-module: 2
-title_en: "Authoritative Server & State Sync"
-title_zh: "权威服务器与状态同步:为什么永远不能信客户端"
-type: deep-dive
-difficulty: 4
-duration: "3-4 小时"
-domains: [game, network, rust, linux, system, concurrency]
-prereqs: ["09E-1-reliable-udp-transport"]
-calibration: "Gaffer on Games 'Snapshot Interpolation' & 'State Synchronization' + 行业 server-authoritative 实践"
----
 
 # 9E-2 · 权威服务器与状态同步
 

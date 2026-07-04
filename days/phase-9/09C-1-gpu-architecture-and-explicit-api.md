@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9C"
-module: 1
-title_en: "GPU Architecture & The Explicit API Philosophy"
-title_zh: "GPU 真相与显式 API 哲学:为什么 Vulkan 这么繁琐"
-type: deep-dive
-difficulty: 5
-duration: "2-3 小时"
-domains: [graphics, gpu, rust, engineering]
-prereqs: ["09B-3-frame-graph", "phase-6/deferred-and-clustered"]
-calibration: "CMU 15-469 (Visual Computing Systems) + Vulkan spec 哲学"
----
 
 # 09C-1 · GPU 真相与显式 API 哲学
 

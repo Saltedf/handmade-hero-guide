@@ -1,10 +1,3 @@
----
-title: "几何处理:从 half-edge 到 QEM,完整推导 mesh 处理算法"
-type: deep-dive
-phase: 3
-domains: [rust, graphics, game, math]
-prereqs: ["phase-0/14-math-foundations", "phase-0/20-math-extended", "phase-0/26-graphics-foundations"]
----
 
 # 几何处理:从 half-edge 到 QEM,完整推导 mesh 处理算法
 

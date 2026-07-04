@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9B"
-module: 3
-title_en: "Frame Graph / Render Graph"
-title_zh: "帧图:让复杂渲染管线自我组织"
-type: deep-dive
-difficulty: 5
-duration: "2-3 小时"
-domains: [graphics, game, rust, engineering]
-prereqs: ["09B-2-subsystems-modules-plugins", "phase-6/deferred-and-clustered"]
-calibration: "现代渲染引擎架构(Yuriy O'Donnell 'FrameGraph' GDC 2017 + Unreal RDG + Bevy render graph)"
----
 
 # 09B-3 · 帧图:让复杂渲染管线自我组织
 

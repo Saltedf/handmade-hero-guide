@@ -1,10 +1,3 @@
----
-title: "SIMD 演化论:从标量到 AVX-512"
-type: deep-dive
-phase: 3
-domains: [rust, linux, game, graphics]
-prereqs: ["phase-0/14-math-foundations", "phase-3/day081"]
----
 
 # SIMD 演化论:从标量到 AVX-512
 

@@ -1,11 +1,3 @@
----
-title: "Determinism and Replay Deep Dive"
-subtitle: "IEEE 754 浮点陷阱 → PCG RNG 完整推导 → Replay system → 集成进 HH 项目"
-type: deep-dive
-phase: 8
-domains: [game, math, network, rust, linux]
-duration: "8-10h"
----
 
 # 决定性与 Replay 系统完整深度专题
 

@@ -1,14 +1,3 @@
----
-phase: 4
-title_en: "Networking Syscalls: socket / epoll / io_uring and the Kernel Stack"
-title_zh: "网络系统调用:socket / epoll / io_uring 与内核网络栈——你 09E 网络代码的真正底层"
-type: deep-dive
-difficulty: 4
-duration: "3-4 小时"
-domains: [system, network, rust, linux, game]
-prereqs: ["09E-1-reliable-udp-transport", "phase-0/23-network-foundation"]
-calibration: "网络 syscall(socket/epoll/kqueue)+ UDP/TCP 深做 + 内核网络栈 — 09E 网络的底层"
----
 
 # 网络系统调用:socket / epoll / io_uring 与内核网络栈
 

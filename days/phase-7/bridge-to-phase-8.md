@@ -1,10 +1,3 @@
----
-phase: 7
-type: bridge
-title: "从 Phase 7 走到 Phase 8:功能完成,该性能收官"
-domains: [game, graphics, performance, rust]
-prereqs: ["day436", "day575"]
----
 
 # Bridge · 从 Phase 7 到 Phase 8
 

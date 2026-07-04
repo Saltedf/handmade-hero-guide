@@ -1,12 +1,3 @@
----
-phase: 7
-range: day436-575
-days: 140
-title: "Phase 7 — PNG / 资产管线 / 编辑器(Day 436–575)"
-estimated: "4-5 个月"
-prereqs: ["phase-6"]
-domains: [graphics, math, rust, linux, game]
----
 
 # Phase 7 · PNG / 资产管线 / 编辑器(Day 436–575)
 

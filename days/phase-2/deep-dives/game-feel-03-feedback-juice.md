@@ -1,14 +1,3 @@
----
-phase: 2
-type: deep-dive
-title_en: "Game Feel & Juice — Feedback Layer (Part 3 of 4)"
-title_zh: "游戏手感与 Juice:反馈层(4 部之第 3 部)"
-difficulty: 3
-duration: "4h"
-domains: [game, rust, graphics, animation]
-prereqs: [particle-systems-cpu, game-feel-02]
-calibration: "Steve Swink《Game Feel》+ 'Juice' (Vlambeer) — hitstop / 粒子 / 缓动 / squash-stretch"
----
 
 # 游戏手感与 Juice:反馈层(4 部之第 3 部)
 

@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9G"
-module: 4
-title_en: "Certification & TRC/TCR"
-title_zh: "认证与 TRC/TCR:从"做完了"到"可以上架了"的最后一道闸"
-type: deep-dive
-difficulty: 4
-duration: "2-3 小时"
-domains: [rust, engineering, game, production, platform, qa]
-prereqs: ["09G-3-alpha-beta-and-content-pipeline"]
-calibration: "平台认证(cert)+ TRC/TCR 清单 + 桌面/Steam 上架检查"
----
 
 # 09G-4 · 认证与 TRC/TCR
 

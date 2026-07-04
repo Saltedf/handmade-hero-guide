@@ -1,11 +1,3 @@
----
-phase: 7
-type: deep-dive
-title_en: "Accessibility a11y (Short)"
-title_zh: "无障碍(简版)"
-domains: [game, rust, ui, accessibility]
-duration: "2h"
----
 
 # 深入:无障碍 a11y(简版)
 

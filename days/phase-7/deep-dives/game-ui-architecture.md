@@ -1,14 +1,3 @@
----
-phase: 7
-title_en: "Game UI Architecture (T7 Deep Dive 1/3)"
-title_zh: "游戏 UI 架构:retained、immediate、hybrid 与子系统化"
-type: deep-dive
-difficulty: 4
-duration: "2-3 小时"
-domains: [game, rust, ui, engineering]
-prereqs: ["immediate-mode-ui", "ui-data-binding-short"]
-calibration: "游戏 UI 架构(retained vs immediate vs hybrid)+ UI 作为子系统 + 事件路由。这是 T7 游戏 UI 深度三联的第一篇(架构),第二篇讲布局引擎(ui-layout-engines),第三篇讲样式与动画。"
----
 
 # 游戏 UI 架构:retained、immediate、hybrid
 

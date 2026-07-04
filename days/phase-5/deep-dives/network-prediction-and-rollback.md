@@ -1,11 +1,3 @@
----
-phase: 5
-title_en: "Network Prediction and Rollback"
-title_zh: "网络预测与回滚:从乐观执行到确定性重放"
-type: deep-dive
-domains: [game, network, rust, linux, system, concurrency]
-bridges: ["network-multiplayer-models", "day201", "25-concurrency-foundation"]
----
 
 # 网络预测与回滚:从乐观执行到确定性重放
 

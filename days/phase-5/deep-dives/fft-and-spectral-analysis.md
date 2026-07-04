@@ -1,11 +1,3 @@
----
-phase: 5
-title_en: "FFT and Spectral Analysis"
-title_zh: "FFT 与频谱分析:从 DFT 到 Shazam 指纹"
-type: deep-dive
-domains: [game, audio, rust, linux, system, math]
-bridges: ["day009", "day142", "day184"]
----
 
 # FFT 与频谱分析
 

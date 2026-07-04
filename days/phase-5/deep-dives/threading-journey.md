@@ -1,11 +1,3 @@
----
-phase: 5
-title_en: "Threading Journey"
-title_zh: "线程演化史:从 Mutex 到 lock-free"
-type: deep-dive
-domains: [game, rust, linux, system, concurrency]
-bridges: ["phase-4", "phase-6"]
----
 
 # 线程演化史:从 Mutex 到 lock-free
 

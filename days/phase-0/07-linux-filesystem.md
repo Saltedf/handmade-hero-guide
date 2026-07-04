@@ -1,13 +1,3 @@
----
-article: 07
-phase: 0
-title: "Linux 文件系统:FHS / inode / proc / sys / dev / 权限"
-type: setup
-difficulty: 3
-duration: "2-3h"
-domains: [linux]
-prereqs: ["00-terminal-basics", "01-arch-setup"]
----
 
 # 07 · Linux 文件系统:FHS / inode / proc / sys / dev / 权限
 

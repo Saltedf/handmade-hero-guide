@@ -1,12 +1,3 @@
----
-phase: 2
-range: day026-070
-days: 45
-title: "2D 游戏:从画一个方块到一个小世界"
-estimated: "6-8 周"
-prereqs: ["phase-0", "phase-1"]
-domains: [game, graphics, math, linux, rust]
----
 
 # Phase 2 · 2D 游戏:从画一个方块到一个小世界
 

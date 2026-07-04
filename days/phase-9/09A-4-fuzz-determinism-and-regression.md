@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9A"
-module: 4
-title_en: "Fuzz, Determinism & Regression"
-title_zh: "模糊测试、确定性与回归网:把测试网铺满"
-type: deep-dive
-difficulty: 4
-duration: "2-3 小时"
-domains: [rust, engineering, game, security]
-prereqs: ["09A-3-integration-and-snapshot-testing"]
-calibration: "软件工程 fuzz/deterministic-replay + 游戏安全(AFL/libFuzzer + 行业 desync 实践)"
----
 
 # 09A-4 · 模糊测试、确定性与回归网
 

@@ -1,10 +1,3 @@
----
-phase: 9
-type: bridge
-title: "从 Phase 8 走到 Phase 9:Casey 烂尾了,你得自己上架"
-domains: [game, graphics, engineering, rust, linux]
-prereqs: ["phase-8"]
----
 
 # Bridge · 从 Phase 8 到 Phase 9
 

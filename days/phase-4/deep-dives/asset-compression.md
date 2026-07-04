@@ -1,11 +1,3 @@
----
-title: "Asset Compression"
-subtitle: "LZ77/LZ4/RLE basics, when to compress, in-memory vs disk"
-type: deep-dive
-phase: 4
-domains: [game, rust]
-duration: "2-3h"
----
 
 # Asset Compression
 

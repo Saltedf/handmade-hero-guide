@@ -1,11 +1,3 @@
----
-title: "Profiling with Tracy Deep Dive"
-subtitle: "从零写 zone macro → Tracy v0.11 架构 → GPU timestamp → 集成进 HH 项目"
-type: deep-dive
-phase: 4
-domains: [game, graphics, rust, linux, performance]
-duration: "8-10h"
----
 
 # Profiling with Tracy 完整深度专题
 

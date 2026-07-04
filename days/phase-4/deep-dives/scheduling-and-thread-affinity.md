@@ -1,15 +1,3 @@
----
-phase: 4
-title_en: "Scheduling and Thread Affinity"
-title_zh: "OS 调度、线程亲和性与实时优先级:从 CFS 到 NUMA"
-type: deep-dive
-difficulty: 4
-duration: "5-7h"
-domains: [game, rust, linux, system, concurrency, performance]
-prereqs: ["threading-models", "threading-journey", "ecs-system-scheduling"]
-calibration: "OS 调度(CFS)+ 线程亲和/优先级/实时 + render/gameplay 线程模型 + NUMA"
-bridges: ["phase-4", "phase-6"]
----
 
 # OS 调度、线程亲和性与实时优先级:从 CFS 到 NUMA
 

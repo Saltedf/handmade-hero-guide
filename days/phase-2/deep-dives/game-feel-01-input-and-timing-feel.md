@@ -1,16 +1,3 @@
----
-phase: 2
-sequence: "T5"
-module: 1
-title_en: "Game Feel · Part 1 — Input & Timing Feel"
-title_zh: "游戏手感序列 part 1/4:输入与时间手感"
-type: deep-dive
-difficulty: 3
-duration: "2-3 小时"
-domains: [game, rust, engineering]
-prereqs: ["game-feel-short", "09B-1-game-loop-and-timestep"]
-calibration: "Steve Swink《Game Feel》— 输入与时间手感(input buffer/coyote time/输入延迟/帧节奏)"
----
 
 # T5-1 · 游戏手感:输入与时间
 

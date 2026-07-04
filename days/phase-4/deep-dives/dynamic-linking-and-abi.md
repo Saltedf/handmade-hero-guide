@@ -1,16 +1,3 @@
----
-phase: 4
-type: deep-dive
-title: "动态链接与 ABI:GOT / PLT / dlopen 到底是怎么把两个二进制接起来的"
-title_en: "Dynamic Linking & ABI: GOT/PLT/dlopen Internals"
-difficulty: 4
-duration: "3h"
-domains: [systems, rust, linux]
-prereqs:
-  - phase-2/deep-dives/rust-cdylib-and-ffi
-  - phase-1/deep-dives/hot-reload-rust
-calibration: "动态链接(GOT/PLT/dlopen)+ ABI 稳定 + 符号可见性 — 深入 hot-reload 与 cdylib 的底层"
----
 
 # 动态链接与 ABI · GOT / PLT / dlopen 到底是怎么把两个二进制接起来的
 

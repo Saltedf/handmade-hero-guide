@@ -1,15 +1,3 @@
----
-phase: 4
-title_en: "Async I/O and Streaming"
-title_zh: "异步 I/O 与资产流式加载:epoll / io_uring / mmap vs read"
-type: deep-dive
-difficulty: 4
-duration: "4-6h"
-domains: [game, rust, linux, system, io]
-prereqs: ["threading-models", "threading-journey"]
-calibration: "异步 I/O(epoll/io_uring)+ mmap vs read + 资产流式加载(open-world streaming)"
-bridges: ["phase-4", "phase-6"]
----
 
 # 异步 I/O 与资产流式加载:epoll / io_uring / mmap vs read
 

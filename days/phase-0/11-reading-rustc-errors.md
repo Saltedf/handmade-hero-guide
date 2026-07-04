@@ -1,13 +1,3 @@
----
-article: 11
-phase: 0
-title: "读懂 rustc 报错:E0xxx 错误码、借用 / 生命周期 / trait bound"
-type: setup
-difficulty: 3
-duration: "2-3h"
-domains: [rust]
-prereqs: ["03-rust-from-scratch-1", "04-rust-from-scratch-2", "09-editor-toolchain"]
----
 
 # 11 · 读懂 rustc 报错:E0xxx 错误码、借用 / 生命周期 / trait bound
 

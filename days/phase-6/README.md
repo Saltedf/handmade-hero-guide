@@ -1,12 +1,3 @@
----
-phase: 6
-range: day261-435
-days: 175
-title: "Phase 6 · 深度缓冲 / 光照 / 压缩"
-estimated: "5-6 个月"
-prereqs: ["phase-0", "phase-1", "phase-2", "phase-3", "phase-4", "phase-5"]
-domains: [game, graphics, math, linux, rust]
----
 
 # Phase 6 · 深度缓冲 / 光照 / 压缩(Day 261-435)
 

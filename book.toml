@@ -1,0 +1,23 @@
+[book]
+title = "Handmade Hero · Rust + Arch 综合教程"
+authors = ["salted"]
+language = "zh"
+description = "借 Handmade Hero 667 天的脉络,把编程小白培养成能独立交付专业水准游戏的开源极客。覆盖图形、音频、系统编程、游戏编程四大支柱到职业深度。"
+src = "days"
+
+[output.html]
+default-theme = "light"
+preferred-dark-theme = "navy"
+git-repository-url = "https://github.com/Saltedf/handmade-hero-guide"
+edit-url-template = "https://github.com/Saltedf/handmade-hero-guide/edit/main/days/{path}"
+
+[output.html.search]
+enable = true
+limit-results = 30
+use-boolean-and = true
+boost-title = 2
+heading-split-level = 3
+
+[output.html.fold]
+enable = true
+level = 0

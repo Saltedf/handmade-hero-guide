@@ -1,11 +1,3 @@
----
-phase: 5
-title_en: "Network Multiplayer Models"
-title_zh: "联机模型全谱:从锁步到回滚到状态同步"
-type: deep-dive
-domains: [game, network, rust, linux, system, concurrency]
-bridges: ["day201", "23-network-foundation", "25-concurrency-foundation"]
----
 
 # 联机模型全谱:从锁步到回滚到状态同步
 

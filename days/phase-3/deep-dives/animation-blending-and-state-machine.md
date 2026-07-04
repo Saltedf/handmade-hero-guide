@@ -1,10 +1,3 @@
----
-title: "动画混合与状态机:从单 clip 到 IK 的完整工程"
-type: deep-dive
-phase: 3
-domains: [rust, graphics, game, math]
-prereqs: ["skeletal-animation-fundamentals"]
----
 
 # 动画混合与状态机:从单 clip 到 IK 的完整工程
 

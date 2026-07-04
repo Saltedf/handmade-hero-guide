@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9C"
-module: 3
-title_en: "Command Buffers & Synchronization"
-title_zh: "命令缓冲与同步:整个 Vulkan 序列最难的一篇"
-type: deep-dive
-difficulty: 5
-duration: "3-4 小时"
-domains: [graphics, gpu, concurrency, rust]
-prereqs: ["09C-2-instance-device-swapchain", "09B-3-frame-graph"]
-calibration: "Vulkan 同步模型 spec + 'Yet another blog on Vulkan synchronization' + frame-graph 自动屏障"
----
 
 # 09C-3 · 命令缓冲与同步
 

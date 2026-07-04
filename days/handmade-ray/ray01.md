@@ -1,15 +1,3 @@
----
-episode: 01
-series: handmade-ray
-title_en: "Basic Raytracer Setup"
-title_zh: "基本光线追踪器搭建"
-type: coding
-difficulty: 2
-duration: "2-3h"
-hh_url: "https://guide.handmadehero.org/ray/ray00/"
-domains: [graphics, math, rust]
-prereqs: ["../phase-0/14-math-foundations", "ray00"]
----
 
 # ray01 · 基本光线追踪器搭建
 

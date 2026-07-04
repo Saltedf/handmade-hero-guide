@@ -1,11 +1,3 @@
----
-phase: 2
-type: deep-dive
-title: "碰撞检测全家桶:Minkowski → 空间网格 → GJK → BVH"
-domains: [game, math, graphics]
-duration: "3h"
-prereqs: ["day048", "day050", "day051", "phase-0/14-math-foundations"]
----
 
 # 碰撞检测全家桶 · Minkowski → 空间网格 → GJK → BVH
 

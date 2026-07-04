@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9C"
-module: 4
-title_en: "Graphics Pipeline & First Triangle"
-title_zh: "图形管线与第一个三角形:Vulkan 繁琐的顶峰"
-type: deep-dive
-difficulty: 4
-duration: "3-4 小时"
-domains: [graphics, gpu, rust]
-prereqs: ["09C-3-command-buffers-and-synchronization"]
-calibration: "Vulkan spec graphics pipeline + vulkan-tutorial 'Pipeline' 实践"
----
 
 # 09C-4 · 图形管线与第一个三角形
 

@@ -1,14 +1,3 @@
----
-phase: 5
-title_en: "Group & Squad AI"
-title_zh: "群体与班组 AI:从涌现式鸟群到协同战术的完整推导"
-type: deep-dive
-difficulty: 4
-duration: "2-3 小时"
-domains: [game, rust, cs, ai]
-prereqs: ["ai-patterns", "ai-perception-and-memory"]
-calibration: "Millington《AI for Games》— 群体 AI(flocking / 编队 / 指挥 / squad 协调)"
----
 
 # 群体与班组 AI:从涌现式鸟群到协同战术的完整推导
 

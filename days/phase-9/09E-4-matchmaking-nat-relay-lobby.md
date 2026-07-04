@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9E"
-module: 4
-title_en: "Matchmaking, NAT Traversal, Relay & Lobby"
-title_zh: "匹配、NAT 穿透、中继与大厅:当两个家庭网络想互连时发生的所有事"
-type: deep-dive
-difficulty: 4
-duration: "3-4 小时"
-domains: [game, network, rust, linux, system]
-prereqs: ["09E-3-interest-management-and-replication"]
-calibration: "NAT 穿透(STUN/TURN/hole punching)+ matchmaking/lobby 服务 + Steam Networking"
----
 
 # 9E-4 · 匹配、NAT 穿透、中继与大厅
 

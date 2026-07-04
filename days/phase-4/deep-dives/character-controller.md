@@ -1,18 +1,3 @@
----
-title: "Kinematic Character Controller Deep Dive"
-title_en: "Kinematic Character Controller"
-title_zh: "运动学角色控制器"
-subtitle: "胶囊扫描 → slide/step/slope/ground → 在 HH 里做出\"手感对\"的角色"
-type: deep-dive
-phase: 4
-domains: [game, graphics, math, rust, linux]
-difficulty: hard
-duration: "5-7h"
-prereqs:
-  - physics-engine-complete
-  - voxel-collision
-calibration: "运动学角色控制器(kinematic character controller)— slide/step/slope/胶囊扫描"
----
 
 # 运动学角色控制器
 

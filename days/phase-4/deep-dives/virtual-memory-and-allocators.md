@@ -1,15 +1,3 @@
----
-title: "虚拟内存与分配器"
-title_en: "Virtual Memory & Allocators"
-subtitle: "mmap / overcommit / huge pages / guard pages + pool / stack / buddy"
-type: deep-dive
-phase: 4
-difficulty: 4
-duration: "3-4h"
-domains: [rust, memory, system, game, linux]
-prereqs: [arena-allocator, memory-layout-for-cache, "phase-0/24-memory-foundation"]
-calibration: "虚拟内存(mmap/overcommit/huge pages/guard pages)+ 分配器(pool/stack/buddy)深做 — MIT 6.S081 + CSAPP"
----
 
 # 虚拟内存与分配器
 

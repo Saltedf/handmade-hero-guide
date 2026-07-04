@@ -1,11 +1,3 @@
----
-title: "Memory Layout for Cache"
-subtitle: "AoS vs SoA, cache lines, false sharing, prefetching"
-type: deep-dive
-phase: 4
-domains: [game, rust]
-duration: "2-3h"
----
 
 # Memory Layout for Cache
 

@@ -1,11 +1,3 @@
----
-title: "SIMD in Rust"
-subtitle: "std::arch::x86_64, portable-simd, wide crate, auto-vectorization"
-type: deep-dive
-phase: 4
-domains: [rust, graphics, game]
-duration: "2-3h"
----
 
 # SIMD in Rust
 

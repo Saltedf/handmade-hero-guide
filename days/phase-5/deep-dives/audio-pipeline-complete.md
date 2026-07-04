@@ -1,11 +1,3 @@
----
-phase: 5
-title_en: "Audio Pipeline Complete"
-title_zh: "音频流水线全解:从 WAV 到 ALSA"
-type: deep-dive
-domains: [game, audio, rust, linux, system]
-bridges: ["day020", "day526"]
----
 
 # 音频流水线全解
 

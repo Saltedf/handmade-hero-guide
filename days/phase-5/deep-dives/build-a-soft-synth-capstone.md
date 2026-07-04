@@ -1,14 +1,3 @@
----
-phase: 5
-title_en: "Build a Soft Synth — Capstone"
-title_zh: "造一台软合成器:T2 音频深度序列收口"
-type: deep-dive
-difficulty: advanced
-duration: 5h
-domains: [game, audio, rust, linux, system, math]
-calibration: "综合 capstone:从零写一个软合成器/迷你 DAW(CCRMA 320C 风格)"
-prereqs: [synthesis-and-instruments, dsp-fundamentals, fft-and-spectral-analysis, audio-effects, physical-modeling-synthesis]
----
 
 # 造一台软合成器:T2 音频深度序列收口
 

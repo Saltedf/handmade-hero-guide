@@ -1,13 +1,3 @@
----
-article: 13
-phase: 0
-title: "诊断工具:strace / ltrace / gdb / perf / valgrind / flamegraph"
-type: setup
-difficulty: 3
-duration: "2-3h"
-domains: [linux]
-prereqs: ["07-linux-filesystem", "08-processes-and-signals", "09-editor-toolchain"]
----
 
 # 13 · 诊断工具:strace / ltrace / gdb / perf / valgrind / flamegraph
 

@@ -1,14 +1,3 @@
----
-phase: 5
-title_en: "AI Debugging and Tuning"
-title_zh: "AI 调试与调参:把不可见的状态变成可观测、可回放、可热调的系统"
-type: deep-dive
-difficulty: 4
-duration: "6-8h"
-domains: [game, rust, cs, system, tooling]
-prereqs: ["ai-patterns", "ai-perception-and-memory", "group-and-squad-ai"]
-calibration: "AI 调试可视化 + 行为录制回放 + 参数调优 + 动态难度(DDA)"
----
 
 # AI 调试与调参:把不可见的状态变成可观测、可回放、可热调的系统
 

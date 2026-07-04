@@ -1,13 +1,3 @@
----
-article: 15
-phase: 0
-title: "读 C 和汇编:读懂 Casey 的 C,用 objdump/gdb 看 x86_64 汇编"
-type: concept
-difficulty: 4
-duration: "3h"
-domains: [linux, c, asm]
-prereqs: ["03-rust-from-scratch-1", "13-diagnosis-tools", "14-math-foundations"]
----
 
 # 15 · 读 C 和汇编:读懂 Casey 的 C,用 objdump/gdb 看 x86_64 汇编
 

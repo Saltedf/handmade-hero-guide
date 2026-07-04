@@ -1,10 +1,3 @@
----
-title: "骨骼动画 fundamentals:从骨到皮的完整推导"
-type: deep-dive
-phase: 3
-domains: [rust, graphics, game, math]
-prereqs: ["phase-0/14-math-foundations", "phase-0/20-math-extended", "phase-0/26-graphics-foundations"]
----
 
 # 骨骼动画 fundamentals:从骨到皮的完整推导
 

@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9E"
-module: 1
-title_en: "Reliable UDP Transport"
-title_zh: "可靠 UDP 传输:为什么 TCP 是游戏的天敌,以及你如何在 UDP 上自建可靠性"
-type: deep-dive
-difficulty: 4
-duration: "3-4 小时"
-domains: [game, network, rust, linux, system]
-prereqs: ["phase-5/network-multiplayer-models", "09B-1-game-loop-and-timestep"]
-calibration: "Gaffer on Games 'Reliable Ordered Messages' + Glenn Fiedler netcode"
----
 
 # 9E-1 · 可靠 UDP 传输
 

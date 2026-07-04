@@ -1,16 +1,3 @@
----
-phase: 7
-type: deep-dive
-title_en: "Gameplay Systems: Dialogue / Quest / Ability / Inventory"
-title_zh: "游戏性系统:对话 / 任务 / 能力 / 库存"
-difficulty: 4
-duration: "10h"
-domains: [game, rust, gamedev, data-driven, state-machines]
-prereqs:
-  - event-systems-and-gameplay-foundations
-  - scripting-and-modding
-calibration: "gameplay 系统(对话/任务/能力/库存)+ 共享模式(数据驱动/状态机/事件)"
----
 
 # 深入:游戏性系统 —— 对话 / 任务 / 能力 / 库存
 

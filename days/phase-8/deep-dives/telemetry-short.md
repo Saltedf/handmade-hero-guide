@@ -1,11 +1,3 @@
----
-phase: 8
-type: deep-dive
-title_en: "Telemetry & Crash Reporting (Short)"
-title_zh: "遥测与崩溃上报(简版)"
-domains: [game, rust, analytics, ops]
-duration: "2h"
----
 
 # 深入:遥测与崩溃上报(简版)
 

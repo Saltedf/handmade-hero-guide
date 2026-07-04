@@ -1,13 +1,3 @@
----
-article: 22
-phase: 0
-title: "信号基础:采样 / 量化 / Fourier / 卷积 / 滤波器 / 心理声学"
-type: concept
-difficulty: 4
-duration: "5-6h"
-domains: [audio, dsp, game, rust, math]
-prereqs: ["20-math-foundation-extended", "21-physics-foundation"]
----
 
 # 22 · 信号基础:从声波到滤波器
 

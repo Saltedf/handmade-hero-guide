@@ -1,11 +1,3 @@
----
-phase: 2
-type: deep-dive
-title: "资产管线:从文件格式解析到缓存到热加载"
-domains: [game, linux, rust]
-duration: "2.5h"
-prereqs: ["day029", "day036", "day037", "day055"]
----
 
 # 资产管线 · 从文件格式解析到缓存到热加载
 

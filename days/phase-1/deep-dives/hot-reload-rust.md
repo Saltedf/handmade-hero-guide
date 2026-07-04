@@ -1,9 +1,3 @@
----
-title: "Rust 热重载:cdylib + libloading + cargo-watch 完整指南"
-phase: 1
-type: deep-dive
-domains: [rust, software-engineering, linux]
----
 
 # Rust 热重载:cdylib + libloading + cargo-watch 完整指南
 

@@ -1,13 +1,3 @@
----
-article: 08
-phase: 0
-title: "进程与信号:fork / exec / wait / 信号 / 作业控制"
-type: setup
-difficulty: 3
-duration: "2-3h"
-domains: [linux]
-prereqs: ["00-terminal-basics", "01-arch-setup", "07-linux-filesystem"]
----
 
 # 08 · 进程与信号:fork / exec / wait / 信号 / 作业控制
 

@@ -1,10 +1,3 @@
----
-phase: 3
-type: bridge
-title: "从 Phase 3 走到 Phase 4:能跑了,该跑快了"
-domains: [game, graphics, performance, rust]
-prereqs: ["day071", "day111"]
----
 
 # Bridge · 从 Phase 3 到 Phase 4
 

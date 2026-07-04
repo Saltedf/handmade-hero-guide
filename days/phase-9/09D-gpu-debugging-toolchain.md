@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9D"
-module: 1
-title_en: "GPU Debugging Toolchain"
-title_zh: "GPU 调试工具链:RenderDoc、Vulkan debug marker、timestamp、shader printf"
-type: deep-dive
-difficulty: 4
-duration: "3-4 小时"
-domains: [graphics, gpu, rust, engineering, tooling]
-prereqs: ["09C-8-migrate-hh-pass-to-vulkan"]
-calibration: "RenderDoc/PIX/Nsight 实操 + Vulkan debug markers/timestamps/shader-printf"
----
 
 # 09D · GPU 调试工具链
 

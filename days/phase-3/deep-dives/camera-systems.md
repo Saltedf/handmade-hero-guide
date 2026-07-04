@@ -1,10 +1,3 @@
----
-phase: 3
-title_en: "Camera Systems Deep Dive"
-title_zh: "摄像机系统深度专题"
-type: deep-dive
-domains: [game, graphics, rust, math]
----
 
 # 摄像机系统深度专题
 

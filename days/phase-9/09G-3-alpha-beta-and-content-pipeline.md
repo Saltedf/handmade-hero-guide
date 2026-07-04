@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9G"
-module: 3
-title_en: "Alpha, Beta & the Content Pipeline"
-title_zh: "Alpha、Beta 与内容量产管线:从"做好一段"到"做好整部""
-type: deep-dive
-difficulty: 4
-duration: "3-4 小时"
-domains: [rust, engineering, game, production, process]
-prereqs: ["09G-2-vertical-slice"]
-calibration: "制作阶段(Alpha/Beta/Gold)+ 内容量产管线 + bug triage"
----
 
 # 09G-3 · Alpha、Beta 与内容量产管线
 

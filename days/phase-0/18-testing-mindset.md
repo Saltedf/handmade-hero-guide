@@ -1,14 +1,3 @@
----
-day: 18
-phase: 0
-title_en: "Testing Mindset"
-title_zh: "测试心智:为什么测、怎么测、游戏为什么难测"
-type: foundation
-difficulty: 2
-duration: "1.5-2 小时"
-domains: [rust, engineering]
-prereqs: ["03-rust-from-scratch-1", "04-rust-from-scratch-2"]
----
 
 # 18 · 测试心智:为什么测、怎么测、游戏为什么难测
 

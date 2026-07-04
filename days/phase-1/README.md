@@ -1,12 +1,3 @@
----
-phase: 1
-range: day001-025
-days: 25
-title: "平台层:从空白 exe 到热重载的舞台"
-estimated: "4-6 周"
-prereqs: ["phase-0"]
-domains: [game, graphics, linux, rust]
----
 
 # Phase 1 · 平台层:从空白 exe 到热重载的舞台
 

@@ -1,13 +1,3 @@
----
-article: 25
-phase: 0
-title: "并发基础:线程 / 锁 / 原子 / 内存序 / async"
-type: concept
-difficulty: 5
-duration: "8-10h"
-domains: [concurrency, system, game, rust, linux]
-prereqs: ["08-processes-and-signals", "23-network-foundation", "24-memory-foundation"]
----
 
 # 25 · 并发基础:从竞态到 async/await
 

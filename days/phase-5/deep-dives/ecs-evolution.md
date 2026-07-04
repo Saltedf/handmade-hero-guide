@@ -1,11 +1,3 @@
----
-phase: 5
-title_en: "ECS Evolution"
-title_zh: "ECS 演化史:从 HH 稀疏数组到工业级 archetype"
-type: deep-dive
-domains: [game, rust, system, architecture]
-bridges: ["day031", "day270", "day543"]
----
 
 # ECS 演化史:从 HH 稀疏数组到工业级 archetype
 

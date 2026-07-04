@@ -1,13 +1,3 @@
----
-article: 06
-phase: 0
-title: "Rust 从零(4):trait / 泛型 / 生命周期 / 迭代器 / 闭包 / 智能指针 / 并发 / async"
-type: setup
-difficulty: 5
-duration: "4-5h"
-domains: [rust]
-prereqs: ["05-rust-from-scratch-3"]
----
 
 # 06 · Rust 从零(4):trait / 泛型 / 生命周期 / 迭代器 / 闭包 / 智能指针 / 并发 / async
 

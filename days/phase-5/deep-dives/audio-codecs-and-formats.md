@@ -1,14 +1,3 @@
----
-phase: 5
-title_en: "Audio Codecs and Formats"
-title_zh: "音频编码与格式:PCM、WAV、Vorbis、Opus、FLAC 与流式解压"
-type: deep-dive
-difficulty: hard
-duration: "3-4h"
-domains: [game, audio, rust, linux, system]
-calibration: "PCM/WAV/OGG Vorbis/Opus/FLAC 编解码 + 流式解压"
-prereqs: ["phase-0/22-signals-foundation", "phase-5/deep-dives/dsp-fundamentals", "phase-5/deep-dives/audio-pipeline-complete", "phase-4/deep-dives/asset-compression"]
----
 
 # 音频编码与格式
 

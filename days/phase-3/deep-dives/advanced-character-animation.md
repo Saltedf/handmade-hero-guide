@@ -1,15 +1,3 @@
----
-title: "高级角色动画:重定向、Morph Target、Root Motion、Two-Bone IK"
-title_en: "Advanced Character Animation: Retargeting, Morph Targets, Root Motion, Two-Bone IK"
-title_zh: "高级角色动画(重定向 / morph target / blend shape / root motion / two-bone IK)"
-type: deep-dive
-phase: 3
-difficulty: 4
-duration: 90
-domains: [rust, graphics, game, math]
-prereqs: ["skeletal-animation-fundamentals", "animation-blending-and-state-machine"]
-calibration: "高级角色动画(重定向/morph target/blend shape/root motion/two-bone IK)"
----
 
 # 高级角色动画:重定向、Morph Target、Root Motion、Two-Bone IK
 

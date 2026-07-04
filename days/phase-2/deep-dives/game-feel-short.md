@@ -1,11 +1,3 @@
----
-phase: 2
-type: deep-dive
-title_en: "Game Feel & Juice (Short)"
-title_zh: "游戏手感与 Juice(简版)"
-domains: [game, rust, graphics]
-duration: "2h"
----
 
 # 深入:游戏手感与 Juice(简版)
 

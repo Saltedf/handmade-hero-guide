@@ -1,10 +1,3 @@
----
-phase: 5
-type: bridge
-title: "从 Phase 5 走到 Phase 6:渲染能跑,该让它好看"
-domains: [graphics, gpu, math, rust]
-prereqs: ["day176", "day235"]
----
 
 # Bridge · 从 Phase 5 到 Phase 6
 

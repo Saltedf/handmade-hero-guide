@@ -1,11 +1,3 @@
----
-title: "Numerical Methods Deep Dive"
-subtitle: "解析解 vs 数值解 → ODE 求解器七种兵器 → Newton / 梯度下降 / L-BFGS → Rust 实现 + HH 项目落地"
-type: deep-dive
-phase: 4
-domains: [game, math, rust, linux]
-duration: "6-8h"
----
 
 # 数值方法完整深度专题
 

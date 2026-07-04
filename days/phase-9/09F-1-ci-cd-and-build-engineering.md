@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9F"
-module: 1
-title_en: "CI/CD & Build Engineering"
-title_zh: "持续集成、持续交付与构建工程:从"能跑"到"能复现地交付""
-type: deep-dive
-difficulty: 4
-duration: "3-4 小时"
-domains: [rust, engineering, devops, game]
-prereqs: ["09A-4-fuzz-determinism-and-regression", "phase-0/17-ci-cd"]
-calibration: "工业级游戏 CI/CD + 交叉编译 + 可复现构建 + workspace 大型化 + Git LFS"
----
 
 # 09F-1 · CI/CD 与构建工程
 

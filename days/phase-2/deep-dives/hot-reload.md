@@ -1,11 +1,3 @@
----
-phase: 2
-type: deep-dive
-title: "热重载完整链路:从 build 系统 到 libloading 到 状态保持"
-domains: [game, rust, linux]
-duration: "2h"
-prereqs: ["day026", "day029"]
----
 
 # 热重载完整链路 · 从 build 系统到 libloading 到状态保持
 

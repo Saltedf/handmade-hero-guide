@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9G"
-module: 6
-title_en: "Professional Readiness Checklist"
-title_zh: "专业就绪自检总清单:你能不能,现在、独立地,交付一款专业游戏"
-type: deep-dive
-difficulty: 3
-duration: "2-3 小时"
-domains: [game, engineering, graphics, audio, systems, physics, animation, gameplay, ai, ui, production, process, self-assessment]
-prereqs: ["09G-5-gold-and-post-launch"]
-calibration: "对照 Gregory《GEA》章目 + 本教程 9 轨道能力地图的专业就绪自检总清单"
----
 
 # 09G-6 · 专业就绪自检总清单
 

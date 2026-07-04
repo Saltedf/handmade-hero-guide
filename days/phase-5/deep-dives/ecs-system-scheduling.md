@@ -1,11 +1,3 @@
----
-phase: 5
-title_en: "ECS System Scheduling"
-title_zh: "ECS 系统调度:scheduler / borrow / 依赖图深潜"
-type: deep-dive
-domains: [game, rust, system, concurrency, architecture]
-bridges: ["ecs-evolution", "ecs-data-layout", "day201", "threading-journey"]
----
 
 # ECS 系统调度:scheduler / borrow / 依赖图深潜
 

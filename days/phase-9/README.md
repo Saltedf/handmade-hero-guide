@@ -1,18 +1,3 @@
----
-phase: 9
-range: "无 HH 日(职业化层)"
-days: 0
-title: "Phase 9:职业工程 + 制作交付 —— 从烂尾到真正上架"
-estimated: "2-3 个月(可与 capstone 并行)"
-prereqs: ["phase-8"]
-domains: [game, graphics, rust, linux, audio, network, engineering]
-calibration:
-  - "CMU 15-469 (Visual Computing Systems)"
-  - "CMU 15-466 (Game Programming)"
-  - "Gregory《Game Engine Architecture》"
-  - "Glenn Fiedler《Gaffer on Games》"
-  - "行业制作阶段(原型→垂直切片→alpha→beta→cert→gold→live)"
----
 
 # Phase 9 · 职业工程 + 制作交付:从烂尾到真正上架
 

@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9B"
-module: 1
-title_en: "Game Loop & Fixed Timestep"
-title_zh: "游戏循环与固定步长:为什么"每帧 dt"是业余写法"
-type: deep-dive
-difficulty: 4
-duration: "2-3 小时"
-domains: [game, rust, engineering]
-prereqs: ["phase-8", "09A-1-testable-game-architecture"]
-calibration: "Gregory《Game Engine Architecture》(game loop 章)+ Gaffer on Games 'Fix Your Timestep'"
----
 
 # 9B-1 · 游戏循环与固定步长
 

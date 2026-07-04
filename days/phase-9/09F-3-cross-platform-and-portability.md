@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9F"
-module: 3
-title_en: "Cross-Platform & Portability"
-title_zh: "跨平台与可移植性:让你的引擎活在每台机器上"
-type: deep-dive
-difficulty: 4
-duration: "2-3 小时"
-domains: [game, rust, engineering, linux]
-prereqs: ["09F-2-release-engineering-and-live-ops", "09B-2-subsystems-modules-plugins"]
-calibration: "平台抽象层设计 + 主机 TRC/TCR + 移动 + Web/WASM 概念 + 可移植心智(SCOPE: 桌面核心 + 概念性覆盖其余)"
----
 
 # 09F-3 · 跨平台与可移植性
 

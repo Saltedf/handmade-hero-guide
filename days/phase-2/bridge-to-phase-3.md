@@ -1,10 +1,3 @@
----
-phase: 2
-type: bridge
-title: "从 Phase 2 走到 Phase 3:2D 走完,准备进 3D"
-domains: [game, graphics, math, rust]
-prereqs: ["day026", "day070"]
----
 
 # Bridge · 从 Phase 2 到 Phase 3
 

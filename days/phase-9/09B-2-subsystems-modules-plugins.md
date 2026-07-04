@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9B"
-module: 2
-title_en: "Subsystems, Modules, Plugins & Lifecycle"
-title_zh: "子系统、模块、插件与生命周期:引擎的器官怎么长规整"
-type: deep-dive
-difficulty: 4
-duration: "2-3 小时"
-domains: [game, rust, engineering]
-prereqs: ["09B-1-game-loop-and-timestep"]
-calibration: "Gregory《Game Engine Architecture》(子系统/工具/反射章)+ Bevy App/Plugin 架构"
----
 
 # 09B-2 · 子系统、模块、插件与生命周期
 

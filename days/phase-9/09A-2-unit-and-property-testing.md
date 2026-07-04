@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9A"
-module: 2
-title_en: "Unit & Property Testing for Game Code"
-title_zh: "单元测试与属性测试:给游戏数学喂一万个随机输入"
-type: deep-dive
-difficulty: 4
-duration: "2-3 小时"
-domains: [rust, engineering, math, game]
-prereqs: ["09A-1-testable-game-architecture"]
-calibration: "软件工程测试 + QuickCheck/prop-testing 传统 + 游戏数学可测性"
----
 
 # 9A-2 · 单元测试与属性测试
 

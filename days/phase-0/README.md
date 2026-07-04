@@ -1,12 +1,3 @@
----
-phase: 0
-range: (穿插,2-4 周)
-days: 16
-title: "起步营:从编程小白到能跟 Handmade Hero"
-estimated: "2-4 周"
-prereqs: []
-domains: [linux, rust, math]
----
 
 # Phase 0 · 起步营
 

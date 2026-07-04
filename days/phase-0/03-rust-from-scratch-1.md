@@ -1,13 +1,3 @@
----
-article: 03
-phase: 0
-title: "Rust 从零(1):安装、cargo、变量、类型、控制流"
-type: setup
-difficulty: 3
-duration: "3-4h"
-domains: [rust]
-prereqs: ["00-terminal-basics", "01-arch-setup", "02-git-and-github"]
----
 
 # 03 · Rust 从零(1):安装、cargo、变量、类型、控制流
 

@@ -1,16 +1,3 @@
----
-title: "Soft Body, Cloth, Fluid & Destruction Deep Dive"
-subtitle: "刚体之外的世界 → PBD 求解器 → SPH / Eulerian 流体 → 破碎与断裂 → HH 项目里挂一片会飘的布"
-type: deep-dive
-phase: 4
-difficulty: 4
-duration: "6-8h"
-domains: [game, graphics, math, rust, linux]
-prereqs:
-  - physics-engine-complete
-  - numerical-methods
-calibration: "柔体/布料/流体(PBD/position-based dynamics + SPH/Eulerian 流体 + 破坏)"
----
 
 # 柔体、布料、流体与破坏深度专题
 

@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9F"
-module: 2
-title_en: "Release Engineering & Live-Ops"
-title_zh: "发布工程与实时运营:发售那一天,工作才真正开始"
-type: deep-dive
-difficulty: 4
-duration: "2.5-3 小时"
-domains: [game, rust, engineering, ops, network]
-prereqs: ["09F-1-ci-cd-and-build-engineering"]
-calibration: "游戏发布工程(patching/DLC/崩溃上报/平台服务)+ live-ops/telemetry→action"
----
 
 # 09F-2 · 发布工程与实时运营:发售那一天,工作才真正开始
 

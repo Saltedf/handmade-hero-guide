@@ -1,11 +1,3 @@
----
-phase: 7
-type: deep-dive
-title_en: "Localization i18n (Short)"
-title_zh: "本地化与国际化(简版)"
-domains: [game, rust, i18n]
-duration: "2h"
----
 
 # 深入:本地化与国际化(简版)
 

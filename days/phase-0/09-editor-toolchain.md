@@ -1,13 +1,3 @@
----
-article: 09
-phase: 0
-title: "编辑器与工具链:helix/nvim + rust-analyzer + cargo-watch + tmux"
-type: setup
-difficulty: 2
-duration: "2h"
-domains: [linux, rust]
-prereqs: ["00-terminal-basics", "01-arch-setup"]
----
 
 # 09 · 编辑器与工具链:helix/nvim + rust-analyzer + cargo-watch + tmux
 

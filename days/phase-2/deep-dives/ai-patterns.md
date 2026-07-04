@@ -1,10 +1,3 @@
----
-phase: 2
-title_en: "AI Patterns Deep Dive"
-title_zh: "AI 模式深度专题"
-type: deep-dive
-domains: [game, rust, cs]
----
 
 # AI 模式深度专题
 

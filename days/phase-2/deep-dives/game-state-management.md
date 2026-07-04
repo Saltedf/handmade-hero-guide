@@ -1,14 +1,3 @@
----
-phase: 2
-title_en: "Game State Management: State Machines & State Stacks"
-title_zh: "游戏状态管理:状态机与状态栈,以及为什么 if 旗标必然失败"
-type: deep-dive
-difficulty: 3
-duration: "2-3 小时"
-domains: [game, rust, engineering]
-prereqs: ["09B-1", "entity-system"]
-calibration: "Gregory《Game Engine Architecture》(application layer / state 章)+ Robert Nystrom《Game Programming Patterns》State 章节 + 09B-2 子系统生命周期"
----
 
 # 游戏状态管理 · 状态机与状态栈
 

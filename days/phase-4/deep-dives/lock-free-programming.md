@@ -1,11 +1,3 @@
----
-title: "Lock-Free Programming"
-subtitle: "Atomics, Ordering, ABA problem, crossbeam"
-type: deep-dive
-phase: 4
-domains: [rust, linux]
-duration: "2-3h"
----
 
 # Lock-Free Programming
 

@@ -1,11 +1,3 @@
----
-title: "Physics Engine Complete Deep Dive"
-subtitle: "从零写 500 行 Rust 物理引擎 → Box2D / Rapier / PhysX 对比 → 集成进 HH 项目"
-type: deep-dive
-phase: 4
-domains: [game, graphics, math, rust, linux]
-duration: "6-8h"
----
 
 # 物理引擎完整深度专题
 

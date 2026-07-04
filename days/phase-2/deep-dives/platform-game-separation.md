@@ -1,11 +1,3 @@
----
-phase: 2
-type: deep-dive
-title: "平台层与游戏层分离:从 Win32 callback 到 Rust cdylib"
-domains: [game, rust, linux]
-duration: "2-3h"
-prereqs: ["day026", "day029", "phase-0/08-processes-and-signals"]
----
 
 # 平台层与游戏层分离 · 从 Win32 callback 到 Rust cdylib
 

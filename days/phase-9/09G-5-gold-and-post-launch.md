@@ -1,16 +1,3 @@
----
-phase: 9
-sequence: "9G"
-module: 5
-title_en: "Gold & Post-Launch"
-title_zh: "Gold 母版与发售之后:从冻结那一刻到游戏的一生"
-type: deep-dive
-difficulty: 4
-duration: "2.5-3 小时"
-domains: [game, rust, engineering, ops, production, process]
-prereqs: ["09G-4-certification-and-trc"]
-calibration: "Gold 母版 + 上架 + 售后支持(live-ops)+ sunsetting/EOL"
----
 
 # 09G-5 · Gold 母版与发售之后:从冻结那一刻到游戏的一生
 
